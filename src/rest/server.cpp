@@ -1,6 +1,5 @@
 #include "server.h"
 #include "client.h"
-#include <iostream>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
@@ -41,6 +40,13 @@ bool Server::begin()
     return true;
 }
 
+void Server::run()
+{
+    if(!acceptor_.is_open())
+        return;
+    context_.run();
+}
+
 void Server::end()
 {
     if(!acceptor_.is_open())
@@ -51,12 +57,19 @@ void Server::end()
 
 void Server::acceptNewClient()
 {
-    Client::Pointer client = Client::create(context_);
+    Client::Context context = { 
+        .manager = manager_, 
+        .io = context_
+    };
 
-    acceptor_.async_accept(client->socket(), boost::bind(&Server::acceptClient, this, client, boost::asio::placeholders::error));
+    Client::Pointer client = Client::create(context);
+
+    acceptor_.async_accept(client->socket(), boost::bind(&Server::acceptClient, this, client, placeholders::error));
 }
 
 void Server::acceptClient(const boost::shared_ptr<Client> &client, const boost::system::error_code &error)
 {
+    if(!error)
+        client->begin();
     acceptNewClient();
 }

@@ -5,9 +5,11 @@ find_package(Boost COMPONENTS system REQUIRED)
 
 # Configure library
 set(HEADERS "server.h"
-            "client.h")
+            "client.h"
+            "clientmanager.h")
 set(SOURCES "server.cpp"
-            "client.cpp")
+            "client.cpp"
+            "clientmanager.cpp")
 
 add_library(rest STATIC ${SOURCES})
 target_include_directories(rest PRIVATE ${Boost_INCLUDE_DIRS})

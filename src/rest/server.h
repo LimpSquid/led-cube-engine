@@ -1,5 +1,6 @@
 #pragma once
 
+#include "clientmanager.h"
 #include <string>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -8,7 +9,6 @@
 namespace Rest
 {
 
-class Client;
 class Server
 {
 public:
@@ -17,12 +17,14 @@ public:
     ~Server();
 
     bool begin();
+    void run();
     void end();
 
 private:
     void acceptNewClient();
     void acceptClient(const boost::shared_ptr<Client> &client, const boost::system::error_code &error);
 
+    ClientManager manager_;
     boost::asio::io_context context_;
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::ip::tcp::endpoint endpoint_;
