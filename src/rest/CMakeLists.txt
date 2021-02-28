@@ -3,9 +3,11 @@ set(${THREADS_PREFER_PTHREAD_FLAG} ON)
 find_package(Threads REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 
-# Add library
-set(HEADERS "server.h")
-set(SOURCES "server.cpp")
+# Configure library
+set(HEADERS "server.h"
+            "client.h")
+set(SOURCES "server.cpp"
+            "client.cpp")
 
 add_library(rest STATIC ${SOURCES})
 target_include_directories(rest PRIVATE ${Boost_INCLUDE_DIRS})
