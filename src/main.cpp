@@ -1,9 +1,11 @@
 #include <iostream>
-#include <rest/server.h>
+#include <rest/http/httpserver.h>
+
+using namespace Rest::Http;
 
 int main(int argc, char *argv[])
 {
-    Rest::Server srv("127.0.0.1", "50000");
+    HttpServer srv("127.0.0.1", "50000");
 
     srv.begin();
     srv.run();
