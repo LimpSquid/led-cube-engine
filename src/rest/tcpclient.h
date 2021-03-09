@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -9,10 +8,17 @@ namespace Rest
 {
 
 class RequestParser;
-class TcpClientManager;
+class TcpClientManagement;
 class TcpClient : public boost::enable_shared_from_this<TcpClient>
 {
 public:
+    enum ClientState
+    {
+        CS_ACTIVE_WAIT = 0,
+        CS_ACTIVE,
+        CS_TERMINATED,
+    };
+
     /**
      * @brief The pointer type for a TcpClient object
      */
@@ -24,45 +30,47 @@ public:
     using Socket = boost::asio::ip::tcp::socket;
 
     /**
-     * @brief The TcpClient context 
-     */
-    struct Context
-    {
-        TcpClientManager &manager;
-        boost::asio::io_context &io;
-    };
-
-    /**
      * @brief Destroy the TcpClient object
      */
     virtual ~TcpClient();
+
+    /**
+     * @brief Get the state of the TcpClient 
+     * @return Returns ClientState 
+     */
+    ClientState state() const;
+    
+    /**
+     * @brief Activate the TcpClient
+     * Activates the client and allows for reading and writing data from and to the socket
+     */
+    void activate();
+
+    /**
+     * @brief Terminate the TcpClient
+     * @param graceful Indication of a graceful shutdown
+     */
+    void terminate(bool graceful = true);
+
+protected:
+    /**
+     * @brief Construct a new TcpClient object
+     * @param management The management associated to this client
+     * @param socket The socket for this client
+     */
+    TcpClient(TcpClientManagement &management, Socket &&socket);
+
+    /**
+     * @brief Get the TcpClient its management
+     * @return Returns TcpClientManagement& 
+     */
+    TcpClientManagement &management();
 
     /**
      * @brief Get the TcpClient its socket
      * @return Returns Socket& 
      */
     Socket &socket();
-    
-    /**
-     * @brief Begin the TcpClient
-     * Starts the client and allows for reading and writing data from and to the socket
-     * @return Returns true when the client was started succesfully
-     * @return Returns false when the client couldn't be started or was running already
-     */
-    bool begin();
-
-    /**
-     * @brief End the TcpClient
-     * Stop reading and writing data from and to the socket and stops the client
-     */
-    void end();
-
-protected:
-    /**
-     * @brief Construct a new TcpClient object
-     * @param context The context for the client
-     */
-    TcpClient(const Context &context);
 
     /**
      * @brief Get the request parser of this TcpClient object
@@ -74,14 +82,16 @@ protected:
 private:
     static const int BUFFER_SIZE_DEFAULT;
 
+    void asyncRead();
+
     void read(const boost::system::error_code &error, size_t bytes);
     void write(const boost::system::error_code &error, size_t bytes);
 
-    TcpClientManager &manager_;
-    boost::asio::io_context &context_;
-    boost::asio::ip::tcp::socket socket_;
+    TcpClientManagement &management_;
+    Socket socket_;
     std::vector<char> readBuffer_;
     std::vector<char> writeBuffer_;
+    ClientState state_;
 };
 
 }

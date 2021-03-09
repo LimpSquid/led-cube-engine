@@ -20,5 +20,5 @@ void HttpParser::clear()
 
 RequestParser::ParsingState HttpParser::step(const char *data, std::size_t length)
 {
-    return PS_UNKNOWN; // @Commit: todo
+    return PS_CONTINUE;
 }

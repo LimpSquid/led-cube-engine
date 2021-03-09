@@ -1,5 +1,6 @@
 #include <http/httpserver.h>
 #include <http/httpclient.h>
+#include <utility>
 
 using namespace Rest;
 using namespace Rest::Http;
@@ -22,7 +23,7 @@ HttpServer::~HttpServer()
 
 }
 
-Rest::TcpClient::Pointer HttpServer::createClient(TcpClientManager &manager, boost::asio::io_context &context) const
+Rest::TcpClient::Pointer HttpServer::createClient(TcpClientManagement &management, Socket &&socket) const
 {
-    return Rest::TcpClient::Pointer(new HttpClient({ manager, context }));
+    return Rest::TcpClient::Pointer(new HttpClient(management, std::move(socket)));
 }

@@ -1,9 +1,9 @@
 #include <tcpserver.h>
-#include <tcpclientmanager.h>
+#include <tcpclientmanagement.h>
 #include <requestparser.h>
+#include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
-#include <iostream> // @Commit: remove
 
 using namespace Rest;
 using namespace boost::asio;
@@ -12,7 +12,57 @@ const int TcpClient::BUFFER_SIZE_DEFAULT = 2048;
 
 TcpClient::~TcpClient()
 {
-    end();
+    terminate();
+}
+
+TcpClient::ClientState TcpClient::state() const
+{
+    return state_;
+}
+
+void TcpClient::activate()
+{
+    switch(state_) {
+        case CS_ACTIVE_WAIT:
+            if(socket_.is_open()) {
+                state_ = CS_ACTIVE;
+                management_.join(shared_from_this());
+                asyncRead();
+            }
+            break;
+        default:                
+            break;
+    }
+}
+
+void TcpClient::terminate(bool graceful)
+{
+    switch(state_) {
+        case CS_ACTIVE:
+            state_ = CS_TERMINATED;
+            management_.leave(shared_from_this());
+            
+            if(graceful)
+                socket_.shutdown(Socket::shutdown_send);
+            else
+                socket_.close();
+            break;
+        default:                
+            break;
+    }
+}
+
+TcpClient::TcpClient(TcpClientManagement &management, Socket &&socket) :
+    management_(management),
+    socket_(std::move(socket))
+{
+    readBuffer_.resize(BUFFER_SIZE_DEFAULT);
+    state_ = CS_ACTIVE_WAIT;
+}
+
+TcpClientManagement &TcpClient::management()
+{
+    return management_;
 }
 
 TcpClient::Socket &TcpClient::socket()
@@ -20,46 +70,38 @@ TcpClient::Socket &TcpClient::socket()
     return socket_;
 }
 
-bool TcpClient::begin()
+void TcpClient::asyncRead()
 {
-    manager_.add(shared_from_this());
     socket_.async_read_some(boost::asio::buffer(readBuffer_), boost::bind(&TcpClient::read, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-    socket_.async_write_some(boost::asio::buffer(writeBuffer_), boost::bind(&TcpClient::write, shared_from_this(), placeholders::error, placeholders::bytes_transferred));
-    return true;
-}
-
-void TcpClient::end()
-{
-    if(!socket_.is_open())
-        return;
-
-    manager_.remove(shared_from_this());
-    socket_.close();
-}
-
-TcpClient::TcpClient(const Context &context) :
-    manager_(context.manager),
-    context_(context.io),
-    socket_(context_)
-{
-    readBuffer_.resize(BUFFER_SIZE_DEFAULT);
 }
 
 void TcpClient::read(const boost::system::error_code &error, size_t bytes)
 {
-    if(error) {
-        end();
+    if(error::eof == error) {
+        terminate();
         return;
     }
 
-    // @Commit: remove
-    std::cout << std::string(readBuffer_.data(), bytes);
+    RequestParser &parser = requestParser();
+
+    switch(parser.parse(readBuffer_.data(), bytes)) {
+        default:
+        case RequestParser::PS_ERROR:
+            parser.reset();
+            break;
+        case RequestParser::PS_FINISHED:
+            parser.reset();
+            break;
+        case RequestParser::PS_CONTINUE:
+            asyncRead();
+            break;
+    }
 }
 
 void TcpClient::write(const boost::system::error_code &error, size_t bytes)
 {
     if(error) {
-        end();
+        terminate();
         return;
     }
 }

@@ -27,7 +27,7 @@ public:
     virtual ~HttpServer() override;
 
 private:
-    virtual Rest::TcpClient::Pointer createClient(TcpClientManager &manager, boost::asio::io_context &context) const override;
+    virtual Rest::TcpClient::Pointer createClient(TcpClientManagement &management, Socket &&socket) const override;
 };
 
 }

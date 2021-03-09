@@ -1,5 +1,6 @@
 #include <tcpserver.h>
 #include <requestparser.h>
+#include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
@@ -43,28 +44,30 @@ void TcpServer::end()
 
 TcpServer::TcpServer(const std::string &address, const std::string &port) :
     acceptor_(context_),
-    endpoint_(*tcp::resolver(context_).resolve(address, port))
+    endpoint_(*tcp::resolver(context_).resolve(address, port)),
+    socket_(context_)
 {
     
 }
 
 TcpServer::TcpServer(const tcp::endpoint &endpoint) :
     acceptor_(context_),
-    endpoint_(endpoint)
+    endpoint_(endpoint),
+    socket_(context_)
 {
 
 }
 
 void TcpServer::acceptNewClient()
 {
-    TcpClient::Pointer client = createClient(manager_, context_);
-
-    acceptor_.async_accept(client->socket(), boost::bind(&TcpServer::acceptClient, this, client, placeholders::error));
+    acceptor_.async_accept(socket_, boost::bind(&TcpServer::acceptClient, this, placeholders::error));
 }
 
-void TcpServer::acceptClient(const boost::shared_ptr<TcpClient> &client, const boost::system::error_code &error)
+void TcpServer::acceptClient(const boost::system::error_code &error)
 {
-    if(!error)
-        client->begin();
+    if(error) 
+        return;
+    
+    createClient(management_, std::move(socket_))->activate();
     acceptNewClient();
 }

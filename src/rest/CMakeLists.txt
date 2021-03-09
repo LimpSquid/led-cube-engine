@@ -6,7 +6,7 @@ find_package(Boost COMPONENTS system REQUIRED)
 # The library sources
 set(SOURCES "tcpserver.cpp"
             "tcpclient.cpp"
-            "tcpclientmanager.cpp"
+            "tcpclientmanagement.cpp"
             "requestparser.cpp"
             "http/httpparser.cpp"
             "http/httpserver.cpp"

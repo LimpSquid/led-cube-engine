@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tcpclient.h>
-#include <tcpclientmanager.h>
+#include <tcpclientmanagement.h>
 #include <string>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -14,6 +14,11 @@ class RequestParser;
 class TcpServer
 {
 public:
+  /**
+     * @brief The socket type for a TcpClient object 
+     */
+    using Socket = TcpClient::Socket;
+
     /**
      * @brief Destroy the TcpServer object
      */
@@ -56,20 +61,21 @@ protected:
     /**
      * @brief Create a TcpClient object
      * A method that must be overridden to return a TcpClient object
-     * @param manager The client manager
-     * @param context The asio context
+     * @param management The management to associate with the new client
+     * @param socket The socket to associate with the new client
      * @return Returns TcpClient* 
      */
-    virtual TcpClient::Pointer createClient(TcpClientManager &manager, boost::asio::io_context &context) const = 0;
+    virtual TcpClient::Pointer createClient(TcpClientManagement &management, Socket &&socket) const = 0;
 
 private:
     void acceptNewClient();
-    void acceptClient(const boost::shared_ptr<TcpClient> &client, const boost::system::error_code &error);
+    void acceptClient(const boost::system::error_code &error);
 
-    TcpClientManager manager_;
     boost::asio::io_context context_;
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::ip::tcp::endpoint endpoint_;
+    TcpClientManagement management_;
+    Socket socket_;
 };
 
 }

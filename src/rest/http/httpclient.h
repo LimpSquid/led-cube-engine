@@ -11,10 +11,11 @@ class HttpClient : public Rest::TcpClient
 public:
     /**
      * @brief Construct a new HttpClient object
-     * @param context The context for the TcpClient
+     * @param management The management associated to this client
+     * @param socket The socket for this client
      */
-    HttpClient(const Context &context);
-
+    HttpClient(TcpClientManagement &management, Socket &&socket);
+    
     /**
      * @brief Destroy the HttpClient object
      */

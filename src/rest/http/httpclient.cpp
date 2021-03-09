@@ -1,9 +1,10 @@
 #include <http/httpclient.h>
+#include <utility>
 
 using namespace Rest::Http;
 
-HttpClient::HttpClient(const Context &context) :
-    TcpClient(context)
+HttpClient::HttpClient(TcpClientManagement &management, Socket &&socket) :
+    TcpClient(management, std::move(socket))
 {
 
 }

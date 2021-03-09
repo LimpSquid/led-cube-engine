@@ -8,14 +8,14 @@ namespace Rest
 {
 
 class TcpClient;
-class TcpClientManager
+class TcpClientManagement
 {
 public:
-    TcpClientManager();
-    ~TcpClientManager();
+    TcpClientManagement();
+    ~TcpClientManagement();
 
-    void add(const boost::shared_ptr<TcpClient> &client);
-    void remove(const boost::shared_ptr<TcpClient> &client);
+    void join(const boost::shared_ptr<TcpClient> &client);
+    void leave(const boost::shared_ptr<TcpClient> &client);
 
 private:
     std::set<boost::shared_ptr<TcpClient>> clients_;
