@@ -1,5 +1,4 @@
 #include <tcpserver.h>
-#include <requestparser.h>
 #include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>

@@ -10,11 +10,10 @@
 namespace Rest
 {
 
-class RequestParser;
 class TcpServer
 {
 public:
-  /**
+    /**
      * @brief The socket type for a TcpClient object 
      */
     using Socket = TcpClient::Socket;

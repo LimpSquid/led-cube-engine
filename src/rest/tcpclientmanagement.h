@@ -1,8 +1,8 @@
 #pragma once
 
-#include <set>
 #include <mutex>
 #include <boost/shared_ptr.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace Rest 
 {
@@ -18,7 +18,7 @@ public:
     void leave(const boost::shared_ptr<TcpClient> &client);
 
 private:
-    std::set<boost::shared_ptr<TcpClient>> clients_;
+    boost::unordered_set<boost::shared_ptr<TcpClient>> clients_;
     mutable std::mutex lock_;
 };
 

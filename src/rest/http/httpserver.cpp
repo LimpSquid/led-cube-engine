@@ -23,7 +23,7 @@ HttpServer::~HttpServer()
 
 }
 
-Rest::TcpClient::Pointer HttpServer::createClient(TcpClientManagement &management, Socket &&socket) const
+TcpClient::Pointer HttpServer::createClient(TcpClientManagement &management, Socket &&socket) const
 {
     return Rest::TcpClient::Pointer(new HttpClient(management, std::move(socket)));
 }

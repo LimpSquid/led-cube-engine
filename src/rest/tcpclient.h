@@ -7,7 +7,6 @@
 namespace Rest
 {
 
-class RequestParser;
 class TcpClientManagement;
 class TcpClient : public boost::enable_shared_from_this<TcpClient>
 {
@@ -16,6 +15,7 @@ public:
     {
         CS_ACTIVE_WAIT = 0,
         CS_ACTIVE,
+        CS_ABOUT_TO_TERMINATE,
         CS_TERMINATED,
     };
 
@@ -73,24 +73,17 @@ protected:
     Socket &socket();
 
     /**
-     * @brief Get the request parser of this TcpClient object
-     * A method that must be overridden to return a reference to a RequestParser object
-     * @return Returns RequestParser& 
+     * @brief The state changed callback
+     * A method which may be overridden to do additional processing on state changes
+     * @param state The new client state
      */
-    virtual RequestParser &requestParser() = 0;
+    virtual void stateChanged(const ClientState &state);
 
 private:
-    static const int BUFFER_SIZE_DEFAULT;
-
-    void asyncRead();
-
-    void read(const boost::system::error_code &error, size_t bytes);
-    void write(const boost::system::error_code &error, size_t bytes);
+    void setState(const ClientState &value);
 
     TcpClientManagement &management_;
     Socket socket_;
-    std::vector<char> readBuffer_;
-    std::vector<char> writeBuffer_;
     ClientState state_;
 };
 
