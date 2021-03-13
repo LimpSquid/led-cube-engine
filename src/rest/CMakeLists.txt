@@ -7,6 +7,8 @@ find_package(Boost COMPONENTS system REQUIRED)
 set(SOURCES "tcpserver.cpp"
             "tcpclient.cpp"
             "tcpclientmanagement.cpp"
+            "router.cpp"
+            "routernode.cpp"
             "http/httpserver.cpp"
             "http/httpclient.cpp")
 

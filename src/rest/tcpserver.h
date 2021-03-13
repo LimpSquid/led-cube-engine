@@ -10,6 +10,7 @@
 namespace Rest
 {
 
+class Router;
 class TcpServer
 {
 public:
@@ -26,10 +27,11 @@ public:
     /**
      * @brief Begin the TcpServer
      * Starts the server and starts listening for incoming connections
+     * @param router The router to use for request handling
      * @return Returns true when the server was started succesfully
      * @return Returns false when the server couldn't be started or was running already
      */
-    bool begin();
+    bool begin(const boost::shared_ptr<Router> &router);
 
     /**
      * @brief Run the TcpServer
@@ -73,6 +75,7 @@ private:
     boost::asio::io_context context_;
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::ip::tcp::endpoint endpoint_;
+    boost::shared_ptr<Router> router_;
     TcpClientManagement management_;
     Socket socket_;
 };

@@ -12,11 +12,12 @@ TcpServer::~TcpServer()
     
 }
 
-bool TcpServer::begin()
+bool TcpServer::begin(const boost::shared_ptr<Router> &router)
 {
     if(acceptor_.is_open())
         return false;
 
+    router_ = router;
     acceptor_.open(endpoint_.protocol());
     acceptor_.set_option(tcp::acceptor::reuse_address(true));
     acceptor_.bind(endpoint_);
