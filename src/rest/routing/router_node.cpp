@@ -32,20 +32,20 @@ bool router_node::match(const std::string &endpoint, token_data &data) const
         return false;    
 
     // Match each tag with token
-    auto tagIt = tags.begin();
-    auto tokenIt = tokens_.cbegin();
-    for(; tokenIt != tokens_.cend(); tagIt++, tokenIt++) {
-        const auto &tag = *tagIt;
-        const auto &token =  *tokenIt;
+    auto tag_it = tags.begin();
+    auto token_it = tokens_.cbegin();
+    for(; token_it != tokens_.cend(); tag_it++, token_it++) {
+        const auto &tag = *tag_it;
+        const auto &token =  *token_it;
         
         if(!token->match(tag))
             return false;
     }
 
     // If all tokens match, provide data
-    for(tagIt = tags.begin(), tokenIt = tokens_.cbegin(); tokenIt != tokens_.cend(); tagIt++, tokenIt++) {
-        const auto &tag = *tagIt;
-        const auto &token =  *tokenIt;
+    for(tag_it = tags.begin(), token_it = tokens_.cbegin(); token_it != tokens_.cend(); tag_it++, token_it++) {
+        const auto &tag = *tag_it;
+        const auto &token =  *token_it;
 
         token->provide_data(tag, data);    
     }
