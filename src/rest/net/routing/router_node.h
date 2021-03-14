@@ -1,10 +1,10 @@
 #pragma once
 
-#include <routing/tokens.h>
+#include <net/routing/tokens.h>
 #include <string>
 #include <vector>
 
-namespace rest::routing
+namespace rest::net::routing
 {
 
 class token_data;

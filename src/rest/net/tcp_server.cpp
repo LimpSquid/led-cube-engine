@@ -1,11 +1,11 @@
 #include <net/tcp_server.h>
-#include <routing/router_node.h>
+#include <net/routing/router_node.h>
 #include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
 using namespace rest::net;
-using namespace rest::routing;
+using namespace rest::net::routing;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
@@ -18,8 +18,8 @@ bool tcp_server::begin(const boost::shared_ptr<router> &router)
 {
     if(acceptor_.is_open())
         return false;
-
-    router_ = router;
+    
+    management_.set_router(router);
     acceptor_.open(endpoint_.protocol());
     acceptor_.set_option(tcp::acceptor::reuse_address(true));
     acceptor_.bind(endpoint_);

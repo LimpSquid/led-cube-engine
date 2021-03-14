@@ -1,9 +1,9 @@
-#include <routing/router_node.h>
+#include <net/routing/router_node.h>
 #include <functional>
 #include <boost/tokenizer.hpp>
 #include <stdexcept>
 
-using namespace rest::routing;
+using namespace rest::net::routing;
 
 router_node::router_node(const std::string &expression) :
     expr_hash_(std::hash<std::string>{ }(expression))
@@ -12,7 +12,8 @@ router_node::router_node(const std::string &expression) :
 }
 
 router_node::router_node(router_node &&other) :
-    expr_hash_(other.expr_hash_)
+    expr_hash_(other.expr_hash_),
+    tokens_(std::move(other.tokens_))
 {
 
 }
@@ -24,7 +25,7 @@ router_node::~router_node()
 
 bool router_node::match(const std::string &endpoint, token_data &data) const
 {
-    boost::tokenizer tags(endpoint, boost::char_separator<char>("/"));
+    boost::tokenizer tags(endpoint, boost::escaped_list_separator<char>('\\', '/'));
     const std::size_t size = std::distance(tags.begin(), tags.end());
 
     // No need to match when size does not match
@@ -36,7 +37,7 @@ bool router_node::match(const std::string &endpoint, token_data &data) const
     auto token_it = tokens_.cbegin();
     for(; token_it != tokens_.cend(); tag_it++, token_it++) {
         const auto &tag = *tag_it;
-        const auto &token =  *token_it;
+        const auto &token = *token_it;
         
         if(!token->match(tag))
             return false;
@@ -70,7 +71,7 @@ void router_node::tokenize(const std::string &expression)
 
     for(const std::string &tag : tags) {
         if(tag.empty())
-            throw std::invalid_argument("Expression is not allowed to have empty tags");
+            token = dummy_token::create();
         if(tag.size() <= 2)
             token = matching_token::create(tag);
         else {

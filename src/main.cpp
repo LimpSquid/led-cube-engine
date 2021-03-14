@@ -1,13 +1,16 @@
 #include <rest/http/http_server.h>
-#include <rest/routing/router.h>
+#include <rest/net/routing/router.h>
 #include <boost/make_shared.hpp>
+
+using namespace rest;
+using namespace rest::net;
 
 int main(int argc, char *argv[])
 {
-    rest::http::http_server srv("127.0.0.1", "50000");
-    boost::shared_ptr<rest::routing::router> router = boost::make_shared<rest::routing::router>();
+    http::http_server srv("127.0.0.1", "50000");
+    boost::shared_ptr<routing::router> router = boost::make_shared<routing::router>();
 
-    router->make_node("//blah/user/[users]/a/");
+    router->make_node("/test/<id>");
 
     srv.begin(router);
     srv.run();

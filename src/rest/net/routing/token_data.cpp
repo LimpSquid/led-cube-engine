@@ -1,6 +1,6 @@
-#include <routing/token_data.h>
+#include <net/routing/token_data.h>
 
-using namespace rest::routing;
+using namespace rest::net::routing;
 
 token_data::token_data()
 {

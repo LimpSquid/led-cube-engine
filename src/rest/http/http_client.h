@@ -4,6 +4,11 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 
+namespace rest::net::routing
+{
+    class router;
+}
+
 namespace rest::http
 {
 
@@ -42,6 +47,7 @@ private:
     void async_read();
     void http_read(boost::beast::error_code error);
 
+    boost::shared_ptr<rest::net::routing::router> router_;
     http_request request_;
     http_buffer buffer_;
 };

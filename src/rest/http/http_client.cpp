@@ -1,4 +1,6 @@
 #include <http/http_client.h>
+#include <net/tcp_client_management.h>
+#include <net/routing/router.h>
 #include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
@@ -10,7 +12,7 @@ using namespace boost;
 http_client::http_client(tcp_client_management &management, socket_type &&socket) :
     tcp_client(management, std::move(socket))
 {
-
+    router_ = management.router();
 }
 
 http_client::~http_client()
@@ -49,5 +51,4 @@ void http_client::http_read(beast::error_code error)
         terminate(false);
         return;
     }
-
 }

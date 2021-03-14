@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace rest::routing
+namespace rest::net::routing
 {
 
 class token_data

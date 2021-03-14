@@ -3,7 +3,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-namespace rest::routing
+namespace rest::net::routing
 {
 class token_data;
 
@@ -13,6 +13,13 @@ public:
     using pointer = boost::shared_ptr<base_token>;
     virtual bool match(const std::string &tag) const = 0;
     virtual void provide_data(const std::string &tag, token_data &data) const;
+};
+
+class dummy_token : public base_token
+{
+public:
+    static pointer create();
+    virtual bool match(const std::string &tag) const override;
 };
 
 class matching_token : public base_token

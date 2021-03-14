@@ -1,9 +1,10 @@
-#include <routing/router.h>
-#include <routing/router_node.h>
+#include <net/routing/router.h>
+#include <net/routing/router_node.h>
+#include <net/routing/token_data.h>
 #include <stdexcept>
 #include <utility>
 
-using namespace rest::routing;
+using namespace rest::net::routing;
 
 router::router()
 {

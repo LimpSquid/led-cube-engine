@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace rest::routing
+namespace rest::net::routing
 {
 
 class router_node;

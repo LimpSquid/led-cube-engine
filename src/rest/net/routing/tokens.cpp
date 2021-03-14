@@ -1,11 +1,21 @@
-#include <routing/tokens.h>
-#include <routing/token_data.h>
+#include <net/routing/tokens.h>
+#include <net/routing/token_data.h>
 
-using namespace rest::routing;
+using namespace rest::net::routing;
 
 void base_token::provide_data(const std::string &tag, token_data &) const
 {
 
+}
+
+base_token::pointer dummy_token::create()
+{
+    return pointer(new dummy_token);
+}
+
+bool dummy_token::match(const std::string &) const
+{
+    return true;
 }
 
 base_token::pointer matching_token::create(const std::string &tag)

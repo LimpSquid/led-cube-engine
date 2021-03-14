@@ -7,16 +7,13 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace rest
+namespace rest::net
 {
 
 namespace routing
 {
     class router;
 }
-
-namespace net
-{
 
 class tcp_server
 {
@@ -82,11 +79,8 @@ private:
     boost::asio::io_context context_;
     boost::asio::ip::tcp::acceptor acceptor_;
     boost::asio::ip::tcp::endpoint endpoint_;
-    boost::shared_ptr<routing::router> router_;
     tcp_client_management management_;
     socket_type socket_;
 };
-
-}
 
 }
