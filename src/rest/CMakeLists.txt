@@ -4,13 +4,15 @@ find_package(Threads REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 
 # The library sources
-set(SOURCES "tcpserver.cpp"
-            "tcpclient.cpp"
-            "tcpclientmanagement.cpp"
-            "router.cpp"
-            "routernode.cpp"
-            "http/httpserver.cpp"
-            "http/httpclient.cpp")
+set(SOURCES "net/tcp_server.cpp"
+            "net/tcp_client.cpp"
+            "net/tcp_client_management.cpp"
+            "http/http_server.cpp"
+            "http/http_client.cpp"
+            "routing/router.cpp"
+            "routing/router_node.cpp"
+            "routing/expression_fragment.cpp"
+            "routing/expression_data.cpp")
 
 # Create library
 add_library(rest STATIC ${SOURCES} ${HEADERS})

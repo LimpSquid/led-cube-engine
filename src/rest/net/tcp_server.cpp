@@ -1,18 +1,20 @@
-#include <tcpserver.h>
+#include <net/tcp_server.h>
+#include <routing/router_node.h>
 #include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
-using namespace Rest;
+using namespace rest::net;
+using namespace rest::routing;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-TcpServer::~TcpServer()
+tcp_server::~tcp_server()
 {
     
 }
 
-bool TcpServer::begin(const boost::shared_ptr<Router> &router)
+bool tcp_server::begin(const boost::shared_ptr<router> &router)
 {
     if(acceptor_.is_open())
         return false;
@@ -23,18 +25,18 @@ bool TcpServer::begin(const boost::shared_ptr<Router> &router)
     acceptor_.bind(endpoint_);
     acceptor_.listen();
 
-    acceptNewClient();
+    accept_new_client();
     return true;
 }
 
-void TcpServer::run()
+void tcp_server::run()
 {
     if(!acceptor_.is_open())
         return;
     context_.run();
 }
 
-void TcpServer::end()
+void tcp_server::end()
 {
     if(!acceptor_.is_open())
         return;
@@ -42,7 +44,7 @@ void TcpServer::end()
     acceptor_.close();
 }
 
-TcpServer::TcpServer(const std::string &address, const std::string &port) :
+tcp_server::tcp_server(const std::string &address, const std::string &port) :
     acceptor_(context_),
     endpoint_(*tcp::resolver(context_).resolve(address, port)),
     socket_(context_)
@@ -50,7 +52,7 @@ TcpServer::TcpServer(const std::string &address, const std::string &port) :
     
 }
 
-TcpServer::TcpServer(const tcp::endpoint &endpoint) :
+tcp_server::tcp_server(const tcp::endpoint &endpoint) :
     acceptor_(context_),
     endpoint_(endpoint),
     socket_(context_)
@@ -58,16 +60,16 @@ TcpServer::TcpServer(const tcp::endpoint &endpoint) :
 
 }
 
-void TcpServer::acceptNewClient()
+void tcp_server::accept_new_client()
 {
-    acceptor_.async_accept(socket_, boost::bind(&TcpServer::acceptClient, this, placeholders::error));
+    acceptor_.async_accept(socket_, boost::bind(&tcp_server::accept_client, this, placeholders::error));
 }
 
-void TcpServer::acceptClient(const boost::system::error_code &error)
+void tcp_server::accept_client(const boost::system::error_code &error)
 {
     if(error) 
         return;
     
-    createClient(management_, std::move(socket_))->activate();
-    acceptNewClient();
+    create_client(management_, std::move(socket_))->activate();
+    accept_new_client();
 }
