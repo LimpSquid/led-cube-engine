@@ -13,7 +13,7 @@ public:
     router();
     ~router();
 
-    router_node &make_node(const std::string &expression);
+    router_node &make_node(const std::string &url_expression);
 
 private:
     std::vector<router_node> nodes_;

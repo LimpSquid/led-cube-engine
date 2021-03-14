@@ -16,13 +16,13 @@ router::~router()
 
 }
 
-router_node &router::make_node(const std::string &expression)
+router_node &router::make_node(const std::string &url_expression)
 {
-    router_node new_node(expression);
+    router_node new_node(url_expression);
 
     for(const router_node &node : nodes_) {
         if(node == new_node)
-            throw std::invalid_argument("Expression already specified for router");
+            throw std::invalid_argument("Url expression already specified for router");
     }
     return nodes_.emplace_back(std::move(new_node));
 }
