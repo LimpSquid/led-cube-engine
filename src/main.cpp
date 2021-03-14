@@ -7,6 +7,8 @@ int main(int argc, char *argv[])
     rest::http::http_server srv("127.0.0.1", "50000");
     boost::shared_ptr<rest::routing::router> router = boost::make_shared<rest::routing::router>();
 
+    router->make_node("//blah/user/[users]/a/");
+
     srv.begin(router);
     srv.run();
     srv.end();

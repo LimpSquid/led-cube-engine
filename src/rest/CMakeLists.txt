@@ -11,8 +11,8 @@ set(SOURCES "net/tcp_server.cpp"
             "http/http_client.cpp"
             "routing/router.cpp"
             "routing/router_node.cpp"
-            "routing/expression_fragment.cpp"
-            "routing/expression_data.cpp")
+            "routing/tokens.cpp"
+            "routing/token_data.cpp")
 
 # Create library
 add_library(rest STATIC ${SOURCES} ${HEADERS})
