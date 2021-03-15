@@ -11,16 +11,16 @@ class router_handler
 public:
     using pointer = boost::shared_ptr<router_handler>;
 
-    template <class Handler, class... Args>
-    static pointer create(const Args&... args) 
+    template <class HandlerImpl, class ...HanderArgs>
+    static pointer create(const HanderArgs &...args)
     { 
-        return pointer(new Handler(args...));
+        return pointer(new HandlerImpl(args...));
     }
 
-    template <class Handler, class... Args>
-    void handle(Args&... args) 
+    template <class HandlerImpl, class ...HanderArgs>
+    void handle(HanderArgs &...args)
     { 
-        Handler *handler = dynamic_cast<Handler *>(this);
+        HandlerImpl *handler = dynamic_cast<HandlerImpl *>(this);
 
         if(nullptr == handler)
             throw std::invalid_argument("Invalid handler type");

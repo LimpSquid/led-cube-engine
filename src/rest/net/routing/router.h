@@ -21,8 +21,8 @@ public:
 
     ~router() = default;
 
-    template<class RouterHandlerImpl, class... RouterHandlerArgs>
-    router_handler::pointer make_handler(const std::string &url_expression, const RouterHandlerArgs&... args)
+    template<class RouterHandlerImpl, class ...RouterHandlerArgs>
+    router_handler::pointer make_handler(const std::string &url_expression, const RouterHandlerArgs &...args)
     {
         router_handler::pointer handler = router_handler::create<RouterHandlerImpl>(args...);
         router_node new_node(url_expression, handler);
@@ -36,8 +36,8 @@ public:
         return handler;
     }
 
-    template<class RouterHandlerImpl, class... RouterHandlerArgs>
-    bool handle(const std::string &url, RouterHandlerArgs&... args)
+    template<class RouterHandlerImpl, class ...RouterHandlerArgs>
+    bool handle(const std::string &url, RouterHandlerArgs &...args)
     {
         if(url.empty())
             return false;
