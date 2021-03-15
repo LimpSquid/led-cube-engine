@@ -14,7 +14,7 @@ tcp_server::~tcp_server()
     
 }
 
-bool tcp_server::begin(const boost::shared_ptr<router> &router)
+bool tcp_server::begin(const routing::router::pointer &router)
 {
     if(acceptor_.is_open())
         return false;

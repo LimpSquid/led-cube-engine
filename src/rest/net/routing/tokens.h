@@ -11,6 +11,7 @@ class base_token
 {
 public:
     using pointer = boost::shared_ptr<base_token>;
+    
     virtual bool match(const std::string &tag) const = 0;
     virtual void provide_data(const std::string &tag, token_data &data) const;
 };

@@ -1,6 +1,5 @@
 #include <http/http_client.h>
 #include <net/tcp_client_management.h>
-#include <net/routing/router.h>
 #include <utility>
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
@@ -34,9 +33,9 @@ void http_client::async_read()
 
     request_ = { };
     beast::http::async_read(socket(), buffer_, request_, 
-                        boost::bind(&http_client::http_read, 
-                        boost::static_pointer_cast<http_client>(shared_from_this()), 
-                        boost::asio::placeholders::error));
+                            boost::bind(&http_client::http_read, 
+                            boost::static_pointer_cast<http_client>(shared_from_this()), 
+                            boost::asio::placeholders::error));
 }
 
 void http_client::http_read(beast::error_code error)
@@ -51,4 +50,7 @@ void http_client::http_read(beast::error_code error)
         terminate(false);
         return;
     }
+
+    boost::string_view url = request_.base().target();
+    router_->handle<handler_type>(std::string(url.data(), url.size()));
 }

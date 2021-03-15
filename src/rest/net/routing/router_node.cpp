@@ -1,19 +1,21 @@
 #include <net/routing/router_node.h>
-#include <functional>
 #include <boost/tokenizer.hpp>
+#include <functional>
 #include <stdexcept>
 
 using namespace rest::net::routing;
 
-router_node::router_node(const std::string &url_expression) :
-    url_expr_hash_(std::hash<std::string>{ }(url_expression))
+router_node::router_node(const std::string &url_expression, const router_handler::pointer &handler) :
+    url_expr_hash_(std::hash<std::string>{ }(url_expression)),
+    handler_(handler)
 {
     tokenize(url_expression);
 }
 
 router_node::router_node(router_node &&other) :
     url_expr_hash_(other.url_expr_hash_),
-    tokens_(std::move(other.tokens_))
+    tokens_(std::move(other.tokens_)),
+    handler_(std::move(other.handler_))
 {
 
 }
@@ -21,6 +23,11 @@ router_node::router_node(router_node &&other) :
 router_node::~router_node()
 {
 
+}
+
+router_handler &router_node::handler()
+{
+    return *handler_.get();
 }
 
 bool router_node::match(const std::string &url, token_data &data) const

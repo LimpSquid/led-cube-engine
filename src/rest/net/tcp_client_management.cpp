@@ -13,12 +13,12 @@ tcp_client_management::~tcp_client_management()
 }
 
 
-boost::shared_ptr<routing::router> tcp_client_management::router() const
+routing::router::pointer tcp_client_management::router() const
 {
     return router_;
 }
 
-void tcp_client_management::set_router(const boost::shared_ptr<routing::router> &value)
+void tcp_client_management::set_router(const routing::router::pointer &value)
 {
     router_ = value;
 }

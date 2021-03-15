@@ -9,12 +9,6 @@
 
 namespace rest::net
 {
-
-namespace routing
-{
-    class router;
-}
-
 class tcp_server
 {
 public:
@@ -35,7 +29,7 @@ public:
      * @return Returns true when the server was started succesfully
      * @return Returns false when the server couldn't be started or was running already
      */
-    bool begin(const boost::shared_ptr<routing::router> &router);
+    bool begin(const routing::router::pointer &router);
 
     /**
      * @brief Run the tcp_server

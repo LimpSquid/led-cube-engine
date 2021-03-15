@@ -7,12 +7,13 @@ find_package(Boost COMPONENTS system REQUIRED)
 set(SOURCES "net/tcp_server.cpp"
             "net/tcp_client.cpp"
             "net/tcp_client_management.cpp"
-            "net/routing/router.cpp"
             "net/routing/router_node.cpp"
+            "net/routing/router_handler.cpp"
             "net/routing/tokens.cpp"
             "net/routing/token_data.cpp"
             "http/http_server.cpp"
-            "http/http_client.cpp")
+            "http/http_client.cpp"
+            "http/http_handler.cpp")
 
 # Create library
 add_library(rest STATIC ${SOURCES} ${HEADERS})
