@@ -75,7 +75,7 @@ void http_client::http_read(beast::error_code error)
     const send_lambda = { *this };
     const request_type request = std::move(request_);
     const string_view &url_view = request.base().target();
-    const regex url_regex("\\/[a-zA-Z0-0_\\-\\/]+");
+    const regex url_regex("\\/[a-zA-Z0-9_\\-\\/]+");
     const std::string url(url_view.data(), url_view.size());
 
     // Generic response generators
