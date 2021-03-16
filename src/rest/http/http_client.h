@@ -3,6 +3,7 @@
 #include <http/types.h>
 #include <net/tcp_client.h>
 #include <net/routing/router.h>
+#include <boost/shared_ptr.hpp>
 
 namespace rest::http
 {
@@ -25,7 +26,9 @@ public:
 private:
     virtual void state_changed(const client_state &state) override;
     void async_read();
+    void async_write(response_type &&response);
     void http_read(boost::beast::error_code error);
+    void http_write(boost::beast::error_code error, boost::shared_ptr<response_type> response);
 
     rest::net::routing::router::pointer router_;
     request_type request_;

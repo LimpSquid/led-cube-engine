@@ -1,7 +1,7 @@
 # Package config
 set(${THREADS_PREFER_PTHREAD_FLAG} ON)
 find_package(Threads REQUIRED)
-find_package(Boost COMPONENTS system REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system regex)
 
 # The library sources
 set(SOURCES "net/tcp_server.cpp"
