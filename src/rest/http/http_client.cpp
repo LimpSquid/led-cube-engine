@@ -25,7 +25,7 @@ http_client::~http_client()
 void http_client::state_changed(const client_state &state)
 {
     switch(state) {
-        case cs_active:     async_read();    break;
+        case cs_active:     async_read();   break;
         default:                            break;
     }
 }
