@@ -27,7 +27,7 @@ router_node::~router_node()
 
 router_handler &router_node::handler()
 {
-    return *handler_.get();
+    return *handler_;
 }
 
 bool router_node::match(const std::string &url, token_data &data) const

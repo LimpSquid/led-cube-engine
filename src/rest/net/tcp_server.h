@@ -6,10 +6,11 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace rest::net
 {
-class tcp_server
+class tcp_server : private boost::noncopyable
 {
 public:
     /**

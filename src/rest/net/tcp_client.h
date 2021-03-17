@@ -3,12 +3,14 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace rest::net
 {
 
 class tcp_client_management;
-class tcp_client : public boost::enable_shared_from_this<tcp_client>
+class tcp_client : public boost::enable_shared_from_this<tcp_client>,
+    private boost::noncopyable
 {
 public:
     enum client_state
@@ -25,7 +27,7 @@ public:
     using pointer = boost::shared_ptr<tcp_client>;
 
     /**
-     * @brief The socket type for a tcp_client object 
+     * @brief The socket type for a tcp_client object
      */
     using socket_type = boost::asio::ip::tcp::socket;
 
@@ -35,11 +37,11 @@ public:
     virtual ~tcp_client();
 
     /**
-     * @brief Get the state of the tcp_client 
-     * @return Returns client_state 
+     * @brief Get the state of the tcp_client
+     * @return Returns client_state
      */
     client_state state() const;
-    
+
     /**
      * @brief Activate the tcp_client
      * Activates the client and allows for reading and writing data from and to the socket
@@ -62,13 +64,13 @@ protected:
 
     /**
      * @brief Get the tcp_client its management
-     * @return Returns tcp_client_management& 
+     * @return Returns tcp_client_management&
      */
     tcp_client_management &management();
 
     /**
      * @brief Get the tcp_client its socket
-     * @return Returns socket_type& 
+     * @return Returns socket_type&
      */
     socket_type &socket();
 

@@ -90,6 +90,17 @@ void http_client::http_read(beast::error_code error)
         send_lambda(std::move(response));
     };
 
+    const auto not_found = [&request, &send_lambda](std::string &&why)
+    {
+        response_type response(beast::http::status::not_found, request.version());
+        // @Todo: server field
+        response.set(beast::http::field::content_type, "text/plain");
+        response.keep_alive(request.keep_alive());
+        response.body() = std::move(why);
+        response.prepare_payload();
+        send_lambda(std::move(response));
+    };
+
     const auto server_error = [&request, &send_lambda](const std::string &why)
     {
         response_type response(beast::http::status::bad_request, request.version());
@@ -101,7 +112,7 @@ void http_client::http_read(beast::error_code error)
         send_lambda(std::move(response));
     };
 
-    const auto ok_request = [&request, &send_lambda](response_type &&response)
+    const auto send_request = [&request, &send_lambda](response_type &&response)
     {
         // @Todo: server field
         response.keep_alive(request.keep_alive());
@@ -115,9 +126,9 @@ void http_client::http_read(beast::error_code error)
         response_type response_;
 
         if(router_->handle<http_handler>(std::string(url.data(), url.size()), request, response_))
-            ok_request(std::move(response_));
+            send_request(std::move(response_));
         else
-            bad_request("Requested url does not exist");
+            not_found("Requested url does not exist");
     }
 }
 
