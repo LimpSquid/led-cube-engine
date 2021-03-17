@@ -112,7 +112,7 @@ void http_client::http_read(beast::error_code error)
         send_lambda(std::move(response));
     };
 
-    const auto send_request = [&request, &send_lambda](response_type &&response)
+    const auto send_response = [&request, &send_lambda](response_type &&response)
     {
         // @Todo: server field
         response.keep_alive(request.keep_alive());
@@ -126,7 +126,7 @@ void http_client::http_read(beast::error_code error)
         response_type response_;
 
         if(router_->handle<http_handler>(std::string(url.data(), url.size()), request, response_))
-            send_request(std::move(response_));
+            send_response(std::move(response_));
         else
             not_found("Requested url does not exist");
     }
