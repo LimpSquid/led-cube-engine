@@ -14,7 +14,7 @@ public:
 
     template <class HandlerImpl, class ...HanderArgs>
     static pointer create(const HanderArgs &...args)
-    { 
+    {
         return pointer(new HandlerImpl(args...));
     }
 
