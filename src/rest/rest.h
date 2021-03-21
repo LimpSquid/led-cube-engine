@@ -11,8 +11,9 @@ namespace rest
     // Http related types
     using http_server = http::http_server;
     using http_handler = http::http_handler;
-    using http_streamable_body = http::streamable_body;
+    using http_ostream = http::http_ostream;
+    using http_istream = http::http_istream;
 
-    // Net related types
+    // Routing related types
     using router = net::routing::router;
 }

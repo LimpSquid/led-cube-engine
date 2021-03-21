@@ -2,44 +2,22 @@
 
 #include <http/types.h>
 #include <types/type_traits.h>
-#include <string>
+#include <sstream>
+#include <iostream>
 
 namespace rest::http
 {
 
-class streamable_body
+class http_ostream : public std::ostringstream
 {
 public:
-    streamable_body(response_type &response);
-    ~streamable_body();
+    void write_to(response_type &response);
+};
 
-    streamable_body &operator<<(const std::string &string);
-    streamable_body &operator<<(std::string &&string);
-
-    template <class T>
-    typename std::enable_if<rest::types::has_serialize<T>::value, streamable_body &>::type
-    operator<<(const T &obj)
-    {
-        return operator<<(obj.serialize());
-    }
-
-    template <class T>
-    typename std::enable_if<rest::types::has_serialize<T>::value, streamable_body &>::type
-    operator<<(T &obj)
-    {
-        return operator<<(obj.serialize());
-    }
-
-
-    template <typename T>
-    typename std::enable_if<!std::is_pointer<T>::value && rest::types::is_string_convertible<T>::value, streamable_body &>::type
-    operator<<(T value)
-    {
-        return operator<<(std::to_string(value));
-    }
-
-private:
-    body_type::value_type &body_;
+class http_istream : public std::istringstream
+{
+public:
+   void read_from(const request_type &request);
 };
 
 }

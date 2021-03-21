@@ -3,25 +3,12 @@
 
 using namespace rest::http;
 
-streamable_body::streamable_body(response_type &response) :
-    body_(response.body())
+void http_ostream::write_to(response_type &response)
 {
-
+    response.body() = std::move(str());
 }
 
-streamable_body::~streamable_body()
+void http_istream::read_from(const request_type &request)
 {
-
-}
-
-streamable_body &streamable_body::operator<<(const std::string &string)
-{
-    body_.append(string);
-    return *this;
-}
-
-streamable_body &streamable_body::operator<<(std::string &&string)
-{
-    body_.append(std::move(string));
-    return *this;
+    str(request.body());
 }
