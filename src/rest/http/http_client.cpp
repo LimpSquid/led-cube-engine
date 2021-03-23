@@ -74,9 +74,9 @@ void http_client::http_read(beast::error_code error)
     }
     const send_lambda = { *this };
     const request_type request = std::move(request_);
-    const string_view &url_view = request.base().target();
-    const regex url_regex("\\/[a-zA-Z0-9_\\-\\/]+");
-    const std::string url(url_view.data(), url_view.size());
+    const string_view &uri_view = request.base().target();
+    const regex uri_regex("\\/[a-zA-Z0-9_\\-\\/]+");
+    const std::string uri(uri_view.data(), uri_view.size());
 
     // Generic response generators
     const auto bad_request = [&request, &send_lambda](std::string &&why)
@@ -120,15 +120,15 @@ void http_client::http_read(beast::error_code error)
         send_lambda(std::move(response));
     };
 
-    if(url.empty() || !regex_match(url, url_regex))
-        bad_request("Requested url has an invalid format");
+    if(uri.empty() || !regex_match(uri, uri_regex))
+        bad_request("Requested URI has an invalid format");
     else {
         response_type response_;
 
-        if(router_->handle<http_handler>(std::string(url.data(), url.size()), request, response_))
+        if(router_->handle<http_handler>(std::string(uri.data(), uri.size()), request, response_))
             send_response(std::move(response_));
         else
-            not_found("Requested url does not exist");
+            not_found("Requested resource does not exist");
     }
 }
 

@@ -5,19 +5,11 @@
 
 using namespace rest::net::routing;
 
-router_node::router_node(const std::string &url_expression, const router_handler::pointer &handler) :
-    url_expr_hash_(std::hash<std::string>{ }(url_expression)),
+router_node::router_node(const std::string &resource_expression, const router_handler::pointer &handler) :
+    resource_expr_hash_(std::hash<std::string>{ }(resource_expression)),
     handler_(handler)
 {
-    tokenize(url_expression);
-}
-
-router_node::router_node(router_node &&other) :
-    url_expr_hash_(other.url_expr_hash_),
-    tokens_(std::move(other.tokens_)),
-    handler_(std::move(other.handler_))
-{
-
+    tokenize(resource_expression);
 }
 
 router_node::~router_node()
@@ -30,14 +22,14 @@ router_handler &router_node::handler()
     return *handler_;
 }
 
-bool router_node::match(const std::string &url, token_data &data) const
+bool router_node::match(const std::string &resource, resource_data &data) const
 {
-    boost::tokenizer tags(url, boost::escaped_list_separator<char>('\\', '/'));
+    boost::tokenizer tags(resource, boost::escaped_list_separator<char>('\\', '/'));
     const std::size_t size = std::distance(tags.begin(), tags.end());
 
     // No need to match when size does not match
     if(tokens_.size() != size)
-        return false;    
+        return false;
 
     // Match each tag with token
     auto tag_it = tags.begin();
@@ -45,7 +37,7 @@ bool router_node::match(const std::string &url, token_data &data) const
     for(; token_it != tokens_.cend(); tag_it++, token_it++) {
         const auto &tag = *tag_it;
         const auto &token = *token_it;
-        
+
         if(!token->match(tag))
             return false;
     }
@@ -55,7 +47,7 @@ bool router_node::match(const std::string &url, token_data &data) const
         const auto &tag = *tag_it;
         const auto &token =  *token_it;
 
-        token->provide_data(tag, data);    
+        token->provide_data(tag, data);
     }
 
     return true;
@@ -63,7 +55,7 @@ bool router_node::match(const std::string &url, token_data &data) const
 
 bool router_node::operator==(const router_node &other) const
 {
-    return (url_expr_hash_ == other.url_expr_hash_);
+    return (resource_expr_hash_ == other.resource_expr_hash_);
 }
 
 bool router_node::operator!=(const router_node &other) const
@@ -71,9 +63,9 @@ bool router_node::operator!=(const router_node &other) const
     return !operator==(other);
 }
 
-void router_node::tokenize(const std::string &url_expression)
+void router_node::tokenize(const std::string &resource_expression)
 {
-    boost::tokenizer tags(url_expression, boost::escaped_list_separator<char>('\\', '/'));
+    boost::tokenizer tags(resource_expression, boost::escaped_list_separator<char>('\\', '/'));
     base_token::pointer token;
 
     for(const std::string &tag : tags) {

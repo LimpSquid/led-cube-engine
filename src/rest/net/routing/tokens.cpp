@@ -1,9 +1,9 @@
 #include <net/routing/tokens.h>
-#include <net/routing/token_data.h>
+#include <net/routing/resource_data.h>
 
 using namespace rest::net::routing;
 
-void base_token::provide_data(const std::string &tag, token_data &) const
+void base_token::provide_data(const std::string &tag, resource_data &) const
 {
 
 }
@@ -44,9 +44,9 @@ bool role_token::match(const std::string &tag) const
     return !tag.empty();
 }
 
-void role_token::provide_data(const std::string &tag, token_data &data) const
+void role_token::provide_data(const std::string &tag, resource_data &data) const
 {
-    data.insert_role(role_, tag);
+    data.set_role(role_, tag);
 }
 
 role_token::role_token(const std::string &role) :
@@ -65,9 +65,9 @@ bool regex_token::match(const std::string &tag) const
     return false;
 }
 
-void regex_token::provide_data(const std::string &tag, token_data &data) const
+void regex_token::provide_data(const std::string &tag, resource_data &data) const
 {
-    data.insert_role(role_, tag);
+    data.set_role(role_, tag);
 }
 
 regex_token::regex_token(const std::string &role, const std::string &regex) :

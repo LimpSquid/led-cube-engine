@@ -6,13 +6,14 @@
 namespace rest::net::routing
 {
 
-class token_data
+class resource_data
 {
 public:
-    token_data();
-    ~token_data();
+    resource_data();
+    ~resource_data();
 
-    void insert_role(const std::string &role, const std::string &value);
+    std::string get_role(const std::string &role) const;
+    void set_role(const std::string &role, const std::string &value);
 
     void clear();
 

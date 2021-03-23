@@ -2,7 +2,7 @@
 
 #include <types/type_traits.h>
 #include <net/routing/router_node.h>
-#include <net/routing/token_data.h>
+#include <net/routing/resource_data.h>
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -24,16 +24,16 @@ public:
     ~router() = default;
 
     template<class RouterHandlerImpl, class ...RouterHandlerArgs>
-    RouterHandlerImpl &make_handler(const std::string &url_expression, const RouterHandlerArgs &...args)
+    RouterHandlerImpl &make_handler(const std::string &resource_expression, const RouterHandlerArgs &...args)
     {
         static_assert(std::is_constructible<RouterHandlerImpl, const RouterHandlerArgs &...>::value, "RouterHandlerImpl is not constructible");
 
         router_handler::pointer handler = router_handler::create<RouterHandlerImpl>(args...);
-        router_node new_node(url_expression, handler);
+        router_node new_node(resource_expression, handler);
 
         for(const router_node &node : nodes_) {
             if(node == new_node)
-                throw std::invalid_argument("Url expression already specified for router");
+                throw std::invalid_argument("Resource expression already specified for router");
         }
 
         nodes_.emplace_back(std::move(new_node));
@@ -42,17 +42,17 @@ public:
 
 
     template<class RouterHandlerImpl, class ...RouterHandlerArgs>
-    bool handle(const std::string &url, RouterHandlerArgs &...args)
+    bool handle(const std::string &resource, RouterHandlerArgs &...args)
     {
         static_assert(rest::types::has_handle<RouterHandlerImpl, RouterHandlerArgs &...>::value,
                         "RouterHandlerImpl does not implement handle(...)");
 
-        if(url.empty())
+        if(resource.empty())
             return false;
 
-        token_data data; // @Todo: pass along to handle method...
+        resource_data data; // @Todo: pass along to handle method...
         for(router_node &node : nodes_) {
-            if(node.match(url, data)) {
+            if(node.match(resource, data)) {
                 node.handler().handle<RouterHandlerImpl>(args...);
                 return true;
             }

@@ -5,15 +5,15 @@
 
 namespace rest::net::routing
 {
-class token_data;
+class resource_data;
 
 class base_token
 {
 public:
     using pointer = boost::shared_ptr<base_token>;
-    
+
     virtual bool match(const std::string &tag) const = 0;
-    virtual void provide_data(const std::string &tag, token_data &data) const;
+    virtual void provide_data(const std::string &tag, resource_data &data) const;
 };
 
 class dummy_token : public base_token
@@ -41,7 +41,7 @@ class role_token : public base_token
 public:
     static pointer create(const std::string &role);
     virtual bool match(const std::string &tag) const override;
-    virtual void provide_data(const std::string &tag, token_data &data) const override;
+    virtual void provide_data(const std::string &tag, resource_data &data) const override;
 
 protected:
     role_token(const std::string &role);
@@ -55,7 +55,7 @@ class regex_token : public base_token
 public:
     static pointer create(const std::string &role, const std::string &regex);
     virtual bool match(const std::string &tag) const override;
-    virtual void provide_data(const std::string &tag, token_data &data) const override;
+    virtual void provide_data(const std::string &tag, resource_data &data) const override;
 
 protected:
     regex_token(const std::string &role, const std::string &regex);
