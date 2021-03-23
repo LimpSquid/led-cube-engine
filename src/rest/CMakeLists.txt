@@ -11,10 +11,10 @@ set(SOURCES "net/tcp_server.cpp"
             "net/routing/router_handler.cpp"
             "net/routing/tokens.cpp"
             "net/routing/resource_data.cpp"
+            "net/uri.cpp"
             "http/http_server.cpp"
             "http/http_client.cpp"
             "http/http_handler.cpp"
-            "http/uri.cpp"
             "http/util.cpp")
 
 # Create library

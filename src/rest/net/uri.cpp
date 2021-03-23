@@ -1,7 +1,6 @@
-#include <http/uri.h>
+#include <net/uri.h>
 #include <boost/regex.hpp>
 #include <utility>
-
 
 using namespace rest::http;
 using namespace boost;
