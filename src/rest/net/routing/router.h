@@ -2,7 +2,7 @@
 
 #include <types/type_traits.h>
 #include <net/routing/router_node.h>
-#include <net/routing/resource_data.h>
+#include <net/routing/routing_params.h>
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -44,19 +44,18 @@ public:
     template<class RouterHandlerImpl, class ...RouterHandlerArgs>
     bool handle(const std::string &resource, RouterHandlerArgs &...args)
     {
-        static_assert(rest::types::has_handle<RouterHandlerImpl, RouterHandlerArgs &...>::value,
+        static_assert(rest::types::has_handle<RouterHandlerImpl, routing_params, RouterHandlerArgs &...>::value,
                         "RouterHandlerImpl does not implement handle(...)");
 
         if(resource.empty())
             return false;
 
-        resource_data data; // @Todo: pass along to handle method...
+        routing_params params;
         for(router_node &node : nodes_) {
-            if(node.match(resource, data)) {
-                node.handler().handle<RouterHandlerImpl>(args...);
+            if(node.match(resource, params)) {
+                node.handler().handle<RouterHandlerImpl>(params, args...);
                 return true;
             }
-            data.clear();
         }
 
         return false;

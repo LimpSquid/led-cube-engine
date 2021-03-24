@@ -22,7 +22,7 @@ router_handler &router_node::handler()
     return *handler_;
 }
 
-bool router_node::match(const std::string &resource, resource_data &data) const
+bool router_node::match(const std::string &resource, routing_params &params) const
 {
     boost::tokenizer tags(resource, boost::escaped_list_separator<char>('\\', '/'));
     const std::size_t size = std::distance(tags.begin(), tags.end());
@@ -42,12 +42,12 @@ bool router_node::match(const std::string &resource, resource_data &data) const
             return false;
     }
 
-    // If all tokens match, provide data
+    // If all tokens match, provide parameters
     for(tag_it = tags.begin(), token_it = tokens_.cbegin(); token_it != tokens_.cend(); tag_it++, token_it++) {
         const auto &tag = *tag_it;
         const auto &token =  *token_it;
 
-        token->provide_data(tag, data);
+        token->provide_params(tag, params);
     }
 
     return true;

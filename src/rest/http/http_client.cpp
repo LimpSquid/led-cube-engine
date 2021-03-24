@@ -1,9 +1,9 @@
 #include <http/http_client.h>
 #include <http/http_handler.h>
+#include <net/uri.h>
 #include <net/tcp_client_management.h>
 #include <utility>
 #include <boost/bind.hpp>
-#include <boost/regex.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/asio/placeholders.hpp>
 
@@ -74,9 +74,8 @@ void http_client::http_read(beast::error_code error)
     }
     const send_lambda = { *this };
     const request_type request = std::move(request_);
-    const string_view &uri_view = request.base().target();
-    const regex uri_regex("\\/[a-zA-Z0-9_\\-\\/]+");
-    const std::string uri(uri_view.data(), uri_view.size());
+    const string_view &request_uri_view = request.base().target();
+    const uri request_uri({ request_uri_view.data(), request_uri_view.size() });
 
     // Generic response generators
     const auto bad_request = [&request, &send_lambda](std::string &&why)
@@ -120,16 +119,15 @@ void http_client::http_read(beast::error_code error)
         send_lambda(std::move(response));
     };
 
-    if(uri.empty() || !regex_match(uri, uri_regex))
-        bad_request("Requested URI has an invalid format");
-    else {
+    if(request_uri.valid() && !request_uri.path().empty()) {
         response_type response_;
 
-        if(router_->handle<http_handler>(std::string(uri.data(), uri.size()), request, response_))
+        if(router_->handle<http_handler>(request_uri.path(), request, response_))
             send_response(std::move(response_));
         else
             not_found("Requested resource does not exist");
-    }
+    } else
+        bad_request("Requested URI is malformed");
 }
 
 void http_client::http_write(beast::error_code error, boost::shared_ptr<response_type> response)

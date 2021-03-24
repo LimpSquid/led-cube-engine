@@ -8,7 +8,7 @@
 namespace rest::net::routing
 {
 
-class resource_data;
+class routing_params;
 class router_node
 {
 public:
@@ -30,7 +30,7 @@ public:
     ~router_node();
 
     router_handler &handler();
-    bool match(const std::string &resource, resource_data &data) const;
+    bool match(const std::string &resource, routing_params &params) const;
 
     router_node &operator=(const router_node &other) = default;
     router_node &operator=(router_node &&other) = default;

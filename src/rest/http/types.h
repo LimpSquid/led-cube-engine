@@ -1,5 +1,6 @@
 #pragma once
 
+#include <net/routing/routing_params.h>
 #include <boost/beast/http.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 
@@ -25,5 +26,10 @@ using response_type = boost::beast::http::response<body_type>;
  * @brief The http buffer type for buffering requests
  */
 using buffer_type = boost::beast::flat_buffer;
+
+/**
+ * @brief The routing parameters type
+ */
+using routing_params_type = rest::net::routing::routing_params;
 
 }

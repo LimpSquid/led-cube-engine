@@ -13,7 +13,7 @@ http_handler::~http_handler()
 
 }
 
-void http_handler::handle(const request_type &request, response_type &response)
+void http_handler::handle(const routing_params_type &params, const request_type &request, response_type &response)
 {
     const auto not_found = [&request, &response](std::string &&why)
     {
@@ -22,11 +22,11 @@ void http_handler::handle(const request_type &request, response_type &response)
         response.body() = std::move(why);
     };
 
-    const auto ok_callback = [&request, &response](const handle_callback &callback)
+    const auto ok_callback = [&params, &request, &response](const handle_callback &callback)
     {
         response = { beast::http::status::ok, request.version() };
         response.set(beast::http::field::content_type, "text/plain");
-        callback(request, response);
+        callback(params, request, response);
     };
 
     const auto search = verb_mapping.find(request.base().method());

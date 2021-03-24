@@ -6,13 +6,13 @@
 namespace rest::net::routing
 {
 
-class resource_data
+class routing_params
 {
 public:
-    resource_data();
-    ~resource_data();
+    routing_params();
+    ~routing_params();
 
-    std::string get_role(const std::string &role) const;
+    std::string get_role(const std::string &role, const std::string &def = std::string()) const;
     void set_role(const std::string &role, const std::string &value);
 
     void clear();

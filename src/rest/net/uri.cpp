@@ -2,13 +2,48 @@
 #include <boost/regex.hpp>
 #include <utility>
 
-using namespace rest::http;
+using namespace rest::net;
 using namespace boost;
 
 uri::uri(const std::string &raw) :
-    raw_(raw)
+    raw_(raw),
+    valid_(false)
 {
     parse_raw();
+}
+
+bool uri::valid() const
+{
+    return valid_;
+}
+const std::string &uri::raw() const
+{
+    return raw_;
+}
+
+const std::string &uri::scheme() const
+{
+    return scheme_;
+}
+
+const std::string &uri::authority() const
+{
+    return authority_;
+}
+
+const std::string &uri::path() const
+{
+    return path_;
+}
+
+const std::string &uri::query() const
+{
+    return query_;
+}
+
+const std::string &uri::fragment() const
+{
+    return fragment_;
 }
 
 void uri::parse_raw()
@@ -20,6 +55,7 @@ void uri::parse_raw()
     path_.clear();
     query_.clear();
     fragment_.clear();
+    valid_ = false;
 
     if(raw_.empty())
         return;
@@ -42,4 +78,6 @@ void uri::parse_raw()
             case 9:     fragment_ = segment;    break;
         }
     }
+
+    valid_ = true;
 }
