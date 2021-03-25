@@ -1,5 +1,13 @@
 #include <http/http_handler.h>
 
+#define MAKE_INSTALL_NAMED(http_verb)   MAKE_INSTALL(http_verb, http_verb)
+#define MAKE_INSTALL(http_verb, name)                                               \
+    http_handler &http_handler::install_##name(const handle_callback &callback)     \
+    {                                                                               \
+        verb_mapping[beast::http::verb::http_verb] = callback;                      \
+        return *this;                                                               \
+    }
+
 using namespace rest::http;
 using namespace boost;
 
@@ -31,13 +39,13 @@ void http_handler::handle(const routing_params_type &params, const request_type 
 
     const auto search = verb_mapping.find(request.base().method());
     if(search == verb_mapping.end())
-        return not_found("Requested verb for url does not exist");
+        return not_found("Requested verb for resource does not exist");
 
     ok_callback(search->second);
 }
 
-http_handler &http_handler::get(const handle_callback &callback)
-{
-    verb_mapping[beast::http::verb::get] = callback;
-    return *this;
-}
+// Generate install methods
+MAKE_INSTALL_NAMED(get)
+MAKE_INSTALL_NAMED(post)
+MAKE_INSTALL_NAMED(put)
+MAKE_INSTALL(delete_, delete)

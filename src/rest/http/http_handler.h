@@ -18,7 +18,10 @@ public:
 
     void handle(const routing_params_type &params, const request_type &request, response_type &response);
 
-    http_handler &get(const handle_callback &callback);
+    http_handler &install_get(const handle_callback &callback);
+    http_handler &install_post(const handle_callback &callback);
+    http_handler &install_put(const handle_callback &callback);
+    http_handler &install_delete(const handle_callback &callback);
 
 private:
     std::unordered_map<boost::beast::http::verb, handle_callback> verb_mapping;

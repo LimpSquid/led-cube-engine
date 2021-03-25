@@ -83,6 +83,9 @@ void router_node::tokenize(const std::string &resource_expression)
                 std::string sub = tag.substr(1, tag.length() - 2);
                 const std::size_t index = sub.find('=');
 
+                if(std::string::npos == index)
+                    throw std::invalid_argument(std::string("Failed to find role regex split character in: ") + resource_expression);
+
                 token = regex_token::create(sub.substr(0, index),
                                             sub.substr(index + 1, sub.length() - index - 1));
             } else
