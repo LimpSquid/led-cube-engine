@@ -4,6 +4,7 @@
 #include <net/tcp_client.h>
 #include <net/routing/router.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/signals2/signal.hpp>
 
 namespace rest::http
 {
@@ -22,6 +23,10 @@ public:
      * @brief Destroy the http_client object
      */
     virtual ~http_client() override;
+
+    // Signals
+    boost::signals2::signal<void (const request_type &request)> signal_request;
+    boost::signals2::signal<void (const request_type &request, const response_type &response)> signal_response;
 
 private:
     virtual void state_changed(const client_state &state) override;

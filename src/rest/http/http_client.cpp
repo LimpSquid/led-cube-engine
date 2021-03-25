@@ -63,17 +63,20 @@ void http_client::http_read(beast::error_code error)
         return;
     }
 
-    struct
+    struct send_lambda
     {
         http_client &client;
+        const request_type &request;
 
         void operator()(response_type &&response) const
         {
+            client.signal_response(request, response);
             client.async_write(std::move(response));
         }
-    }
-    const send_lambda = { *this };
+    };
+
     const request_type request = std::move(request_);
+    const send_lambda send_lambda = { *this, request };
     const string_view &request_uri_view = request.base().target();
     const uri request_uri({ request_uri_view.data(), request_uri_view.size() });
 
@@ -118,6 +121,8 @@ void http_client::http_read(beast::error_code error)
         response.prepare_payload();
         send_lambda(std::move(response));
     };
+
+    signal_request(request);
 
     if(request_uri.valid() && !request_uri.path().empty()) {
         response_type response_;
