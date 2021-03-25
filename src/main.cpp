@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     rest::http_server srv("127.0.0.1", "50000");
     rest::router::pointer router = rest::router::create();
 
-    auto &handler = router->make_handler<rest::http_handler>("/api/<version>/resource");
+    auto &handler = router->make_handler<rest::http_handler>(R"(/api/[version=^[0-9]{1,}$]/resource)");
 
     handler.get([](const rest::http::routing_params_type &params, const rest::http::request_type &request, rest::http::response_type &response) {
         rest::http_ostream stream;
