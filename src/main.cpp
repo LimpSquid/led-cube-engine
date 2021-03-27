@@ -1,9 +1,12 @@
 #include <rest/rest.h>
+#include <cube/core/engine.h>
 #include <sstream>
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/make_shared.hpp>
+
+// This is all temporary stuffs, just playing in my sandbox
 
 struct world
 {
@@ -13,8 +16,7 @@ struct world
     }
 };
 
-
-int main(int argc, char *argv[])
+void run_server()
 {
     rest::http_server srv("127.0.0.1", "50000");
     srv.install_plugin([](const rest::http::request_type &request, const rest::http::response_type &response) {
@@ -57,6 +59,12 @@ int main(int argc, char *argv[])
     srv.begin(router);
     srv.run();
     srv.end();
+}
 
+int main(int argc, char *argv[])
+{
+    cube::core::engine cube_engine;
+
+    run_server();
     return EXIT_SUCCESS;
 }
