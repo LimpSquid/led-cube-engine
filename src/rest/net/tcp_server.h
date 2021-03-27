@@ -65,7 +65,7 @@ protected:
      * @param socket The socket to associate with the new client
      * @return Returns tcp_client* 
      */
-    virtual tcp_client::pointer create_client(tcp_client_management &management, socket_type &&socket) const = 0;
+    virtual tcp_client::pointer create_client(tcp_client_management &management, socket_type &&socket) = 0;
 
 private:
     void accept_new_client();

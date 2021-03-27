@@ -1,4 +1,8 @@
 #include <rest/rest.h>
+#include <sstream>
+#include <iostream>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/make_shared.hpp>
 
 struct world
@@ -9,9 +13,23 @@ struct world
     }
 };
 
+
 int main(int argc, char *argv[])
 {
     rest::http_server srv("127.0.0.1", "50000");
+    srv.install_plugin([](const rest::http::request_type &request, const rest::http::response_type &response) {
+        std::stringstream stream;
+
+	    boost::posix_time::time_facet *facet = new boost::posix_time::time_facet("%d/%b/%Y:%H:%M:%S");
+	    stream.imbue(std::locale(stream.getloc(), facet));
+
+        stream << boost::posix_time::second_clock::local_time() << " request: \"" <<
+            request.method() << " " << request.base().target() << "\" version: \"" <<
+            request.base().version() << "\" response: \"" << response.body() << "\"";
+
+        std::cout << stream.str() << std::endl;
+    });
+
     rest::router::pointer router = rest::router::create();
 
     auto &handler = router->make_handler<rest::http_handler>(R"(/api/[version=^[0-9]{1,}$]/resource)");
@@ -35,7 +53,6 @@ int main(int argc, char *argv[])
         stream << "Kirby ate: " << params.get_role("other");
         stream.write_to(response);
     });
-
 
     srv.begin(router);
     srv.run();
