@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
@@ -8,7 +9,6 @@ namespace cube::core
 {
 
 class graphics_device;
-class time_step;
 class animation : public boost::enable_shared_from_this<animation>,
     private boost::noncopyable
 {
@@ -17,11 +17,20 @@ public:
 
     virtual ~animation() = default;
 
-    virtual void update(const time_step &time_step) = 0;
-    virtual void paint(graphics_device &device) = 0;
+    bool dirty() const;
+    void update();
+
+    void tick_event(const std::chrono::microseconds &interval);
+    void paint_event(graphics_device &device);
 
 protected:
-    animation() = default;
+    animation();
+
+    virtual void tick(const std::chrono::microseconds &interval) = 0;
+    virtual void paint(graphics_device &device) = 0;
+
+private:
+    bool dirty_;
 };
 
 }

@@ -6,11 +6,10 @@ find_package(Boost REQUIRED COMPONENTS system)
 # The library sources
 set(SOURCES "core/engine.cpp"
             "core/painter.cpp"
-            "core/voxel_display.cpp"
             "core/graphics_device.cpp"
             "core/animation.cpp"
             "util/color.cpp"
-            "util/time_step.cpp")
+            "hal/voxel_display.cpp")
 
 # Create library
 add_library(cube STATIC ${SOURCES} ${HEADERS})
