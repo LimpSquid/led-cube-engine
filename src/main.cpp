@@ -1,5 +1,6 @@
 #include <rest/rest.h>
 #include <cube/core/engine.h>
+#include <cube/hal/voxel_display.h>
 #include <sstream>
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -63,7 +64,7 @@ void run_server()
 
 int main(int argc, char *argv[])
 {
-    cube::core::engine cube_engine;
+    cube::core::engine cube_engine(new cube::hal::voxel_display);
 
     run_server();
     return EXIT_SUCCESS;
