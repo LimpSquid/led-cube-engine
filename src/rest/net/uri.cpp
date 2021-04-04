@@ -1,9 +1,8 @@
 #include <net/uri.h>
-#include <boost/regex.hpp>
+#include <regex>
 #include <utility>
 
 using namespace rest::net;
-using namespace boost;
 
 uri::uri(const std::string &raw) :
     raw_(raw),
@@ -60,10 +59,10 @@ void uri::parse_raw()
     if(raw_.empty())
         return;
 
-    const regex uri_regex(RFC3986, regex::extended);
-    smatch segments;
+    const std::regex uri_regex(RFC3986, std::regex::extended);
+    std::smatch segments;
 
-    if(!regex_match(raw_, segments, uri_regex))
+    if(!std::regex_match(raw_, segments, uri_regex))
         return;
 
     for(int i = 0; i < segments.size(); ++i) {

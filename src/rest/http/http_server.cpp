@@ -1,7 +1,7 @@
 #include <http/http_server.h>
 #include <http/http_client.h>
 #include <utility>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 using namespace rest::net;
 using namespace rest::http;

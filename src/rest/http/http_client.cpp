@@ -3,7 +3,7 @@
 #include <net/uri.h>
 #include <net/tcp_client_management.h>
 #include <utility>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/asio/placeholders.hpp>
 

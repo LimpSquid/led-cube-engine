@@ -1,6 +1,6 @@
 #include <net/routing/tokens.h>
 #include <net/routing/routing_params.h>
-#include <boost/regex.hpp>
+#include <regex>
 
 using namespace rest::net::routing;
 using namespace boost;
@@ -64,9 +64,9 @@ base_token::pointer regex_token::create(const std::string &role, const std::stri
 
 bool regex_token::match(const std::string &tag) const
 {
-    const regex tag_regex(regex_, regex::extended);
+    const std::regex tag_regex(regex_, std::regex::extended);
 
-    return regex_match(tag, tag_regex);
+    return std::regex_match(tag, tag_regex);
 }
 
 void regex_token::provide_params(const std::string &tag, routing_params &params) const

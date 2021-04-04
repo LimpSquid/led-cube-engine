@@ -1,7 +1,7 @@
 #include <net/tcp_server.h>
 #include <net/routing/router_node.h>
 #include <utility>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
 using namespace rest::net;

@@ -1,11 +1,8 @@
 #include <net/tcp_server.h>
 #include <net/tcp_client_management.h>
 #include <utility>
-#include <boost/bind.hpp>
-#include <boost/asio/placeholders.hpp>
 
 using namespace rest::net;
-using namespace boost::asio;
 
 tcp_client::~tcp_client()
 {
