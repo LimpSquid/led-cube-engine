@@ -12,7 +12,7 @@ voxel_display::~voxel_display()
 
 }
 
-void voxel_display::draw_voxel(int x, int y, int z, const util::color &color)
+void voxel_display::draw_voxel(int x, int y, int z, const util::color_uchar &color)
 {
 
 }

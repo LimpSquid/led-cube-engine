@@ -1,22 +1,31 @@
 #pragma once
 
+#include <type_traits>
+
 namespace cube::util
 {
 
-class color
+template<typename ColorType>
+struct color
 {
-public:
-    color();
-    color(unsigned char red, unsigned char green, unsigned char blue);
+    using value_type = ColorType;
+
+    color() : color(0, 0, 0) { }
+    color(value_type r, value_type g, value_type b) :
+        red(r), green(g), blue(b)
+    {
+        static_assert(std::is_integral<value_type>::value, "Color type is not integral");
+    }
     color(const color &other) = default;
     ~color() = default;
 
     color &operator=(const color &other) = default;
 
-private:
-    unsigned char red_;
-    unsigned char green_;
-    unsigned char blue_;
+    value_type red;
+    value_type green;
+    value_type blue;
 };
+
+using color_uchar = color<unsigned char>;
 
 }

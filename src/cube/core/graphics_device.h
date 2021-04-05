@@ -1,11 +1,7 @@
 #pragma once
 
 #include <core/animation.h>
-
-namespace cube::util
-{
-class color;
-}
+#include <util/color.h>
 
 namespace cube::core
 {
@@ -14,7 +10,7 @@ class graphics_device
 {
 public:
     virtual ~graphics_device() = default;
-    virtual void draw_voxel(int x, int y, int z, const util::color &color) = 0;
+    virtual void draw_voxel(int x, int y, int z, const util::color_uchar &color) = 0;
     void show(const animation::pointer &animation);
     void render();
 
