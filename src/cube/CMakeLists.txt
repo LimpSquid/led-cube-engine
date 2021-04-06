@@ -8,7 +8,6 @@ set(SOURCES "core/engine.cpp"
             "core/painter.cpp"
             "core/graphics_device.cpp"
             "core/animation.cpp"
-            "util/color.cpp"
             "hal/voxel_display.cpp")
 
 # Create library
