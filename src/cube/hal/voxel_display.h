@@ -12,9 +12,9 @@ public:
     virtual ~voxel_display() override;
 
 private:
-    virtual void draw_voxel(int x, int y, int z) override;
-    virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2) override;
-    virtual void update_state(const core::graphics_device_state &state) override;
+    virtual void draw_voxel(int x, int y, int z, const color_type &color) override;
+    virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2, const color_type &color) override;
+    virtual void fill(const color_type &color) override;
     virtual void update() override;
 };
 

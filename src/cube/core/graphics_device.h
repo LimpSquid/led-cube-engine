@@ -1,25 +1,20 @@
 #pragma once
 
 #include <core/animation.h>
-#include <util/brush.h>
-#include <util/pen.h>
+#include <util/color.h>
 
 namespace cube::core
 {
 
-struct graphics_device_state
-{
-    util::brush brush;
-    util::pen pen;
-};
-
 class graphics_device
 {
 public:
+    using color_type = util::basic_color<unsigned char>;
+
     virtual ~graphics_device() = default;
-    virtual void draw_voxel(int x, int y, int z) = 0;
-    virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2) = 0;
-    virtual void update_state(const graphics_device_state &state) = 0;
+    virtual void draw_voxel(int x, int y, int z, const color_type &color) = 0;
+    virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2, const color_type &color) = 0;
+    virtual void fill(const color_type &color) = 0;
     void show(const animation::pointer &animation);
     void render();
 
@@ -29,7 +24,6 @@ protected:
 
 private:
     animation::pointer animation_;
-    graphics_device_state state_;
 };
 
 }
