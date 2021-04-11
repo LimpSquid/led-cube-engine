@@ -66,23 +66,21 @@ void engine::process()
         elapsed_us = duration_cast<microseconds>(now - previous);
         previous += elapsed_us;
 
+        // Tick event
         tick_elapsed_us += elapsed_us;
-        time_step_elapsed_us += elapsed_us;
-        if(nullptr != animation_) {
-            // Tick event
-            if(tick_elapsed_us >= tick_event_ms) {
-                animation_->tick_event(tick_elapsed_us);
-                tick_elapsed_us = 0us;
-            }
-
-            // Time step event
-            if(time_step_elapsed_us >= animation_->config().time_step_ms) {
-                animation_->time_step_event();
-                time_step_elapsed_us = 0us;
-            }
+        if(tick_elapsed_us >= tick_event_ms) {
+            animation->tick_event(tick_elapsed_us);
+            tick_elapsed_us = 0us;
         }
 
-        // Render
+        // Time step event
+        time_step_elapsed_us += elapsed_us;
+        if(time_step_elapsed_us >= animation->config().time_step_ms) {
+            animation->time_step_event();
+            time_step_elapsed_us = 0us;
+        }
+
+        // Finally render to device
         device_->render();
     }
 }
