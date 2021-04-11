@@ -20,9 +20,8 @@ public:
     ~basic_animation_track() = default;
 
     template<typename T>
-    void write_property(const property_label_type &label, T value)
+    typename std::enable_if<std::is_string_convertible<T>::value>::type write_property(const property_label_type &label, T value)
     {
-        static_assert(is_string_convertible<T>::value, "Property is not string convertible");
         properties_[label] = std::to_string(value);
     }
 
