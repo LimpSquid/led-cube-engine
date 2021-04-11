@@ -23,8 +23,8 @@ engine::~engine()
 
 void engine::load(const animation::pointer &animation)
 {
+    std::lock_guard<std::mutex> guard(animation_lock_);
     animation_ = animation;
-    device_->show(animation);
 }
 
 void engine::process()
@@ -35,9 +35,31 @@ void engine::process()
     microseconds time_step_elapsed_us = 0us;
     steady_clock::time_point now = steady_clock::now();
     steady_clock::time_point previous = now;
+    animation::pointer animation;
+    bool init = false;
 
     for(;;) {
-        // @Todo: lock?
+        {
+            std::lock_guard<std::mutex> guard(animation_lock_);
+            init = (animation != animation_);
+            animation = animation_;
+        }
+
+        // Animation to be serviced?
+        if(nullptr == animation) {
+            std::this_thread::sleep_for(100ms);
+            continue;
+        }
+
+        // Init new animation
+        if(init) {
+            previous = steady_clock::now();
+            tick_elapsed_us = 0us;
+            time_step_elapsed_us = 0us;
+
+            device_->show(animation);
+            continue;
+        }
 
         // Update time tracking
         now = steady_clock::now();

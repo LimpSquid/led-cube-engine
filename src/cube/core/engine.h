@@ -3,6 +3,7 @@
 #include <core/animation.h>
 #include <memory>
 #include <thread>
+#include <mutex>
 #include <boost/noncopyable.hpp>
 
 namespace cube::core
@@ -23,6 +24,7 @@ private:
     animation::pointer animation_;
     std::unique_ptr<graphics_device> device_;
     std::thread thread_;
+    std::mutex animation_lock_;
 };
 
 }

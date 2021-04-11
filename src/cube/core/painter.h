@@ -15,7 +15,6 @@ public:
 
     void wipe_canvas();
     void fill_canvas(const color_type &color);
-    void blend_canvas(const color_type &color);
 
 private:
     graphics_device &device_;
