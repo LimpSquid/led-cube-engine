@@ -23,8 +23,7 @@ void tcp_client::activate()
                 set_state(cs_active);
             }
             break;
-        default:                
-            break;
+        default:;
     }
 }
 
@@ -41,8 +40,7 @@ void tcp_client::terminate(bool graceful)
                 socket_.close();
             set_state(cs_terminated);  
             break;
-        default:                
-            break;
+        default:;
     }
 }
 

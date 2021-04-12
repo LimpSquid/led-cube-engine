@@ -69,12 +69,12 @@ void uri::parse_raw()
         const std::string &segment = segments[i];
 
         switch(i) {
-            default:                            break;
             case 2:     scheme_ = segment;      break;
             case 4:     authority_ = segment;   break;
             case 5:     path_ = segment;        break;
             case 7:     query_ = segment;       break;
             case 9:     fragment_ = segment;    break;
+            default:;
         }
     }
 
