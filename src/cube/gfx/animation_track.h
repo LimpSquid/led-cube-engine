@@ -153,7 +153,7 @@ class animation_track : public basic_animation_track<int>
 private:
 
 public:
-    enum : int
+    enum : property_label_type
     {
         property_duration_us    = 0,
 

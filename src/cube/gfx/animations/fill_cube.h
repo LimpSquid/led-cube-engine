@@ -8,7 +8,7 @@ namespace cube::gfx::animations
 class fill_cube : public animation_track
 {
 public:
-    enum : animation_track::property_label_type
+    enum : property_label_type
     {
         property_cycle_interval_sec     = property_user + 1,
     };
