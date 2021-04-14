@@ -15,7 +15,7 @@ private:
     virtual void draw_voxel(int x, int y, int z, const color_type &color) override;
     virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2, const color_type &color) override;
     virtual void fill(const color_type &color) override;
-    virtual void update() override;
+    virtual void refresh() override;
 };
 
 }

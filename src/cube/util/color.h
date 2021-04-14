@@ -24,6 +24,9 @@ struct basic_color
     basic_color(const basic_color &other) = default;
     ~basic_color() = default;
 
+    static inline constexpr value_type min() { return std::numeric_limits<value_type>::min(); }
+    static inline constexpr value_type max() { return std::numeric_limits<value_type>::max(); }
+
     basic_color &operator=(const basic_color &other) = default;
 
     value_type red;

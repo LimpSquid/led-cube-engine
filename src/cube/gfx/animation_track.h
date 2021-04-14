@@ -14,14 +14,15 @@ template<typename PropertyLabelType>
 class basic_animation_track : public core::animation
 {
 private:
-    template<class, class = void>
-    struct is_string_convertible : public std::false_type { };
+    template<class>
+    struct is_duration : std::false_type { };
 
-    template<class T>
-    struct is_string_convertible<T, std::void_t<decltype(std::to_string(std::declval<T>()))>> : public std::true_type { };
+    template<class Rep, class Period>
+    struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type { };
 
 public:
     using property_label_type = PropertyLabelType;
+    using pointer = boost::shared_ptr<basic_animation_track>;
 
     enum animation_state
     {
@@ -31,7 +32,7 @@ public:
         finished,
     };
 
-    ~basic_animation_track() = default;
+    virtual ~basic_animation_track() override = default;
 
     void start()
     {
@@ -78,14 +79,27 @@ public:
     }
 
     template<typename T>
-    typename std::enable_if<is_string_convertible<T>::value>::type write_property(const property_label_type &label, T value)
+    typename std::enable_if<is_duration<T>::value>::type write_property(const property_label_type &label, T value)
+    {
+        write_property(label, value.count());
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_integral<T>::value ||
+        std::is_floating_point<T>::value>::type write_property(const property_label_type &label, T value)
     {
         properties_[label] = std::to_string(value);
     }
 
     template<typename T>
+    typename std::enable_if<is_duration<T>::value, T>::type read_property(const property_label_type &label, T def = T()) const
+    {
+        return T(read_property<int64_t>(label, def.count()));
+    }
+
+    template<typename T>
     typename std::enable_if<std::is_integral<T>::value ||
-        std::is_floating_point<T>::value, T>::type read_property(const property_label_type &label, T def = T())
+        std::is_floating_point<T>::value, T>::type read_property(const property_label_type &label, T def = T()) const
     {
         const auto search = properties_.find(label);
 
@@ -129,11 +143,29 @@ private:
         }
     }
 
-    std::unordered_map<property_label_type, std::string> properties_;
     animation_state state_;
     std::chrono::microseconds duration_;
+    std::unordered_map<property_label_type, std::string> properties_;
 };
 
-using animation_track = basic_animation_track<std::string>;
+class animation_track : public basic_animation_track<int>
+{
+private:
+
+public:
+    enum : int
+    {
+        property_duration_us    = 0,
+
+        // Reserved for user properties
+        property_user           = 255,
+    };
+
+private:
+    virtual std::chrono::microseconds duration_us() const override
+    {
+        return read_property<std::chrono::microseconds>(property_duration_us, basic_animation_track::duration_us());
+    }
+};
 
 }

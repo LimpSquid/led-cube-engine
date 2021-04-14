@@ -57,7 +57,7 @@ void engine::process()
             tick_elapsed_us = 0us;
             time_step_elapsed_us = 0us;
 
-            device_->show(animation);
+            device_->show_animation(animation);
             continue;
         }
 
@@ -81,6 +81,6 @@ void engine::process()
         }
 
         // Finally render to device
-        device_->render();
+        device_->render_animation();
     }
 }

@@ -8,7 +8,9 @@ set(SOURCES "core/engine.cpp"
             "core/painter.cpp"
             "core/graphics_device.cpp"
             "core/animation.cpp"
-            "hal/voxel_display.cpp")
+            "hal/voxel_display.cpp"
+            "gfx/animation_player.cpp"
+            "gfx/animations/fill_cube.cpp")
 
 # Create library
 add_library(cube STATIC ${SOURCES} ${HEADERS})

@@ -13,6 +13,7 @@ public:
     painter(graphics_device &device);
     ~painter();
 
+    void draw(int x, int y, int z, const color_type &color);
     void wipe_canvas();
     void fill_canvas(const color_type &color);
 
