@@ -10,18 +10,18 @@
 namespace cube::gfx
 {
 
-template<typename PropertyLabelType>
+template<typename PropertyLabel>
 class basic_animation_track : public core::animation
 {
 private:
-    template<class>
-    struct is_duration : std::false_type { };
+template<class>
+struct is_duration : std::false_type { };
 
-    template<class Rep, class Period>
-    struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type { };
+template<class Rep, class Period>
+struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type { };
 
 public:
-    using property_label_type = PropertyLabelType;
+    using property_label_type = PropertyLabel;
     using pointer = boost::shared_ptr<basic_animation_track>;
 
     enum animation_state
@@ -33,6 +33,11 @@ public:
     };
 
     virtual ~basic_animation_track() override = default;
+
+    bool is_stopped() { return stopped == state_; }
+    bool is_paused() { return paused == state_; }
+    bool is_running() { return running == state_; }
+    bool is_finished() { return finished == state_; }
 
     void start()
     {
@@ -68,14 +73,12 @@ public:
         }
     }
 
-    animation_state poll() const
+    void poll() const
     {
         if(poll_at_end())
             set_state(finished);
         else if(poll_duration_expired())
             set_state(finished);
-
-        return state_;
     }
 
     template<typename T>
@@ -127,7 +130,7 @@ private:
         using namespace std::chrono_literals;
 
         if(running == state_)
-            duration_ = interval < duration_ ? (duration_ - interval) : 0s;
+            duration_ = interval <= duration_ ? (duration_ - interval) : 0us;
     }
 
     bool poll_duration_expired() const
@@ -148,7 +151,7 @@ private:
     std::unordered_map<property_label_type, std::string> properties_;
 };
 
-class animation_track : public basic_animation_track<int>
+class property_animation_track : public basic_animation_track<int>
 {
 private:
 

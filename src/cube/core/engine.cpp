@@ -16,11 +16,6 @@ engine::engine(graphics_device *device) :
         throw std::invalid_argument("Graphics device cannot be nullptr");
 }
 
-engine::~engine()
-{
-
-}
-
 void engine::load(const animation::pointer &animation)
 {
     std::lock_guard<std::mutex> guard(animation_lock_);
@@ -29,7 +24,7 @@ void engine::load(const animation::pointer &animation)
 
 void engine::process()
 {
-    const milliseconds tick_event_ms = 15ms; // @Todo: we should make this configurable?
+    const milliseconds tick_event_ms = 15ms;
     microseconds elapsed_us = 0us;
     microseconds tick_elapsed_us = 0us;
     microseconds time_step_elapsed_us = 0us;

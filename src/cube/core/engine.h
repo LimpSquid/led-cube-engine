@@ -14,7 +14,7 @@ class engine : private boost::noncopyable
 {
 public:
     engine(graphics_device *device);
-    ~engine();
+    ~engine() = default;
 
     void load(const animation::pointer &animation);
 
