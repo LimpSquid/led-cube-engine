@@ -9,7 +9,6 @@ set(SOURCES "core/engine.cpp"
             "core/graphics_device.cpp"
             "core/animation.cpp"
             "hal/voxel_display.cpp"
-            "gfx/animation_player.cpp"
             "gfx/animations/fill_cube.cpp")
 
 # Create library
