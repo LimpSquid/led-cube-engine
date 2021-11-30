@@ -1,9 +1,9 @@
-#include <core/animation.h>
+#include <cube/core/animation.h>
 
 using namespace cube::core;
 using namespace std::chrono;
 
-const animation_config &animation::config() const
+animation_config const & animation::config() const
 {
     return config_;
 }
@@ -29,12 +29,12 @@ void animation::time_step_event()
     time_step();
 }
 
-void animation::tick_event(const microseconds &interval)
+void animation::tick_event(microseconds const & interval)
 {
     tick(interval);
 }
 
-void animation::paint_event(graphics_device &device)
+void animation::paint_event(graphics_device & device)
 {
     dirty_ = false;
     paint(device);
@@ -45,7 +45,7 @@ animation::animation()
     dirty_ = true;
 }
 
-void animation::configure(animation_config &config)
+void animation::configure(animation_config & config)
 {
     // Do nothing by default
 }

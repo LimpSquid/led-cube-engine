@@ -1,6 +1,6 @@
-#include <core/engine.h>
-#include <core/graphics_device.h>
-#include <core/animation.h>
+#include <cube/core/engine.h>
+#include <cube/core/graphics_device.h>
+#include <cube/core/animation.h>
 #include <stdexcept>
 #include <chrono>
 
@@ -12,7 +12,7 @@ engine::engine(graphics_device *device) :
     device_(device),
     thread_(&engine::process, this)
 {
-    if(nullptr == device_)
+    if (nullptr == device_)
         throw std::invalid_argument("Graphics device cannot be nullptr");
 }
 
@@ -24,7 +24,7 @@ void engine::load(const animation::pointer &animation)
 
 void engine::process()
 {
-    const milliseconds tick_event_ms = 15ms;
+    milliseconds const tick_event_ms = 15ms;
     microseconds elapsed_us = 0us;
     microseconds tick_elapsed_us = 0us;
     microseconds time_step_elapsed_us = 0us;
@@ -33,7 +33,7 @@ void engine::process()
     animation::pointer animation;
     bool init = false;
 
-    for(;;) {
+    for (;;) {
         {
             std::lock_guard<std::mutex> guard(animation_lock_);
             init = (animation != animation_);
@@ -41,13 +41,13 @@ void engine::process()
         }
 
         // Animation to be serviced?
-        if(nullptr == animation) {
+        if (nullptr == animation) {
             std::this_thread::sleep_for(100ms);
             continue;
         }
 
         // Init new animation
-        if(init) {
+        if (init) {
             previous = steady_clock::now();
             tick_elapsed_us = 0us;
             time_step_elapsed_us = 0us;
@@ -63,14 +63,14 @@ void engine::process()
 
         // Tick event
         tick_elapsed_us += elapsed_us;
-        if(tick_elapsed_us >= tick_event_ms) {
+        if (tick_elapsed_us >= tick_event_ms) {
             animation->tick_event(tick_elapsed_us);
             tick_elapsed_us = 0us;
         }
 
         // Time step event
         time_step_elapsed_us += elapsed_us;
-        if(time_step_elapsed_us >= animation->config().time_step_ms) {
+        if (time_step_elapsed_us >= animation->config().time_step_ms) {
             animation->time_step_event();
             time_step_elapsed_us = 0us;
         }

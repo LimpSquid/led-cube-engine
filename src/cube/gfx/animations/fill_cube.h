@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gfx/animation_track.h>
+#include <cube/gfx/animation_track.h>
 
 namespace cube::gfx::animations
 {

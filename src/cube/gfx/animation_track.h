@@ -1,17 +1,17 @@
 #pragma once
 
-#include <core/animation.h>
+#include <cube/core/animation.h>
 #include <string>
 #include <sstream>
 #include <unordered_map>
 #include <type_traits>
-#include <stdexcept>
 
 namespace cube::gfx
 {
 
 template<typename PropertyLabel>
-class basic_animation_track : public core::animation
+class basic_animation_track :
+    public core::animation
 {
 private:
 template<class>
@@ -41,7 +41,7 @@ public:
 
     void start()
     {
-        switch(state_) {
+        switch (state_) {
             case stopped:
                 duration_ = duration_us();
                 [[fallthrough]];
@@ -54,7 +54,7 @@ public:
 
     void pause()
     {
-        switch(state_) {
+        switch (state_) {
             case running:
                 set_state(paused);
                 break;
@@ -64,7 +64,7 @@ public:
 
     void stop()
     {
-        switch(state_) {
+        switch (state_) {
             case paused:
             case running:
                 set_state(stopped);
@@ -75,38 +75,38 @@ public:
 
     void poll() const
     {
-        if(poll_at_end())
+        if (poll_at_end())
             set_state(finished);
-        else if(poll_duration_expired())
+        else if (poll_duration_expired())
             set_state(finished);
     }
 
     template<typename T>
-    typename std::enable_if<is_duration<T>::value>::type write_property(const property_label_type &label, T value)
+    typename std::enable_if<is_duration<T>::value>::type write_property(property_label_type const & label, T value)
     {
         write_property(label, value.count());
     }
 
     template<typename T>
     typename std::enable_if<std::is_integral<T>::value ||
-        std::is_floating_point<T>::value>::type write_property(const property_label_type &label, T value)
+        std::is_floating_point<T>::value>::type write_property(property_label_type const & label, T value)
     {
         properties_[label] = std::to_string(value);
     }
 
     template<typename T>
-    typename std::enable_if<is_duration<T>::value, T>::type read_property(const property_label_type &label, T def = T()) const
+    typename std::enable_if<is_duration<T>::value, T>::type read_property(property_label_type const & label, T def = T()) const
     {
         return T(read_property<int64_t>(label, def.count()));
     }
 
     template<typename T>
     typename std::enable_if<std::is_integral<T>::value ||
-        std::is_floating_point<T>::value, T>::type read_property(const property_label_type &label, T def = T()) const
+        std::is_floating_point<T>::value, T>::type read_property(property_label_type const & label, T def = T()) const
     {
-        const auto search = properties_.find(label);
+        auto const search = properties_.find(label);
 
-        if(search == properties_.end() || search->second.empty())
+        if (search == properties_.end() || search->second.empty())
             return def;
 
         T result;
@@ -117,19 +117,21 @@ public:
     }
 
 protected:
-    basic_animation_track() : state_(stopped) { }
+    basic_animation_track() :
+        state_(stopped)
+    { }
 
     std::chrono::microseconds us_to_end() const { return duration_; }
     virtual std::chrono::microseconds duration_us() const { return std::chrono::microseconds::max(); }
     virtual bool poll_at_end() const { return false; }
-    virtual void state_changed(const animation_state &) { }
+    virtual void state_changed(animation_state const &) { }
 
 private:
-    virtual void tick(const std::chrono::microseconds &interval)
+    virtual void tick(std::chrono::microseconds const & interval)
     {
         using namespace std::chrono_literals;
 
-        if(running == state_)
+        if (running == state_)
             duration_ = interval <= duration_ ? (duration_ - interval) : 0us;
     }
 
@@ -140,7 +142,7 @@ private:
 
     void set_state(const animation_state &value)
     {
-        if(state_ != value) {
+        if (state_ != value) {
             state_ = value;
             state_changed(state_);
         }
@@ -151,10 +153,23 @@ private:
     std::unordered_map<property_label_type, std::string> properties_;
 };
 
-class property_animation_track : public basic_animation_track<int>
-{
-private:
+template<class, class = void>
+struct is_animation_track : std::false_type { };
+template<class T>
+struct is_animation_track<T, std::void_t<decltype(
+    std::declval<typename T::pointer>(),
+    std::declval<T>().start(),
+    std::declval<T>().stop(),
+    std::declval<T>().pause(),
+    std::declval<T>().is_stopped(),
+    std::declval<T>().is_running(),
+    std::declval<T>().is_paused(),
+    std::declval<T>().is_finished()
+)>> : std::true_type { };
 
+class property_animation_track :
+    public basic_animation_track<int>
+{
 public:
     enum : property_label_type
     {

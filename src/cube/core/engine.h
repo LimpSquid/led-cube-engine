@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/animation.h>
+#include <cube/core/animation.h>
 #include <memory>
 #include <thread>
 #include <mutex>
@@ -10,13 +10,14 @@ namespace cube::core
 {
 
 class graphics_device;
-class engine : private boost::noncopyable
+class engine :
+    private boost::noncopyable
 {
 public:
-    engine(graphics_device *device);
+    engine(graphics_device * device);
     ~engine() = default;
 
-    void load(const animation::pointer &animation);
+    void load(animation::pointer const & animation);
 
 private:
     void process();

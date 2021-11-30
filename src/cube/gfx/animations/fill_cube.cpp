@@ -1,5 +1,6 @@
-#include <gfx/animations/fill_cube.h>
-#include <core/painter.h>
+#include <cube/gfx/animations/fill_cube.h>
+#include <cube/core/painter.h>
+#include <cube/core/color.h>
 #include <cstdlib>
 
 using namespace cube::gfx::animations;
@@ -31,10 +32,9 @@ void fill_cube::paint(graphics_device &device)
 {
     painter p(device);
 
-    using color_t = painter::color_type::value_type;
-    color_t r = static_cast<color_t>(rand() % painter::color_type::max());
-    color_t g = static_cast<color_t>(rand() % painter::color_type::max());
-    color_t b = static_cast<color_t>(rand() % painter::color_type::max());
+    color_t r = static_cast<color_t>(rand() % color_max_value);
+    color_t g = static_cast<color_t>(rand() % color_max_value);
+    color_t b = static_cast<color_t>(rand() % color_max_value);
 
     p.fill_canvas({ r, g, b });
 }
