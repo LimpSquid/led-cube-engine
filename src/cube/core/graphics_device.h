@@ -16,14 +16,14 @@ public:
     virtual void fill(color const & color) = 0; // Fill all voxels
     virtual void refresh() = 0; // Do a refresh, draw all voxels to the actual display
 
-    void show_animation(animation::pointer const & animation);
+    void show_animation(animation * animation);
     void render_animation();
 
 protected:
     graphics_device() = default;
 
 private:
-    animation::pointer animation_;
+    animation * animation_;
 };
 
 }

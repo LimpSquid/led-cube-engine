@@ -5,7 +5,8 @@
 namespace cube::gfx::animations
 {
 
-class fill_cube : public property_animation_track
+class fill_cube :
+    public animation_track
 {
 public:
     enum : property_label_type

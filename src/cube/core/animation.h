@@ -1,8 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 
 namespace cube::core
@@ -10,17 +8,14 @@ namespace cube::core
 
 struct animation_config
 {
-    std::chrono::milliseconds time_step_ms = std::chrono::milliseconds(50);
+    std::chrono::milliseconds time_step_interval = std::chrono::milliseconds(50);
 };
 
 class graphics_device;
 class animation :
-    public boost::enable_shared_from_this<animation>,
     private boost::noncopyable
 {
 public:
-    using pointer = boost::shared_ptr<animation>;
-
     virtual ~animation() = default;
 
     animation_config const & config() const;
@@ -36,12 +31,12 @@ public:
 protected:
     animation();
 
+private:
     virtual void configure(animation_config & config);
     virtual void time_step();
     virtual void tick(std::chrono::microseconds const & interval) = 0;
     virtual void paint(graphics_device & device) = 0;
 
-private:
     animation_config config_;
     bool dirty_;
 };

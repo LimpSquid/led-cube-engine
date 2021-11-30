@@ -9,20 +9,46 @@
 namespace cube::gfx
 {
 
-template<typename PropertyLabel>
-class basic_animation_track :
-    public core::animation
+template<typename T>
+struct property_value_converter
 {
-private:
-template<class>
-struct is_duration : std::false_type { };
+    static std::string convert(T const & value)
+    {
+        std::string str;
+        std::stringstream stream(str);
+        stream << value;
+        return str;
+    }
+
+    static T convert(std::string const & value)
+    {
+        T result;
+        std::stringstream stream(value);
+        stream >> result;
+        return result;
+    }
+};
 
 template<class Rep, class Period>
-struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type { };
+struct property_value_converter<std::chrono::duration<Rep, Period>>
+{
+    static std::string convert(std::chrono::duration<Rep, Period> const & value)
+    {
+        return property_value_converter<Rep>::convert(value.count());
+    }
 
+    static std::chrono::duration<Rep, Period> convert(std::string const & value)
+    {
+        auto const count = property_value_converter<Rep>::convert(value);
+        return std::chrono::duration<Rep, Period>(count);
+    }
+};
+
+class animation_track :
+    public core::animation
+{
 public:
-    using property_label_type = PropertyLabel;
-    using pointer = boost::shared_ptr<basic_animation_track>;
+    using property_label_type = int;
 
     enum animation_state
     {
@@ -32,121 +58,54 @@ public:
         finished,
     };
 
-    virtual ~basic_animation_track() override = default;
-
-    bool is_stopped() { return stopped == state_; }
-    bool is_paused() { return paused == state_; }
-    bool is_running() { return running == state_; }
-    bool is_finished() { return finished == state_; }
-
-    void start()
+    enum : property_label_type
     {
-        switch (state_) {
-            case stopped:
-                duration_ = duration_us();
-                [[fallthrough]];
-            case paused:
-                set_state(running);
-                break;
-            default:;
-        }
-    }
+        property_duration_us    = 0,
 
-    void pause()
-    {
-        switch (state_) {
-            case running:
-                set_state(paused);
-                break;
-            default:;
-        }
-    }
+        // Reserved for user properties
+        property_user           = 255,
+    };
 
-    void stop()
-    {
-        switch (state_) {
-            case paused:
-            case running:
-                set_state(stopped);
-                break;
-            default:;
-        }
-    }
+    virtual ~animation_track() override = default;
 
-    void poll() const
+    animation_state state() const;
+    bool is_stopped() const;
+    bool is_paused() const;
+    bool is_running() const;
+    bool is_finished() const;
+
+    std::chrono::microseconds us_to_end() const;
+    std::chrono::microseconds duration_us() const;
+
+    void start();
+    void pause();
+    void stop();
+
+    template<typename T>
+    void write_property(property_label_type label, T value)
     {
-        if (poll_at_end())
-            set_state(finished);
-        else if (poll_duration_expired())
-            set_state(finished);
+        properties_[label] = property_value_converter<T>::convert(value);
     }
 
     template<typename T>
-    typename std::enable_if<is_duration<T>::value>::type write_property(property_label_type const & label, T value)
-    {
-        write_property(label, value.count());
-    }
-
-    template<typename T>
-    typename std::enable_if<std::is_integral<T>::value ||
-        std::is_floating_point<T>::value>::type write_property(property_label_type const & label, T value)
-    {
-        properties_[label] = std::to_string(value);
-    }
-
-    template<typename T>
-    typename std::enable_if<is_duration<T>::value, T>::type read_property(property_label_type const & label, T def = T()) const
-    {
-        return T(read_property<int64_t>(label, def.count()));
-    }
-
-    template<typename T>
-    typename std::enable_if<std::is_integral<T>::value ||
-        std::is_floating_point<T>::value, T>::type read_property(property_label_type const & label, T def = T()) const
+    T read_property(property_label_type label, T def = T()) const
     {
         auto const search = properties_.find(label);
 
         if (search == properties_.end() || search->second.empty())
             return def;
 
-        T result;
-        std::stringstream stream(search->second);
-
-        stream >> result;
-        return result;
+        return property_value_converter<T>::convert(search->second);
     }
 
 protected:
-    basic_animation_track() :
-        state_(stopped)
-    { }
-
-    std::chrono::microseconds us_to_end() const { return duration_; }
-    virtual std::chrono::microseconds duration_us() const { return std::chrono::microseconds::max(); }
-    virtual bool poll_at_end() const { return false; }
-    virtual void state_changed(animation_state const &) { }
+    animation_track();
 
 private:
-    virtual void tick(std::chrono::microseconds const & interval)
-    {
-        using namespace std::chrono_literals;
+    virtual void state_changed(animation_state const & state);
+    virtual void tick(std::chrono::microseconds const & interval) override;
 
-        if (running == state_)
-            duration_ = interval <= duration_ ? (duration_ - interval) : 0us;
-    }
-
-    bool poll_duration_expired() const
-    {
-        return running == state_ && duration_.count() <= 0;
-    }
-
-    void set_state(const animation_state &value)
-    {
-        if (state_ != value) {
-            state_ = value;
-            state_changed(state_);
-        }
-    }
+    void set_state(animation_state const & value);
 
     animation_state state_;
     std::chrono::microseconds duration_;
@@ -157,7 +116,6 @@ template<class, class = void>
 struct is_animation_track : std::false_type { };
 template<class T>
 struct is_animation_track<T, std::void_t<decltype(
-    std::declval<typename T::pointer>(),
     std::declval<T>().start(),
     std::declval<T>().stop(),
     std::declval<T>().pause(),
@@ -166,24 +124,5 @@ struct is_animation_track<T, std::void_t<decltype(
     std::declval<T>().is_paused(),
     std::declval<T>().is_finished()
 )>> : std::true_type { };
-
-class property_animation_track :
-    public basic_animation_track<int>
-{
-public:
-    enum : property_label_type
-    {
-        property_duration_us    = 0,
-
-        // Reserved for user properties
-        property_user           = 255,
-    };
-
-private:
-    virtual std::chrono::microseconds duration_us() const override
-    {
-        return read_property<std::chrono::microseconds>(property_duration_us, basic_animation_track::duration_us());
-    }
-};
 
 }

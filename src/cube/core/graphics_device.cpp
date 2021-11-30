@@ -3,7 +3,7 @@
 
 using namespace cube::core;
 
-void graphics_device::show_animation(animation::pointer const & animation)
+void graphics_device::show_animation(animation * animation)
 {
     animation_ = animation;
     if (animation_) {

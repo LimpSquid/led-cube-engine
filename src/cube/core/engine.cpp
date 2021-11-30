@@ -3,6 +3,7 @@
 #include <cube/core/animation.h>
 #include <stdexcept>
 #include <chrono>
+#include <thread>
 
 using namespace cube::core;
 using namespace std::chrono;
@@ -10,35 +11,30 @@ using namespace std::chrono_literals;
 
 engine::engine(graphics_device *device) :
     device_(device),
-    thread_(&engine::process, this)
+    animation_(nullptr)
 {
     if (nullptr == device_)
         throw std::invalid_argument("Graphics device cannot be nullptr");
 }
 
-void engine::load(const animation::pointer &animation)
+void engine::load(animation * animation)
 {
-    std::lock_guard<std::mutex> guard(animation_lock_);
     animation_ = animation;
 }
 
-void engine::process()
+void engine::run()
 {
-    milliseconds const tick_event_ms = 15ms;
-    microseconds elapsed_us = 0us;
-    microseconds tick_elapsed_us = 0us;
-    microseconds time_step_elapsed_us = 0us;
+    milliseconds const tick_event_interval = 15ms;
     steady_clock::time_point now = steady_clock::now();
-    steady_clock::time_point previous = now;
-    animation::pointer animation;
+    steady_clock::time_point tick_tp = now;
+    steady_clock::time_point time_step_tp = now;
+    animation * animation = nullptr;
     bool init = false;
 
     for (;;) {
-        {
-            std::lock_guard<std::mutex> guard(animation_lock_);
-            init = (animation != animation_);
-            animation = animation_;
-        }
+        init = (animation != animation_);
+        animation = animation_;
+        now = steady_clock::now();
 
         // Animation to be serviced?
         if (nullptr == animation) {
@@ -48,31 +44,23 @@ void engine::process()
 
         // Init new animation
         if (init) {
-            previous = steady_clock::now();
-            tick_elapsed_us = 0us;
-            time_step_elapsed_us = 0us;
+            tick_tp += tick_event_interval;
+            time_step_tp += animation->config().time_step_interval;
 
             device_->show_animation(animation);
             continue;
         }
 
-        // Update time tracking
-        now = steady_clock::now();
-        elapsed_us = duration_cast<microseconds>(now - previous);
-        previous += elapsed_us;
-
         // Tick event
-        tick_elapsed_us += elapsed_us;
-        if (tick_elapsed_us >= tick_event_ms) {
-            animation->tick_event(tick_elapsed_us);
-            tick_elapsed_us = 0us;
+        if (now >= tick_tp) {
+            animation->tick_event(tick_event_interval);
+            tick_tp += tick_event_interval;
         }
 
         // Time step event
-        time_step_elapsed_us += elapsed_us;
-        if (time_step_elapsed_us >= animation->config().time_step_ms) {
+        if (now >= time_step_tp) {
             animation->time_step_event();
-            time_step_elapsed_us = 0us;
+            time_step_tp += animation->config().time_step_interval;
         }
 
         // Finally render to device

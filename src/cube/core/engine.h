@@ -2,8 +2,6 @@
 
 #include <cube/core/animation.h>
 #include <memory>
-#include <thread>
-#include <mutex>
 #include <boost/noncopyable.hpp>
 
 namespace cube::core
@@ -17,15 +15,14 @@ public:
     engine(graphics_device * device);
     ~engine() = default;
 
-    void load(animation::pointer const & animation);
+    void load(animation * animation);
+    void run();
+
+    // Todo: eventually add ZMQ and ASIO stuff to the cube which external systems can use as well.
 
 private:
-    void process();
-
-    animation::pointer animation_;
+    animation * animation_;
     std::unique_ptr<graphics_device> device_;
-    std::thread thread_;
-    std::mutex animation_lock_;
 };
 
 }
