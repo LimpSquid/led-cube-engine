@@ -5,12 +5,12 @@
 namespace cube::hal
 {
 
-class voxel_display :
+class opengl_display :
     public core::graphics_device
 {
 public:
-    voxel_display();
-    virtual ~voxel_display() override;
+    opengl_display();
+    virtual ~opengl_display() override;
 
 private:
     virtual void poll() override;

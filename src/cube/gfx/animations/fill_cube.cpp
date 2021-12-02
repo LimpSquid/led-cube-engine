@@ -16,7 +16,7 @@ void fill_cube::configure(animation_config & config)
 void fill_cube::time_step()
 {
     animation_config const & cfg = config();
-    seconds const cycle_interval_sec = read_property<seconds>(property_cycle_interval_sec, 5s);
+    seconds const cycle_interval_sec = read_property<seconds>(property_cycle_interval_sec, 1s);
 
     elapsed_ms_ += cfg.time_step_interval;
     if(elapsed_ms_ >= cycle_interval_sec) {

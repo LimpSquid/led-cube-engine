@@ -2,14 +2,35 @@
 # Executable config #
 #####################
 
+file(GLOB_RECURSE SOURCES "*.cpp")
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Core
 set(${THREADS_PREFER_PTHREAD_FLAG} ON)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 
-file(GLOB_RECURSE SOURCES "*.cpp")
-add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE ${CMAKE_THREAD_LIBS_INIT}
+    PRIVATE ${Boost_LIBRARIES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Boost_LIBRARIES})
+# OpenGL
+# Todo: eventually make this optional and a build setting, e.g. build for actual hardware or for simulating the cube locally
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLFW 2.1 REQUIRED glfw3) # See: https://www.glfw.org/docs/3.0/build.html
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ${OPENGL_INCLUDE_DIR}
+    PRIVATE ${GLFW_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE ${OPENGL_LIBRARIES}
+    PRIVATE ${GLFW_LIBRARIES}
+    PRIVATE ${GLEW_LIBRARIES})
+
+find_package(OpenSSL REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL)

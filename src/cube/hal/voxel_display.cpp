@@ -1,5 +1,7 @@
 #include <cube/hal/voxel_display.h>
 #include <cube/core/color.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 using namespace cube::core;
 using namespace cube::hal;
@@ -12,6 +14,11 @@ voxel_display::voxel_display()
 voxel_display::~voxel_display()
 {
 
+}
+
+void voxel_display::poll()
+{
+    // Do other hardware stuff, like bus communication?
 }
 
 void voxel_display::draw_voxel(int x, int y, int z, color const & color)

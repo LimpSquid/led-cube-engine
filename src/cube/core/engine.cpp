@@ -63,7 +63,8 @@ void engine::run()
             time_step_tp += animation->config().time_step_interval;
         }
 
-        // Finally render to device
+        // Finally, poll and render animation to device
+        device_->poll();
         device_->render_animation();
     }
 }
