@@ -18,24 +18,29 @@ void painter::set_color(color const & color)
 {
     state_.draw_color = color;
     state_.dirty_flags |= graphics_state::dirty_draw_color;
-    update_state();
 }
 
 void painter::draw(voxel const & voxel)
 {
+    update_state();
+
     device_.draw_voxel(voxel.x, voxel.y, voxel.z);
 }
 
 void painter::wipe_canvas()
 {
     color const old = state_.draw_color;
+
     set_color({});
+    update_state();
     device_.fill();
     set_color(old);
 }
 
 void painter::fill_canvas()
 {
+    update_state();
+
     device_.fill();
 }
 
