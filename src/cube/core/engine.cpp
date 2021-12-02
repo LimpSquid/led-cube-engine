@@ -65,6 +65,6 @@ void engine::run()
 
         // Finally render the animation and poll the device (may block)
         device_->render_animation();
-        device_->poll();
+        device_->do_poll();
     }
 }

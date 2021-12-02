@@ -13,11 +13,8 @@ public:
     virtual ~voxel_display() override;
 
 private:
+    virtual void show(core::graphics_buffer & buffer) override;
     virtual void poll() override;
-    virtual void draw_voxel(int x, int y, int z, core::color const & color) override;
-    virtual void draw_line(int x1, int y1, int z1, int x2, int y2, int z2, core::color const & color) override;
-    virtual void fill(core::color const & color) override;
-    virtual void show() override;
 };
 
 }

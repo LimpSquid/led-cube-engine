@@ -14,17 +14,32 @@ painter::~painter()
 
 }
 
-void painter::draw(int x, int y, int z, color const & color)
+void painter::set_color(color const & color)
 {
-    device_.draw_voxel(x, y, z, color);
+    state_.draw_color = color;
+    state_.dirty_flags |= graphics_state::dirty_draw_color;
+    update_state();
+}
+
+void painter::draw(voxel const & voxel)
+{
+    device_.draw_voxel(voxel.x, voxel.y, voxel.z);
 }
 
 void painter::wipe_canvas()
 {
-    device_.fill({});
+    color const old = state_.draw_color;
+    set_color({});
+    device_.fill();
+    set_color(old);
 }
 
-void painter::fill_canvas(color const & color)
+void painter::fill_canvas()
 {
-    device_.fill(color);
+    device_.fill();
+}
+
+void painter::update_state()
+{
+    device_.update_state(state_);
 }

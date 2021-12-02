@@ -16,16 +16,9 @@ namespace
         0.0f,  1.0f, 0.0f,
     };
 
-    GLfloat g_vertex_buffer_data2[] = {
-        1.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f,
-        0.0f,  -1.0f, 0.0f,
-    };
-
     GLFWwindow* window;
     GLuint vertexbuffer;
-    GLuint vertexbuffer2;
-    bool toggle;
+    color c;
 
     void glfw_error_cb (int, const char * desc)
     {
@@ -58,10 +51,6 @@ opengl_display::opengl_display()
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &vertexbuffer2);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data2), g_vertex_buffer_data2, GL_STATIC_DRAW);
 }
 
 opengl_display::~opengl_display()
@@ -69,13 +58,22 @@ opengl_display::~opengl_display()
 
 }
 
+void opengl_display::show(graphics_buffer & buffer)
+{
+    // Todo: temporary show color
+    c = buffer.test_color;
+}
+
 void opengl_display::poll()
 {
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glColor3f(c.r / 255.0, c.g / 255.0, c.b / 255.0);
 
     // Draw triangle
     glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, toggle ? vertexbuffer : vertexbuffer2);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -93,25 +91,4 @@ void opengl_display::poll()
     glfwPollEvents();
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         exit(0);
-}
-
-void opengl_display::draw_voxel(int x, int y, int z, color const & color)
-{
-    // Draw a voxel
-}
-
-void opengl_display::draw_line(int x1, int y1, int z1, int x2, int y2, int z2, color const & color)
-{
-    // Draw a voxel
-}
-
-void opengl_display::fill(color const & color)
-{
-    // Fill all the voxels
-}
-
-void opengl_display::show()
-{
-    // Show voxels
-    toggle = !toggle;
 }

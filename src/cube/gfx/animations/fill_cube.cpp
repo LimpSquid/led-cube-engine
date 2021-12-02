@@ -33,5 +33,6 @@ void fill_cube::paint(graphics_device & device)
     color_t g = static_cast<color_t>(rand() % color_max_value + 1);
     color_t b = static_cast<color_t>(rand() % color_max_value + 1);
 
-    p.fill_canvas({ r, g, b });
+    p.set_color({ r, g, b });
+    p.fill_canvas();
 }
