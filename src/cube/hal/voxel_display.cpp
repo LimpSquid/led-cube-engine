@@ -36,7 +36,7 @@ void voxel_display::fill(color const & color)
     // Fill all the voxels of the graphics buffer
 }
 
-void voxel_display::refresh()
+void voxel_display::show()
 {
     // Send graphics buffer to slaves, swap frame buffers etc.
 }

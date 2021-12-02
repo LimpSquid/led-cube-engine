@@ -110,9 +110,8 @@ void opengl_display::fill(color const & color)
     // Fill all the voxels
 }
 
-void opengl_display::refresh()
+void opengl_display::show()
 {
-    // Update cube voxels
-    std::cout << "refreshing\n";
+    // Show voxels
     toggle = !toggle;
 }

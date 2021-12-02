@@ -9,7 +9,7 @@ void graphics_device::show_animation(animation * animation)
     if (animation_) {
         animation_->init();
         animation_->paint_event(*this);
-        refresh();
+        show();
     }
 }
 
@@ -17,6 +17,6 @@ void graphics_device::render_animation()
 {
     if (animation_ && animation_->dirty()) {
         animation_->paint_event(*this);
-        refresh();
+        show();
     }
 }
