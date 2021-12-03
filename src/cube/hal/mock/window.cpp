@@ -1,10 +1,10 @@
-#include <cube/hal/opengl/window.h>
+#include <cube/hal/mock/window.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cstdlib>
 
-using namespace cube::hal::opengl;
+using namespace cube::hal::mock;
 
 namespace
 {

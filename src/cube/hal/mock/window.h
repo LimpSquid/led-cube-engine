@@ -2,7 +2,7 @@
 
 struct GLFWwindow;
 
-namespace cube::hal::opengl
+namespace cube::hal::mock
 {
 
 struct window_properties
