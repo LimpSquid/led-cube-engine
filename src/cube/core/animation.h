@@ -8,7 +8,7 @@ namespace cube::core
 
 struct animation_config
 {
-    std::chrono::milliseconds time_step_interval = std::chrono::milliseconds(50);
+    std::chrono::milliseconds time_step_interval{50};
 };
 
 class graphics_device;

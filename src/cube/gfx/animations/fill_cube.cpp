@@ -10,19 +10,12 @@ using namespace std::chrono_literals;
 
 void fill_cube::configure(animation_config & config)
 {
-    config.time_step_interval = 100ms;
+    config.time_step_interval = read_property<seconds>(property_cycle_interval_sec, 1s);
 }
 
 void fill_cube::time_step()
 {
-    animation_config const & cfg = config();
-    seconds const cycle_interval_sec = read_property<seconds>(property_cycle_interval_sec, 1s);
-
-    elapsed_ms_ += cfg.time_step_interval;
-    if(elapsed_ms_ >= cycle_interval_sec) {
-        update();
-        elapsed_ms_ = 0ms;
-    }
+    update();
 }
 
 void fill_cube::paint(graphics_device & device)

@@ -2,19 +2,23 @@
 
 #include <cube/core/graphics_device.h>
 
-namespace cube::hal
+namespace cube::hal::opengl
 {
 
-class opengl_display :
+class window;
+
+class mock_display :
     public core::graphics_device
 {
 public:
-    opengl_display();
-    virtual ~opengl_display() override;
+    mock_display();
+    virtual ~mock_display() override;
 
 private:
     virtual void show(core::graphics_buffer & buffer) override;
     virtual void poll() override;
+
+    window & window_;
 };
 
 }
