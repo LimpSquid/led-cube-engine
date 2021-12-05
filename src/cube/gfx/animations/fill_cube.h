@@ -11,11 +11,11 @@ class fill_cube :
 public:
     enum : property_label_type
     {
-        property_cycle_interval_sec     = property_user + 1,
+        cycle_interval_sec  = property_custom,
+        disable_red,
+        disable_green,
+        disable_blue,
     };
-
-    fill_cube() = default;
-    virtual ~fill_cube() override = default;
 
 private:
     virtual void configure(cube::core::animation_config &config) override;

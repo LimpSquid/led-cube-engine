@@ -2,8 +2,6 @@
 #include <cube/hal/mock/window.h>
 #include <cube/core/color.h>
 #include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <math.h>
 
 using namespace cube::core;
@@ -57,7 +55,8 @@ void display::poll()
     float p[3],dp=1.0/float(SIZE-1);
 
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE,GL_ONE);
+    glBlendFunc(GL_ONE, GL_ONE);
+    //glBlendFunc(GL_SRC_COLOR, GL_DST_COLOR);
 
     glPointSize(3.0);
     glBegin(GL_POINTS);

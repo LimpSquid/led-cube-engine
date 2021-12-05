@@ -28,21 +28,21 @@ bool animation_track::is_finished() const
     return state_ == finished;
 }
 
-std::chrono::microseconds animation_track::us_to_end() const
+std::chrono::microseconds animation_track::time_remaining() const
 {
-    return duration_;
+    return time_;
 }
 
-std::chrono::microseconds animation_track::duration_us() const
+std::chrono::microseconds animation_track::time_total() const
 {
-    return read_property<std::chrono::microseconds>(property_duration_us, 10s);
+    return read_property<std::chrono::microseconds>(animation_time_us, 10s);
 }
 
 void animation_track::start()
 {
     switch (state_) {
         case stopped:
-            duration_ = duration_us();
+            time_ = time_total();
             [[fallthrough]];
         case paused:
             set_state(running);
@@ -72,6 +72,12 @@ void animation_track::stop()
     }
 }
 
+void animation_track::write_properties(std::vector<std::pair<property_label_type, property_value>> const & properties)
+{
+    for (auto const & property : properties)
+        write_property(property.first, property.second);
+}
+
 animation_track::animation_track() :
     state_(stopped)
 {
@@ -87,11 +93,10 @@ void animation_track::tick(std::chrono::microseconds const & interval)
 {
     switch (state_) {
         case running:
-            duration_ = interval < duration_ ? (duration_ - interval) : 0us;
-            if (interval < duration_)
-                duration_ -= interval;
+            if (interval < time_)
+                time_ -= interval;
             else {
-                duration_ = 0us;
+                time_ = 0us;
                 set_state(finished);
             }
             break;

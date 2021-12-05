@@ -6,11 +6,10 @@
 using namespace cube::gfx::animations;
 using namespace cube::core;
 using namespace std::chrono;
-using namespace std::chrono_literals;
 
 void fill_cube::configure(animation_config & config)
 {
-    config.time_step_interval = read_property<seconds>(property_cycle_interval_sec, 1s);
+    config.time_step_interval = read_property(cycle_interval_sec, 5s);
 }
 
 void fill_cube::time_step()
@@ -22,9 +21,9 @@ void fill_cube::paint(graphics_device & device)
 {
     painter p(device);
 
-    color_t r = static_cast<color_t>(rand() % color_max_value + 1);
-    color_t g = static_cast<color_t>(rand() % color_max_value + 1);
-    color_t b = static_cast<color_t>(rand() % color_max_value + 1);
+    color_t r = read_property(disable_red, false) ? 0 : static_cast<color_t>(rand() % color_max_value + 1);
+    color_t g = read_property(disable_green, false) ? 0 : static_cast<color_t>(rand() % color_max_value + 1);
+    color_t b = read_property(disable_blue, false) ? 0 : static_cast<color_t>(rand() % color_max_value + 1);
 
     p.set_color({ r, g, b });
     p.fill_canvas();

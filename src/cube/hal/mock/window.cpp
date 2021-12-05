@@ -62,22 +62,20 @@ void window::update()
 
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
     glTranslatef(-camera.x, -camera.y, -camera.z);
 
     if (glfwGetKey(glfw_window_, GLFW_KEY_UP) == GLFW_PRESS)
-        camera.y += 0.01;
+        camera.y += 0.02;
     if (glfwGetKey(glfw_window_, GLFW_KEY_DOWN) == GLFW_PRESS)
-        camera.y -= 0.01;
+        camera.y -= 0.02;
     if (glfwGetKey(glfw_window_, GLFW_KEY_LEFT) == GLFW_PRESS)
-        camera.x -= 0.01;
+        camera.x -= 0.02;
     if (glfwGetKey(glfw_window_, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        camera.x += 0.01;
+        camera.x += 0.02;
     if (glfwGetKey(glfw_window_, GLFW_KEY_HOME) == GLFW_PRESS)
-        camera.z -= 0.01;
+        camera.z -= 0.02;
     if (glfwGetKey(glfw_window_, GLFW_KEY_END) == GLFW_PRESS)
-        camera.z += 0.01;
+        camera.z += 0.02;
 
     glfwPollEvents();
     glfwSwapBuffers(glfw_window_);
@@ -103,7 +101,6 @@ void window::window_init(window_properties const & properties)
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_REFRESH_RATE, 50);
 
     glfw_window_ = glfwCreateWindow(properties.width, properties.height, properties.title, NULL, NULL);
     if (!glfw_window_)

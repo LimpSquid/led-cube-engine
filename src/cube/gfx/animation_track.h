@@ -1,10 +1,9 @@
 #pragma once
 
 #include <cube/core/animation.h>
-#include <string>
 #include <sstream>
 #include <unordered_map>
-#include <type_traits>
+#include <vector>
 
 namespace cube::gfx
 {
@@ -14,10 +13,9 @@ struct property_value_converter
 {
     static std::string convert(T const & value)
     {
-        std::string str;
-        std::stringstream stream(str);
+        std::stringstream stream;
         stream << value;
-        return str;
+        return stream.str();
     }
 
     static T convert(std::string const & value)
@@ -27,6 +25,12 @@ struct property_value_converter
         stream >> result;
         return result;
     }
+};
+
+template<>
+struct property_value_converter<std::string>
+{
+    static std::string convert(std::string const & value) { return value; }
 };
 
 template<class Rep, class Period>
@@ -42,6 +46,22 @@ struct property_value_converter<std::chrono::duration<Rep, Period>>
         auto const count = property_value_converter<Rep>::convert(value);
         return std::chrono::duration<Rep, Period>(count);
     }
+};
+
+struct property_value
+{
+    template<typename T>
+    property_value(T const & v) :
+        property(property_value_converter<T>::convert(v))
+    { }
+
+    std::string const property;
+};
+
+template<>
+struct property_value_converter<property_value>
+{
+    static std::string convert(property_value const & value) { return value.property; }
 };
 
 class animation_track :
@@ -60,13 +80,10 @@ public:
 
     enum : property_label_type
     {
-        property_duration_us    = 0,
+        animation_time_us   = 0,
 
-        // Reserved for user properties
-        property_user           = 255,
+        property_custom     = 255, // First usable label for custom properties
     };
-
-    virtual ~animation_track() override = default;
 
     animation_state state() const;
     bool is_stopped() const;
@@ -74,8 +91,8 @@ public:
     bool is_running() const;
     bool is_finished() const;
 
-    std::chrono::microseconds us_to_end() const;
-    std::chrono::microseconds duration_us() const;
+    std::chrono::microseconds time_remaining() const;
+    std::chrono::microseconds time_total() const;
 
     void start();
     void pause();
@@ -86,6 +103,8 @@ public:
     {
         properties_[label] = property_value_converter<T>::convert(value);
     }
+
+    void write_properties(std::vector<std::pair<property_label_type, property_value>> const & properties);
 
     template<typename T>
     T read_property(property_label_type label, T def = T()) const
@@ -108,7 +127,7 @@ private:
     void set_state(animation_state const & value);
 
     animation_state state_;
-    std::chrono::microseconds duration_;
+    std::chrono::microseconds time_;
     std::unordered_map<property_label_type, std::string> properties_;
 };
 
