@@ -1,4 +1,4 @@
-#include <cube/gfx/animation_track.h>
+#include <cube/gfx/animation_track.hpp>
 
 using namespace cube::gfx;
 using namespace std::chrono_literals;

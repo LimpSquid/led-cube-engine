@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cube/core/animation.h>
-#include <cube/core/color.h>
+#include <cube/core/animation.hpp>
+#include <cube/core/color.hpp>
 
 namespace cube::core
 {

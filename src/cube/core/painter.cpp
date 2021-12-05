@@ -1,5 +1,5 @@
-#include <cube/core/painter.h>
-#include <cube/core/color.h>
+#include <cube/core/painter.hpp>
+#include <cube/core/color.hpp>
 
 using namespace cube::core;
 

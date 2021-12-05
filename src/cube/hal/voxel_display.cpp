@@ -1,5 +1,5 @@
-#include <cube/hal/voxel_display.h>
-#include <cube/core/color.h>
+#include <cube/hal/voxel_display.hpp>
+#include <cube/core/color.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 

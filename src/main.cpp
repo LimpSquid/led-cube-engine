@@ -1,7 +1,7 @@
-#include <cube/core/engine.h>
-#include <cube/hal/mock/display.h>
-#include <cube/gfx/animation_track.h>
-#include <cube/gfx/animations/fill_cube.h>
+#include <cube/core/engine.hpp>
+#include <cube/hal/mock/display.hpp>
+#include <cube/gfx/animation_track.hpp>
+#include <cube/gfx/animations/fill_cube.hpp>
 #include <chrono>
 
 using namespace cube::core;

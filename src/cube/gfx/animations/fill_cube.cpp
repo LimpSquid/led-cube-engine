@@ -1,6 +1,6 @@
-#include <cube/gfx/animations/fill_cube.h>
-#include <cube/core/painter.h>
-#include <cube/core/color.h>
+#include <cube/gfx/animations/fill_cube.hpp>
+#include <cube/core/painter.hpp>
+#include <cube/core/color.hpp>
 #include <cstdlib>
 
 using namespace cube::gfx::animations;

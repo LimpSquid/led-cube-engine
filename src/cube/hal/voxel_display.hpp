@@ -1,24 +1,20 @@
 #pragma once
 
-#include <cube/core/graphics_device.h>
+#include <cube/core/graphics_device.hpp>
 
-namespace cube::hal::mock
+namespace cube::hal
 {
 
-class window;
-
-class display :
+class voxel_display :
     public core::graphics_device
 {
 public:
-    display();
-    virtual ~display() override;
+    voxel_display();
+    virtual ~voxel_display() override;
 
 private:
     virtual void show(core::graphics_buffer & buffer) override;
     virtual void poll() override;
-
-    window & window_;
 };
 
 }

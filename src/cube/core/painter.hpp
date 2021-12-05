@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cube/core/graphics_device.h>
+#include <cube/core/graphics_device.hpp>
 
 namespace cube::core
 {

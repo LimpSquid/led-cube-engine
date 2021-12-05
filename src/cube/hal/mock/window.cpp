@@ -1,4 +1,4 @@
-#include <cube/hal/mock/window.h>
+#include <cube/hal/mock/window.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>

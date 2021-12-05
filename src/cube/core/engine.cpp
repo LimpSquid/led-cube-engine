@@ -1,6 +1,6 @@
-#include <cube/core/engine.h>
-#include <cube/core/graphics_device.h>
-#include <cube/core/animation.h>
+#include <cube/core/engine.hpp>
+#include <cube/core/graphics_device.hpp>
+#include <cube/core/animation.hpp>
 #include <stdexcept>
 #include <chrono>
 #include <thread>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cube/core/animation.h>
+#include <cube/core/animation.hpp>
 #include <sstream>
 #include <unordered_map>
 #include <vector>

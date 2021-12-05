@@ -1,4 +1,4 @@
-#include <cube/core/graphics_device.h>
+#include <cube/core/graphics_device.hpp>
 
 using namespace cube::core;
 

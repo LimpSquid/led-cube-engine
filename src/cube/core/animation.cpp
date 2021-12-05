@@ -1,4 +1,4 @@
-#include <cube/core/animation.h>
+#include <cube/core/animation.hpp>
 
 using namespace cube::core;
 using namespace std::chrono;

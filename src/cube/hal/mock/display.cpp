@@ -1,6 +1,6 @@
-#include <cube/hal/mock/display.h>
-#include <cube/hal/mock/window.h>
-#include <cube/core/color.h>
+#include <cube/hal/mock/display.hpp>
+#include <cube/hal/mock/window.hpp>
+#include <cube/core/color.hpp>
 #include <GL/glew.h>
 #include <cmath>
 
