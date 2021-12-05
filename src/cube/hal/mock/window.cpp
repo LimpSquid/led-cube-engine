@@ -3,33 +3,20 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cstdlib>
-#include <cmath>
 
 using namespace cube::hal::mock;
 
 namespace
 {
-    void glfw_error_callback(int, const char * const desc)
-    {
-        std::cerr << "GLFW error: " << desc << "\n";
-    }
 
-    struct V { GLdouble x, y, z; };
+constexpr double camera_navigation_step = 0.02;
 
-    double norm(V v){ return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
-
-    V operator-(V a, V b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
-    V operator+(V a, V b) { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
-    V operator*(V v, double s) { return {v.x * s, v.y * s, v.z * s}; }
-    V & operator+=(V & a, V b) { return a = a + b; }
-    V & operator-=(V & a, V b) { return a = a - b; }
-
-    V operator/(V v, double s) { return {v.x / s, v.y / s, v.z / s}; }
-    V normalize(V v){ return v / norm(v); }
-
-    V camera{0, 0, 2};
-    double rotation = 0;
+void glfw_error_callback(int, const char * const desc)
+{
+    std::cerr << "glfw error: " << desc << "\n";
 }
+
+} // end of namespace
 
 window & window::instance(window_properties creation_properties)
 {
@@ -51,48 +38,38 @@ void window::clear()
 
 void window::update()
 {
-    int width, height;
+    int width;
+    int height;
     glfwGetFramebufferSize(glfw_window_, &width, &height);
-    float ratio = width / (float) height;
+
     glViewport(0, 0, width, height);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, ratio, 0.1, 30);
+    gluPerspective(60, static_cast<float>(width) / height, 0.1, 30);
 
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-    glTranslatef(-camera.x, -camera.y, -camera.z);
-
-    if (glfwGetKey(glfw_window_, GLFW_KEY_UP) == GLFW_PRESS)
-        camera.y += 0.02;
-    if (glfwGetKey(glfw_window_, GLFW_KEY_DOWN) == GLFW_PRESS)
-        camera.y -= 0.02;
-    if (glfwGetKey(glfw_window_, GLFW_KEY_LEFT) == GLFW_PRESS)
-        camera.x -= 0.02;
-    if (glfwGetKey(glfw_window_, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        camera.x += 0.02;
-    if (glfwGetKey(glfw_window_, GLFW_KEY_HOME) == GLFW_PRESS)
-        camera.z -= 0.02;
-    if (glfwGetKey(glfw_window_, GLFW_KEY_END) == GLFW_PRESS)
-        camera.z += 0.02;
+    glTranslatef(-camera_.x, -camera_.y, -camera_.z);
 
     glfwPollEvents();
+    process_inputs();
     glfwSwapBuffers(glfw_window_);
 }
 
 bool window::close()
 {
-    return glfwWindowShouldClose(glfw_window_) || glfwGetKey(glfw_window_, GLFW_KEY_ESCAPE);
+    return glfwWindowShouldClose(glfw_window_);
 }
 
-window::window(window_properties properties)
+window::window(window_properties properties) :
+    camera_(0, 0, (properties.width * 1.5f) / properties.height)
 {
-    window_init(properties);
-    input_init();
+    init_window(properties);
+    init_inputs();
 }
 
-void window::window_init(window_properties const & properties)
+void window::init_window(window_properties const & properties)
 {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -111,7 +88,23 @@ void window::window_init(window_properties const & properties)
         exit(EXIT_FAILURE);
 }
 
-void window::input_init()
+void window::init_inputs()
 {
     glfwSetInputMode(glfw_window_, GLFW_STICKY_KEYS, GL_TRUE);
+}
+
+void window::process_inputs()
+{
+    auto process_input = [this](int key, auto h) {
+        if (glfwGetKey(glfw_window_, key) == GLFW_PRESS)
+            h();
+    };
+
+    process_input(GLFW_KEY_UP,          [this](){ camera_.y -= camera_navigation_step; });
+    process_input(GLFW_KEY_DOWN,        [this](){ camera_.y += camera_navigation_step; });
+    process_input(GLFW_KEY_RIGHT,       [this](){ camera_.x -= camera_navigation_step; });
+    process_input(GLFW_KEY_LEFT,        [this](){ camera_.x += camera_navigation_step; });
+    process_input(GLFW_KEY_PAGE_UP,     [this](){ camera_.z -= camera_navigation_step; });
+    process_input(GLFW_KEY_PAGE_DOWN,   [this](){ camera_.z += camera_navigation_step; });
+    process_input(GLFW_KEY_ESCAPE,      [this](){ glfwSetWindowShouldClose(glfw_window_, 1); });
 }

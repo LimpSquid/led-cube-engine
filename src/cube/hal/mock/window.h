@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/vec3.hpp>
+
 struct GLFWwindow;
 
 namespace cube::hal::mock
@@ -25,10 +27,13 @@ public:
 private:
     window(window_properties properties);
 
-    void window_init(window_properties const & properties);
-    void input_init();
+    void init_window(window_properties const & properties);
+    void init_inputs();
+
+    void process_inputs();
 
     GLFWwindow * glfw_window_;
+    glm::vec3 camera_;
 };
 
 }
