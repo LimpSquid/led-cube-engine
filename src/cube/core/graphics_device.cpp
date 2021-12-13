@@ -25,7 +25,7 @@ void graphics_device::draw_line(int x1, int y1, int z1, int x2, int y2, int z2)
 
 void graphics_device::fill()
 {
-    argb_t * data = buffer_.data;
+    rgba_t * data = buffer_.data;
     for (int i = 0; i < cube_size_3d; ++i)
         blend(draw_color_, *data++);
 }

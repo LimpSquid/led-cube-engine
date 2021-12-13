@@ -22,7 +22,7 @@ struct graphics_state
 
 struct graphics_buffer
 {
-    argb_t data[cube_size_3d];
+    rgba_t data[cube_size_3d];
 
     void operator=(graphics_buffer const & other)
     {

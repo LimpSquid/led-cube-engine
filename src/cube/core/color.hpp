@@ -7,7 +7,7 @@
 namespace cube::core
 {
 
-using argb_t = uint32_t;
+using rgba_t = uint32_t;
 using color_t = unsigned char;
 constexpr color_t color_min_value = std::numeric_limits<color_t>::min();
 constexpr color_t color_max_value = std::numeric_limits<color_t>::max();
@@ -18,8 +18,8 @@ struct color
         color(0, 0, 0, 0)
     { }
 
-    constexpr color(argb_t argb) :
-        color(argb, argb >> 8, argb >> 16, argb >> 24)
+    constexpr color(rgba_t rgba) :
+        color(rgba, rgba >> 8, rgba >> 16, rgba >> 24)
     { }
 
     constexpr color(
@@ -37,7 +37,7 @@ struct color
         r(red), g(green), b(blue), a(alpha)
     { }
 
-    operator argb_t() const { return argb_t((a << 24) | (b << 16) | (g << 8) | r); }
+    operator rgba_t() const { return rgba_t((a << 24) | (b << 16) | (g << 8) | r); }
     bool transparent() const { return a == color_min_value; }
     bool opaque() const { return a == color_max_value; }
 

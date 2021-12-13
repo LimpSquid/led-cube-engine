@@ -28,7 +28,7 @@ inline void blend(color const & c, color & bucket)
         alpha_blend(c, bucket); // blend the new color with the existing color in the bucket
 }
 
-inline void blend(color const & c, argb_t & bucket)
+inline void blend(color const & c, rgba_t & bucket)
 {
     color tmp{bucket};
     blend(c, tmp);
