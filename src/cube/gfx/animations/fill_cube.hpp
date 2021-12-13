@@ -18,9 +18,9 @@ public:
     };
 
 private:
-    virtual void configure(cube::core::animation_config &config) override;
+    virtual void configure(core::animation_config &config) override;
     virtual void time_step() override;
-    virtual void paint(cube::core::graphics_device &device) override;
+    virtual void paint(core::graphics_device &device) override;
 };
 
 }

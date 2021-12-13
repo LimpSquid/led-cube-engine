@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cube/specs.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/color.hpp>
+#include <cstring>
 
 namespace cube::core
 {
@@ -20,8 +22,12 @@ struct graphics_state
 
 struct graphics_buffer
 {
-    // Todo: actually implement for 16^3 RGB display
-    color test_color; // Remove this, purely for testing
+    argb_t data[cube_size_3d];
+
+    void operator=(graphics_buffer const & other)
+    {
+        memcpy(data, other.data, sizeof(data));
+    }
 };
 
 class graphics_device
@@ -29,7 +35,7 @@ class graphics_device
 public:
     virtual ~graphics_device() = default;
 
-    void update_state(graphics_state const & state);
+    void update_state(graphics_state & state);
     void draw_voxel(int x, int y, int z);
     void draw_line(int x1, int y1, int z1, int x2, int y2, int z2);
     void fill();
@@ -40,10 +46,10 @@ public:
     void do_poll(); // Do a poll, which may block
 
 protected:
-    graphics_device() = default;
+    virtual int map_to_offset(int x, int y, int z) const;
 
 private:
-    virtual void show(graphics_buffer & buffer) = 0;
+    virtual void show(graphics_buffer const & buffer) = 0;
     virtual void poll() = 0;
 
     graphics_buffer buffer_;

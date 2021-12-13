@@ -13,7 +13,7 @@ public:
     virtual ~voxel_display() override;
 
 private:
-    virtual void show(core::graphics_buffer & buffer) override;
+    virtual void show(core::graphics_buffer const & buffer) override;
     virtual void poll() override;
 };
 

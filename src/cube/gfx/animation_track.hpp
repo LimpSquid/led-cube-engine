@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/core/animation.hpp>
+#include <cube/core/color.hpp>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -45,6 +46,25 @@ struct property_value_converter<std::chrono::duration<Rep, Period>>
     {
         auto const count = property_value_converter<Rep>::convert(value);
         return std::chrono::duration<Rep, Period>(count);
+    }
+};
+
+template<>
+struct property_value_converter<core::color>
+{
+    static std::string convert(core::color const & value)
+    {
+        std::stringstream stream;
+        stream << value.r << value.g << value.b << value.a;
+        return stream.str();
+    }
+
+    static core::color convert(std::string const & value)
+    {
+        core::color_t r, g, b, a;
+        std::stringstream stream(value);
+        stream >> r >> g >> b >> a;
+        return {r, g, b, a};
     }
 };
 

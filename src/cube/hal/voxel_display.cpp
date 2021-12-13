@@ -16,7 +16,7 @@ voxel_display::~voxel_display()
 
 }
 
-void voxel_display::show(graphics_buffer & buffer)
+void voxel_display::show(graphics_buffer const & buffer)
 {
     // Send graphics buffer to slaves, swap frame buffers etc.
 }
