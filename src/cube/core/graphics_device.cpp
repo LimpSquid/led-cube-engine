@@ -55,5 +55,5 @@ void graphics_device::do_poll()
 
 int graphics_device::map_to_offset(int x, int y, int z) const
 {
-    return x + y * cube_size_1d + z * cube_size_1d * cube_size_1d;
+    return x + y * cube_size_1d + z * cube_size_2d;
 }
