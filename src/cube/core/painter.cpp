@@ -2,7 +2,8 @@
 #include <cube/core/color.hpp>
 #include <cassert>
 
-using namespace cube::core;
+namespace cube::core
+{
 
 painter::painter(graphics_device & device) :
     device_(device)
@@ -48,3 +49,5 @@ void painter::update_state()
     device_.update_state(state_);
     assert(state_.dirty_flags == 0);
 }
+
+} // end of namespace

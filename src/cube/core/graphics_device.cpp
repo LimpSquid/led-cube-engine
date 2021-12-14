@@ -1,8 +1,7 @@
 #include <cube/core/graphics_device.hpp>
-#include <cube/core/color_manipulation.hpp>
 
-using namespace cube;
-using namespace cube::core;
+namespace cube::core
+{
 
 void graphics_device::update_state(graphics_state & state)
 {
@@ -57,3 +56,5 @@ int graphics_device::map_to_offset(int x, int y, int z) const
 {
     return x + y * cube_size_1d + z * cube_size_2d;
 }
+
+} // end of namespace

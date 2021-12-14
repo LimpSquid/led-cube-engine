@@ -4,8 +4,6 @@
 #include <iostream>
 #include <cstdlib>
 
-using namespace cube::hal::mock;
-
 namespace
 {
 
@@ -18,6 +16,10 @@ void glfw_error_callback(int, const char * const desc)
 }
 
 } // end of namespace
+
+
+namespace cube::hal::mock
+{
 
 window & window::instance(window_properties creation_properties)
 {
@@ -107,7 +109,7 @@ void window::init_inputs()
 
 void window::glfw_key_callback(GLFWwindow * const glfw_window, int key, int scancode, int action, int modifiers)
 {
-	window & self = *reinterpret_cast<window *>(glfwGetWindowUserPointer(glfw_window));
+    window & self = *reinterpret_cast<window *>(glfwGetWindowUserPointer(glfw_window));
     if (action == GLFW_PRESS)
         self.process_key_press(key, scancode, modifiers);
 }
@@ -150,3 +152,5 @@ void window::process_inputs()
         [this](){ camera_.rotation.z += rotation_step; },
         [this](){ camera_.translation.z += translation_step; });
 }
+
+} // end of namespace

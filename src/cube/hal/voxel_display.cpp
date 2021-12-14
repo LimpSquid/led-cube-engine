@@ -4,7 +4,9 @@
 #include <GLFW/glfw3.h>
 
 using namespace cube::core;
-using namespace cube::hal;
+
+namespace cube::hal
+{
 
 voxel_display::voxel_display()
 {
@@ -25,3 +27,5 @@ void voxel_display::poll()
 {
     // Do other hardware stuff, like bus communication?
 }
+
+} // end of namespace

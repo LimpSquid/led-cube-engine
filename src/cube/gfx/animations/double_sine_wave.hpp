@@ -27,7 +27,7 @@ private:
         core::color color;
     };
 
-    virtual void configure(core::animation_config &config) override;
+    virtual void configure(core::animation_config & config) override;
     virtual void time_step() override;
     virtual void paint(core::graphics_device & device) override;
     void init_waves();

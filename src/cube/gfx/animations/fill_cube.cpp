@@ -2,9 +2,17 @@
 #include <cube/core/painter.hpp>
 #include <cstdlib>
 
-using namespace cube::gfx::animations;
 using namespace cube::core;
 using namespace std::chrono;
+
+namespace name
+{
+
+} // namespace name
+
+
+namespace cube::gfx::animations
+{
 
 void fill_cube::configure(animation_config & config)
 {
@@ -27,3 +35,5 @@ void fill_cube::paint(graphics_device & device)
     p.set_color({ r, g, b });
     p.fill_canvas();
 }
+
+} // end of namespace

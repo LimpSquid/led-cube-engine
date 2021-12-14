@@ -5,9 +5,11 @@
 #include <chrono>
 #include <thread>
 
-using namespace cube::core;
 using namespace std::chrono;
 using namespace std::chrono_literals;
+
+namespace cube::core
+{
 
 engine::engine(graphics_device *device) :
     device_(device),
@@ -68,3 +70,5 @@ void engine::run()
         device_->do_poll();
     }
 }
+
+} // end of namespace

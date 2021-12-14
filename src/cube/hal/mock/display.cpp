@@ -6,7 +6,9 @@
 #include <cstring>
 
 using namespace cube::core;
-using namespace cube::hal::mock;
+
+namespace cube::hal::mock
+{
 
 display::display() :
     window_(window::instance())
@@ -58,3 +60,5 @@ void display::poll()
 
     window_.update();
 }
+
+} // end of namespace

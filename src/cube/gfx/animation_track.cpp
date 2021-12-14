@@ -1,7 +1,9 @@
 #include <cube/gfx/animation_track.hpp>
 
-using namespace cube::gfx;
 using namespace std::chrono_literals;
+
+namespace cube::gfx
+{
 
 animation_track::animation_state animation_track::state() const
 {
@@ -111,3 +113,5 @@ void animation_track::set_state(animation_state const & value)
         state_changed(state_);
     }
 }
+
+} // end of namespace

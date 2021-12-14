@@ -1,7 +1,9 @@
 #include <cube/core/animation.hpp>
 
-using namespace cube::core;
 using namespace std::chrono;
+
+namespace cube::core
+{
 
 animation_config const & animation::config() const
 {
@@ -54,3 +56,5 @@ void animation::time_step()
 {
     // Do nothing by default
 }
+
+} // end of namespace

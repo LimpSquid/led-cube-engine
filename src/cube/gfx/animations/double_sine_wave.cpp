@@ -3,7 +3,8 @@
 #include <cube/specs.hpp>
 #include <cmath>
 
-using namespace cube::gfx::animations;
+#include <cube/core/gradient.hpp>
+
 using namespace cube::core;
 using namespace std::chrono;
 
@@ -11,8 +12,12 @@ namespace
 {
 
 constexpr double sine_offset = (cube::cube_size_1d - 1) / 2.0;
+constexpr double hue_step = 1.0 / cube::cube_size_1d;
 
-}
+} // end of namespace
+
+namespace cube::gfx::animations
+{
 
 void double_sine_wave::configure(animation_config & config)
 {
@@ -34,9 +39,13 @@ void double_sine_wave::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (wave const & w : waves) {
-        p.set_color(w.color);
+        gradient g;
+        g.add({0.0, !w.color});
+        g.add({1.0, w.color});
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
+            p.set_color(g(cos(i * w.omega)));
+
             int z = round(sine_offset * sin(i * w.omega) + sine_offset);
             int x = i - w.time_count;
 
@@ -55,6 +64,8 @@ void double_sine_wave::init_waves()
 
     waves[1].time_count = 0;
     waves[1].period = read_property(period_wave_2, int(1.75 * cube_size_1d));
-    waves[1].color = read_property(color_wave_2, color(0, 255, 0, 127));
+    waves[1].color = read_property(color_wave_2, color(0, 255, 0));
     waves[1].omega = (2.0 * M_PI) / waves[1].period;
 }
+
+} // end of namespace
