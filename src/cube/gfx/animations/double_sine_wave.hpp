@@ -35,4 +35,4 @@ private:
     std::array<wave, 2> waves;
 };
 
-}
+} // end of namespace

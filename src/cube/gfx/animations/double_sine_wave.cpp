@@ -12,7 +12,7 @@ namespace
 {
 
 constexpr double sine_offset = (cube::cube_size_1d - 1) / 2.0;
-constexpr color default_color = {0, 128, 255};
+constexpr color default_color = color_magenta;
 
 } // end of namespace
 
@@ -50,7 +50,7 @@ void double_sine_wave::paint(graphics_device & device)
             int z = round(sine_offset * sin(i * w.omega) + sine_offset);
             int x = i - w.time_count;
 
-            for(int y = 0; y < cube_size_1d; ++y)
+            for (int y = 0; y < cube_size_1d; ++y)
                 p.draw({x, y, z});
         }
     }

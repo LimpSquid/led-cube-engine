@@ -30,4 +30,4 @@ private:
     graphics_state state_;
 };
 
-}
+} // end of namespace

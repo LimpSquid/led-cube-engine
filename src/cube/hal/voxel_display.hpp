@@ -17,4 +17,4 @@ private:
     virtual void poll() override;
 };
 
-}
+} // end of namespace

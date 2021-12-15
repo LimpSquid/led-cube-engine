@@ -57,4 +57,4 @@ private:
     animation * animation_;
 };
 
-}
+} // end of namespace

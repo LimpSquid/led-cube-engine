@@ -164,4 +164,4 @@ struct is_animation_track<T, std::void_t<decltype(
     std::declval<T>().is_finished()
 )>> : std::true_type { };
 
-}
+} // end of namespace

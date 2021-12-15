@@ -53,7 +53,7 @@ inline constexpr color operator!(color const & c)
     color_t g = color_max_value - c.g;
     color_t b = color_max_value - c.b;
 
-    return { r, g, b, c.a};
+    return { r, g, b, c.a };
 }
 
 inline bool operator==(color const & lhs, color const & rhs) { return lhs.rgba() == rhs.rgba(); }
@@ -107,4 +107,4 @@ void alpha_blend(color const & c, color & bucket);
 void blend(color const & c, color & bucket);
 void blend(color const & c, rgba_t & bucket);
 
-}
+} // end of namespace
