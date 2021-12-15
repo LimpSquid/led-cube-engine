@@ -2,9 +2,6 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/gradient.hpp>
 #include <cube/specs.hpp>
-#include <cmath>
-
-#include <iostream>
 
 using namespace cube::core;
 using namespace std::chrono;
