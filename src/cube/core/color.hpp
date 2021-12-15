@@ -107,4 +107,4 @@ void alpha_blend(color const & c, color & bucket);
 void blend(color const & c, color & bucket);
 void blend(color const & c, rgba_t & bucket);
 
-} // end of namespace
+} // End of namespace

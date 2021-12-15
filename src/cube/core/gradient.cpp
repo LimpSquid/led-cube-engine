@@ -40,4 +40,4 @@ color gradient::operator()(double gpos)
     return gs0->gcolor + ((gs1->gcolor - gs0->gcolor) * (gpos - gs0->gpos)) / (gs1->gpos - gs0->gpos);
 }
 
-} // end of namespace
+} // End of namespace

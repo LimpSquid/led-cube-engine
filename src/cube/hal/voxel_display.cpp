@@ -28,4 +28,4 @@ void voxel_display::poll()
     // Do other hardware stuff, like bus communication?
 }
 
-} // end of namespace
+} // End of namespace

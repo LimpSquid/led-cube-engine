@@ -11,20 +11,18 @@ class double_sine_wave :
 public:
     enum : property_label_type
     {
-        frame_rate_ms = property_custom, // Todo: possibly move this ot animation_track as this will likely be used a lot
-        period_wave_1,
-        period_wave_2,
-        color_wave_1,
-        color_wave_2,
+        wave_period = property_custom,
+        wave_period_time_ms,
+        color_gradient_start,
+        color_gradient_end,
     };
 
 private:
     struct wave
     {
         int time_count;
-        int period;
-        double omega;
-        core::color color;
+        core::color gradient_start;
+        core::color gradient_end;
     };
 
     virtual void configure(core::animation_config & config) override;
@@ -32,7 +30,9 @@ private:
     virtual void paint(core::graphics_device & device) override;
     void init_waves();
 
-    std::array<wave, 2> waves;
+    std::array<wave, 2> waves_;
+    int period_;
+    double omega_;
 };
 
-} // end of namespace
+} // End of namespace

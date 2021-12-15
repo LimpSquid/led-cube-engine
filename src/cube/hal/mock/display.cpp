@@ -61,4 +61,4 @@ void display::poll()
     window_.update();
 }
 
-} // end of namespace
+} // End of namespace

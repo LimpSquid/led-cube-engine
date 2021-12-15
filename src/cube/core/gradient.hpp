@@ -38,4 +38,4 @@ private:
     boost::container::flat_set<gradient_stop> stops_;
 };
 
-} // end of namespace
+} // End of namespace

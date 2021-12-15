@@ -114,4 +114,4 @@ void animation_track::set_state(animation_state const & value)
     }
 }
 
-} // end of namespace
+} // End of namespace

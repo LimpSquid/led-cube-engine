@@ -57,4 +57,4 @@ void animation::time_step()
     // Do nothing by default
 }
 
-} // end of namespace
+} // End of namespace

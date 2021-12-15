@@ -25,4 +25,4 @@ private:
     std::unique_ptr<graphics_device> device_;
 };
 
-} // end of namespace
+} // End of namespace

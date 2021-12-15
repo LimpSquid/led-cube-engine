@@ -15,7 +15,7 @@ void glfw_error_callback(int, const char * const desc)
     std::cerr << "glfw error: " << desc << "\n";
 }
 
-} // end of namespace
+} // End of namespace
 
 
 namespace cube::hal::mock
@@ -153,4 +153,4 @@ void window::process_inputs()
         [this](){ camera_.translation.z += translation_step; });
 }
 
-} // end of namespace
+} // End of namespace

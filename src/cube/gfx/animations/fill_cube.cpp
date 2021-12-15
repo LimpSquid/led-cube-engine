@@ -29,4 +29,4 @@ void fill_cube::paint(graphics_device & device)
     p.fill_canvas();
 }
 
-} // end of namespace
+} // End of namespace

@@ -57,4 +57,4 @@ int graphics_device::map_to_offset(int x, int y, int z) const
     return x + y * cube_size_1d + z * cube_size_2d;
 }
 
-} // end of namespace
+} // End of namespace

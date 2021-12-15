@@ -46,4 +46,4 @@ private:
     camera camera_;
 };
 
-} // end of namespace
+} // End of namespace

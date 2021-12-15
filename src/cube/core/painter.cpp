@@ -50,4 +50,4 @@ void painter::update_state()
     assert(state_.dirty_flags == 0);
 }
 
-} // end of namespace
+} // End of namespace

@@ -73,4 +73,4 @@ void blend(color const & c, rgba_t & bucket)
     bucket = tmp.rgba();
 }
 
-} // end of namespace
+} // End of namespace

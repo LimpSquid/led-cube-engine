@@ -134,6 +134,7 @@ public:
         if (search == properties_.end() || search->second.empty())
             return def;
 
+        // Todo: maybe do some checking if we are able to convert the string to the given type.
         return property_value_converter<T>::convert(search->second);
     }
 

@@ -23,4 +23,4 @@ private:
     virtual void paint(core::graphics_device & device) override;
 };
 
-} // end of namespace
+} // End of namespace

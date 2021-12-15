@@ -22,4 +22,4 @@ private:
     core::graphics_buffer buffer_;
 };
 
-} // end of namespace
+} // End of namespace
