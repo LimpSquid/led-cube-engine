@@ -12,7 +12,6 @@ namespace
 {
 
 constexpr double sine_offset = (cube::cube_size_1d - 1) / 2.0;
-constexpr double hue_step = 1.0 / cube::cube_size_1d;
 constexpr color default_color = {0, 128, 255};
 
 } // end of namespace
