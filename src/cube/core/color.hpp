@@ -47,7 +47,7 @@ inline std::ostream & operator<<(std::ostream & o, color const & c)
         << "b: " << int(c.b) << ", " << "a: " << int(c.a);
 }
 
-inline color operator!(color const & c)
+inline constexpr color operator!(color const & c)
 {
     color_t r = color_max_value - c.r;
     color_t g = color_max_value - c.g;

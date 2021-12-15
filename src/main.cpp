@@ -1,4 +1,5 @@
 #include <cube/core/engine.hpp>
+#include <cube/core/gradient.hpp>
 #include <cube/hal/mock/display.hpp>
 #include <cube/gfx/animation_track.hpp>
 #include <cube/gfx/animations/fill_cube.hpp>
