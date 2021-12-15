@@ -39,7 +39,6 @@ public:
     void draw_voxel(int x, int y, int z);
     void draw_line(int x1, int y1, int z1, int x2, int y2, int z2);
     void fill();
-    void translate(int dx, int dy, int dz);
 
     void show_animation(animation * animation);
     void render_animation(); // Render drawn voxels to the actual display

@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
     engine cube_engine(new mock::display);
     animations::fill_cube fill_cube{};
     fill_cube.write_properties({
-        { animations::fill_cube::cycle_interval_sec,    1s      },
-        { animations::fill_cube::disable_red,           true    },
+        {animations::fill_cube::cycle_interval_sec, 1s},
+        {animations::fill_cube::disable_red, true},
     });
     animations::double_sine_wave double_sine_wave{};
 
