@@ -3,9 +3,18 @@
 namespace cube::core
 {
 
-gradient::gradient()
+gradient::gradient(std::initializer_list<gradient_stop> initializer_list) :
+    stops_(std::move(initializer_list))
 {
-    reset();
+    // Won't be inserted if already provided by initializer list
+    stops_.insert({0.0, color_black});
+    stops_.insert({1.0, color_black});
+}
+
+gradient::gradient() :
+    gradient({})
+{
+
 }
 
 void gradient::add(gradient_stop stop)

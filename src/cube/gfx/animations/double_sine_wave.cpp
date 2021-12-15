@@ -40,9 +40,10 @@ void double_sine_wave::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (wave const & w : waves) {
-        gradient g;
-        g.add({0.0, !w.color});
-        g.add({1.0, w.color});
+        gradient g({
+            {0.0, !w.color},
+            {1.0, w.color}
+        });
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
             p.set_color(g(cos(i * w.omega)));

@@ -26,6 +26,7 @@ inline bool operator!=(gradient_stop const & lhs, gradient_stop const & rhs) { r
 class gradient
 {
 public:
+    gradient(std::initializer_list<gradient_stop> initializer_list);
     gradient();
 
     void add(gradient_stop stop);
