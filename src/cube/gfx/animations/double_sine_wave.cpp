@@ -40,8 +40,8 @@ void double_sine_wave::paint(graphics_device & device)
 
     for (wave const & w : waves) {
         gradient g({
-            {0.0, !w.color},
-            {1.0, w.color}
+            { 0.0, !w.color },
+            { 1.0,  w.color }
         });
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
@@ -58,15 +58,15 @@ void double_sine_wave::paint(graphics_device & device)
 
 void double_sine_wave::init_waves()
 {
-    waves[0].time_count = 0;
     waves[0].period = read_property(period_wave_1, int(2 * cube_size_1d));
     waves[0].color = read_property(color_wave_1, default_color);
     waves[0].omega = (2.0 * M_PI) / waves[0].period;
+    waves[0].time_count = 0;
 
-    waves[1].time_count = 0;
-    waves[1].period = read_property(period_wave_2, int(1.75 * cube_size_1d));
+    waves[1].period = read_property(period_wave_2, int(2.0 * cube_size_1d));
     waves[1].color = read_property(color_wave_2, !default_color);
     waves[1].omega = (2.0 * M_PI) / waves[1].period;
+    waves[1].time_count = waves[1].period / 2;
 }
 
 } // end of namespace
