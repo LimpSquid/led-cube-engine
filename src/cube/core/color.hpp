@@ -59,16 +59,16 @@ inline constexpr color operator!(color const & c)
 inline bool operator==(color const & lhs, color const & rhs) { return lhs.rgba() == rhs.rgba(); }
 inline bool operator!=(color const & lhs, color const & rhs) { return lhs.rgba() != rhs.rgba(); }
 
-constexpr color color_clear     = {000, 000, 000, 000};
-constexpr color color_black     = {000, 000, 000};
-constexpr color color_white     = {255, 255, 255};
-constexpr color color_red       = {255, 000, 000};
-constexpr color color_green     = {000, 255, 000};
-constexpr color color_blue      = {000, 000, 255};
-constexpr color color_cyan      = {000, 255, 255};
-constexpr color color_magenta   = {255, 000, 255};
-constexpr color color_yellow    = {255, 255, 000};
-constexpr color color_orange    = {255, 128, 000};
+constexpr color color_clear         = {000, 000, 000, 000};
+constexpr color color_black         = {000, 000, 000};
+constexpr color color_white         = {255, 255, 255};
+constexpr color color_red           = {255, 000, 000};
+constexpr color color_green         = {000, 255, 000};
+constexpr color color_blue          = {000, 000, 255};
+constexpr color color_cyan          = {000, 255, 255};
+constexpr color color_magenta       = {255, 000, 255};
+constexpr color color_yellow        = {255, 255, 000};
+constexpr color color_orange        = {255, 128, 000};
 
 struct color_scalar
 {

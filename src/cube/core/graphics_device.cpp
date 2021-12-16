@@ -11,13 +11,13 @@ void graphics_device::update_state(graphics_state & state)
     state.dirty_flags = 0;
 }
 
-void graphics_device::draw_voxel(int x, int y, int z)
+void graphics_device::draw(voxel_t const & voxel)
 {
-    int const offset = map_to_offset(x, y, z);
+    int const offset = map_to_offset(voxel.x, voxel.y, voxel.z);
     blend(draw_color_, buffer_.data[offset]);
 }
 
-void graphics_device::draw_line(int x1, int y1, int z1, int x2, int y2, int z2)
+void graphics_device::draw_line(voxel_t const & voxel1, voxel_t const & voxel2)
 {
     // Draw a voxel into the graphics buffer
 }

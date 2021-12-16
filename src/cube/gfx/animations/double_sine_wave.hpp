@@ -11,10 +11,10 @@ class double_sine_wave :
 public:
     enum : property_label_type
     {
-        wave_period = property_custom,
-        wave_period_time_ms,
-        color_gradient_start,
-        color_gradient_end,
+        wave_period = property_custom,      // wave period in number of pixels
+        wave_period_time_ms,                // time of one wave period to complete
+        color_gradient_start,               // start color of gradient
+        color_gradient_end,                 // end color of gradient
     };
 
 private:
@@ -28,7 +28,6 @@ private:
     virtual void configure(core::animation_config & config) override;
     virtual void time_step() override;
     virtual void paint(core::graphics_device & device) override;
-    void init_waves();
 
     std::array<wave, 2> waves_;
     int period_;

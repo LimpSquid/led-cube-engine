@@ -5,13 +5,6 @@
 namespace cube::core
 {
 
-struct voxel
-{
-    int x;
-    int y;
-    int z;
-};
-
 class painter
 {
 public:
@@ -19,7 +12,7 @@ public:
     ~painter();
 
     void set_color(color const & color);
-    void draw(voxel const & voxel);
+    void draw(voxel_t const & voxel);
     void wipe_canvas();
     void fill_canvas();
 

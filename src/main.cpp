@@ -4,6 +4,7 @@
 #include <cube/gfx/animation_track.hpp>
 #include <cube/gfx/animations/fill_cube.hpp>
 #include <cube/gfx/animations/double_sine_wave.hpp>
+#include <cube/gfx/animations/stars.hpp>
 #include <chrono>
 
 using namespace cube::core;
@@ -25,7 +26,9 @@ int main(int argc, char *argv[])
         {animations::double_sine_wave::color_gradient_end, color_green},
     });
 
-    cube_engine.load(&double_sine_wave);
+    animations::stars stars;
+
+    cube_engine.load(&stars);
     cube_engine.run(); // Todo: eventually we need to cycle through animations
 
     return EXIT_SUCCESS;

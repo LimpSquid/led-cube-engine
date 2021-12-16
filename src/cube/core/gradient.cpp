@@ -30,7 +30,7 @@ void gradient::reset()
     add({1.0, color_black});
 }
 
-color gradient::operator()(double gpos)
+color gradient::operator()(double gpos) const
 {
     gpos = std::clamp(gpos, 0.0, 1.0);
     auto gs1 = std::lower_bound(stops_.begin() + 1, stops_.end(), gpos,

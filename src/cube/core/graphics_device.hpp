@@ -3,6 +3,7 @@
 #include <cube/specs.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/color.hpp>
+#include <cube/core/voxel.hpp>
 #include <cstring>
 
 namespace cube::core
@@ -36,8 +37,8 @@ public:
     virtual ~graphics_device() = default;
 
     void update_state(graphics_state & state);
-    void draw_voxel(int x, int y, int z);
-    void draw_line(int x1, int y1, int z1, int x2, int y2, int z2);
+    void draw(voxel_t const & voxel);
+    void draw_line(voxel_t const & voxel1, voxel_t const & voxel2);
     void fill();
 
     void show_animation(animation * animation);

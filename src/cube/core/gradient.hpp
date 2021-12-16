@@ -32,7 +32,7 @@ public:
     void add(gradient_stop stop);
     void reset();
 
-    color operator()(double gpos);
+    color operator()(double gpos) const;
 
 private:
     boost::container::flat_set<gradient_stop> stops_;

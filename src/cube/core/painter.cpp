@@ -22,10 +22,10 @@ void painter::set_color(color const & color)
     state_.dirty_flags |= graphics_state::dirty_draw_color;
 }
 
-void painter::draw(voxel const & voxel)
+void painter::draw(voxel_t const & v)
 {
     update_state();
-    device_.draw_voxel(voxel.x, voxel.y, voxel.z);
+    device_.draw(v);
 }
 
 void painter::wipe_canvas()
