@@ -44,7 +44,7 @@ void stars::configure(animation_config & config)
 void stars::time_step()
 {
     for (star & s : stars_)
-        if (s.fade_step++ >= fade_resolution_)
+        if (++s.fade_step > fade_resolution_)
             s = make_unique_star();
 
     hue_step_++;
