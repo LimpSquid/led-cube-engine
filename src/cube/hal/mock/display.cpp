@@ -44,7 +44,7 @@ void display::poll()
         for (y = 0, pos[1] = -0.5; y < cube_size_1d; y++, pos[1] += pos_step) {
             for (z = 0, pos[2] = -0.5; z < cube_size_1d; z++, pos[2] += pos_step) {
                 // Draw "off" cube
-                glColor3f(0.05, 0.05, 0.05);
+                glColor3f(0.08, 0.08, 0.08);
                 glVertex3fv(pos);
 
                 // Blend in colors

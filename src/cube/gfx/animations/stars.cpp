@@ -32,7 +32,7 @@ void stars::configure(animation_config & config)
     omega_ = M_PI / fade_resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
     hue_step_ = 0;
 
-    int number_of_stars = read_property(number_of_stars, cube_size_3d / 20);
+    int number_of_stars = read_property(number_of_stars, cube_size_3d / 15);
     stars_.resize(std::min(cube_size_3d / 8, number_of_stars)); // Max number of stars is 1/8th of the cube's size
     for (star & s : stars_) {
         s = make_unique_star();
