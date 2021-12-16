@@ -48,13 +48,13 @@ void double_sine_wave::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (wave const & w : waves_) {
-        gradient g({
+        gradient hue({
             {0.0, w.gradient_start},
             {1.0, w.gradient_end},
         });
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
-            p.set_color(g(std::fabs(std::cos(i * omega_))));
+            p.set_color(hue(std::fabs(std::cos(i * omega_))));
 
             int z = std::round(sine_offset * std::sin(i * omega_) + sine_offset);
             int x = i - w.time_count;
