@@ -1,4 +1,6 @@
 #include <cube/core/graphics_device.hpp>
+#include <glm/glm.hpp>
+#include <algorithm>
 
 namespace cube::core
 {
@@ -15,7 +17,7 @@ void graphics_device::draw(voxel_t const & voxel)
     blend(draw_color_, buffer_.data[offset]);
 }
 
-void graphics_device::draw_line(voxel_t const & voxel1, voxel_t const & voxel2)
+void graphics_device::line(voxel_t const & start, voxel_t const & end)
 {
     // Draw a voxel into the graphics buffer
 }

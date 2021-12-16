@@ -37,7 +37,7 @@ color gradient::operator()(double gpos) const
         [](gradient_stop const & lhs, double rhs) { return std::less<double>{}(lhs.gpos, rhs); });
     auto gs0 = gs1 - 1; // safe, because we always have two gradient stops and start searching from index 1
 
-    return gs0->gcolor + ((gs1->gcolor - gs0->gcolor) * (gpos - gs0->gpos)) / (gs1->gpos - gs0->gpos);
+    return gs0->gcolor.vec() + ((gs1->gcolor.vec() - gs0->gcolor.vec()) * (gpos - gs0->gpos)) / (gs1->gpos - gs0->gpos);
 }
 
 } // End of namespace

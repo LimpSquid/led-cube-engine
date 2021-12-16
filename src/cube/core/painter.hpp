@@ -15,6 +15,7 @@ public:
     void draw(voxel_t const & voxel);
     void wipe_canvas();
     void fill_canvas();
+    void radiate(voxel_t const & origin, double length);
 
 private:
     void update_state();

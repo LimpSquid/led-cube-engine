@@ -29,8 +29,8 @@ public:
 private:
     struct camera
     {
-        glm::vec3 translation;
-        glm::vec3 rotation;
+        glm::dvec3 translation;
+        glm::dvec3 rotation;
     };
 
     struct mouse

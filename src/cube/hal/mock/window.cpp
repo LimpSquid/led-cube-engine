@@ -1,25 +1,25 @@
 #include <cube/hal/mock/window.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <cstdlib>
 #include <algorithm>
+#include <iostream>
 
 namespace
 {
 
-constexpr float translation_step = 0.04;
-constexpr float mouse_drag_sensitivity = 0.1;
+constexpr double translation_step = 0.04;
+constexpr double mouse_drag_sensitivity = 0.1;
 
 // All degrees angles down below
-constexpr float x_axis_min = -160;
-constexpr float x_axis_max = -20;
-constexpr float z_axis_min = -360;
-constexpr float z_axis_max = 360;
-constexpr glm::vec3 x_axis_view = {-90, 0, 0};
-constexpr glm::vec3 y_axis_view = {-90, 0, 90};
-constexpr glm::vec3 z_axis_view = {0, 0, 0};
-constexpr glm::vec3 default_view = x_axis_view + glm::vec3(25, 0, -35);
+constexpr double x_axis_min = -160;
+constexpr double x_axis_max = -20;
+constexpr double z_axis_min = -360;
+constexpr double z_axis_max = 360;
+constexpr glm::dvec3 x_axis_view = {-90, 0, 0};
+constexpr glm::dvec3 y_axis_view = {-90, 0, 90};
+constexpr glm::dvec3 z_axis_view = {0, 0, 0};
+constexpr glm::dvec3 default_view = x_axis_view + glm::dvec3(25, 0, -35);
 
 void glfw_error_callback(int, const char * const desc)
 {
@@ -93,7 +93,7 @@ void window::init_window(window_properties const & properties)
         exit(EXIT_FAILURE);
 
     // Init camera
-    camera_.translation = glm::vec3(0, 0, (properties.width * 1.5f) / properties.height);
+    camera_.translation = glm::dvec3(0, 0, (properties.width * 1.5f) / properties.height);
     camera_.rotation = default_view;
 }
 
@@ -114,39 +114,39 @@ void window::draw_triad()
     glViewport(0, 0, width / 5, height / 5);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, static_cast<float>(width) / height, 0.1, 30); // Todo: magic variables
+    gluPerspective(60, static_cast<double>(width) / height, 0.1, 30); // Todo: magic variables
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0, 0, -2); // Place triad between clipping planes.
-    glRotatef(camera_.rotation.x, 1, 0, 0);
-    //glRotatef(camera_.rotation.y, 0, 1, 0);
-    glRotatef(camera_.rotation.z, 0, 0, 1);
+    glTranslated(0, 0, -2); // Place triad between clipping planes.
+    glRotated(camera_.rotation.x, 1, 0, 0);
+    //glRotated(camera_.rotation.y, 0, 1, 0);
+    glRotated(camera_.rotation.z, 0, 0, 1);
 
     auto const draw_axis = []() {
         GLUquadric * cylinder = gluNewQuadric();
         gluCylinder(cylinder, 0.02, 0.02, 0.8, 16, 1); // Body of axis.
-        glColor3f(1,1,5); // Make arrow head white.
+        glColor3d(1,1,5); // Make arrow head white.
         glPushMatrix();
-        glTranslatef(0.0, 0.0, 0.8);
+        glTranslated(0.0, 0.0, 0.8);
         gluCylinder(cylinder, 0.06, 0.001, 0.1, 12, 1); // Arrow head cone at end of axis.
         glPopMatrix();
     };
 
     // Z axis in blue
-    glColor3f(0.3, 0.3, 1.0);
+    glColor3d(0.3, 0.3, 1.0);
     draw_axis();
 
     // Y axis in green
-    glColor3f(0.3, 1.0, 0.3);
+    glColor3d(0.3, 1.0, 0.3);
     glPushMatrix();
-    glRotatef(-90, 1, 0, 0);
+    glRotated(-90, 1, 0, 0);
     draw_axis();
     glPopMatrix();
 
     // X axis in red
-    glColor3f(1.0, 0.3, 0.3);
+    glColor3d(1.0, 0.3, 0.3);
     glPushMatrix();
-    glRotatef(90, 0, 1, 0);
+    glRotated(90, 0, 1, 0);
     draw_axis();
     glPopMatrix();
 }
@@ -161,14 +161,14 @@ void window::compute_projection()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, static_cast<float>(width) / height, 0.1, 30); // Todo: magic variables
+    gluPerspective(60, static_cast<double>(width) / height, 0.1, 30); // Todo: magic variables
 
     glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-    glTranslatef(-camera_.translation.x, -camera_.translation.y, -camera_.translation.z);
-    glRotatef(camera_.rotation.x, 1, 0, 0);
-    //glRotatef(camera_.rotation.y, 0, 1, 0);
-    glRotatef(camera_.rotation.z, 0, 0, 1);
+    glTranslated(-camera_.translation.x, -camera_.translation.y, -camera_.translation.z);
+    glRotated(camera_.rotation.x, 1, 0, 0);
+    //glRotated(camera_.rotation.y, 0, 1, 0);
+    glRotated(camera_.rotation.z, 0, 0, 1);
 }
 
 void window::glfw_key_callback(GLFWwindow * const glfw_window, int key, int scancode, int action, int modifiers)
@@ -223,8 +223,8 @@ void window::process_mouse_button_release(int button, int /* modifiers */)
 void window::process_cursor_pos_change(double xpos, double ypos)
 {
     if (mouse_.dragging) {
-        float rdz = (xpos - mouse_.previous_xpos) * mouse_drag_sensitivity;
-        float rdx = (ypos - mouse_.previous_ypos) * mouse_drag_sensitivity;
+        double rdz = (xpos - mouse_.previous_xpos) * mouse_drag_sensitivity;
+        double rdx = (ypos - mouse_.previous_ypos) * mouse_drag_sensitivity;
 
         camera_.rotation.z = std::clamp(camera_.rotation.z + rdz, z_axis_min, z_axis_max);
         camera_.rotation.x = std::clamp(camera_.rotation.x + rdx, x_axis_min, x_axis_max);

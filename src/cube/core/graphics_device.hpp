@@ -38,7 +38,7 @@ public:
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
-    void draw_line(voxel_t const & voxel1, voxel_t const & voxel2);
+    void line(voxel_t const & start, voxel_t const & end);
     void fill();
 
     void show_animation(animation * animation);
