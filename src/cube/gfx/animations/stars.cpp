@@ -56,12 +56,12 @@ void stars::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    for (star const & s : stars_) {
-        gradient fade({
-            {0.0, color_black},
-            {1.0, hue(std::fabs(std::cos(hue_step_ * omega_ * hue_omega_scalar)))},
-        });
+    gradient fade({
+        {0.0, color_black},
+        {1.0, hue(std::fabs(std::cos(hue_step_ * omega_ * hue_omega_scalar)))},
+    });
 
+    for (star const & s : stars_) {
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
         p.draw(s.voxel);
     }
