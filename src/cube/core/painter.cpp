@@ -47,7 +47,7 @@ void painter::fill_canvas()
 void painter::update_state()
 {
     device_.update_state(state_);
-    assert(state_.dirty_flags == 0);
+    state_.dirty_flags = 0;
 }
 
 } // End of namespace

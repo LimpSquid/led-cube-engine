@@ -11,13 +11,14 @@ namespace
 {
 
 constexpr double hue_omega_scalar = 0.125;
+constexpr double hue_phase_shift_scalar = 0.1;
 const gradient hue =
 {
     {0.00, color_red    },
-    {0.25, color_orange },
-    {0.50, color_cyan   },
-    {0.75, color_magenta},
-    {1.00, color_blue   },
+    {0.25, color_magenta},
+    {0.50, color_orange },
+    {0.75, color_yellow },
+    {1.00, color_cyan   },
 };
 
 }
@@ -56,12 +57,14 @@ void stars::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    gradient fade({
-        {0.0, color_black},
-        {1.0, hue(std::fabs(std::cos(hue_step_ * omega_ * hue_omega_scalar)))},
-    });
-
     for (star const & s : stars_) {
+        double phase_shift = hue_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube_size_1d);
+        double hue_omega = omega_ * hue_omega_scalar;
+        gradient fade({
+            {0.0, color_black},
+            {1.0, hue(std::fabs(std::cos(hue_step_ * hue_omega - phase_shift)))},
+        });
+
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
         p.draw(s.voxel);
     }

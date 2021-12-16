@@ -36,7 +36,7 @@ class graphics_device
 public:
     virtual ~graphics_device() = default;
 
-    void update_state(graphics_state & state);
+    void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
     void draw_line(voxel_t const & voxel1, voxel_t const & voxel2);
     void fill();

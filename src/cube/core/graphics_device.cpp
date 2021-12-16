@@ -3,12 +3,10 @@
 namespace cube::core
 {
 
-void graphics_device::update_state(graphics_state & state)
+void graphics_device::update_state(graphics_state const & state)
 {
     if (state.dirty_flags & graphics_state::dirty_draw_color)
         draw_color_ = state.draw_color;
-
-    state.dirty_flags = 0;
 }
 
 void graphics_device::draw(voxel_t const & voxel)
