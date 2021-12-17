@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
     std::vector<animation *> animations = {
         &stars,
-        &fill_cube,
+        // &fill_cube,
         &double_sine_wave,
     };
     int animations_index = 0;
