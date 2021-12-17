@@ -8,14 +8,10 @@ namespace cube::core
 
 painter::painter(graphics_device & device) :
     device_(device)
-{
-
-}
+{ }
 
 painter::~painter()
-{
-
-}
+{ }
 
 void painter::set_color(color const & color)
 {

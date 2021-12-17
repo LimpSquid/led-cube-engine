@@ -17,6 +17,8 @@ public:
         number_of_stars,
     };
 
+    stars(core::engine_context & context);
+
 private:
     struct star
     {
@@ -24,11 +26,11 @@ private:
         int fade_step;
     };
 
-    virtual void configure(core::animation_config & config) override;
-    virtual void time_step() override;
+    virtual void configure() override;
     virtual void paint(core::graphics_device & device) override;
     star make_unique_star() const;
 
+    core::tick_subscription::pointer tick_sub_;
     std::vector<star> stars_;
     int hue_step_;
     int fade_resolution_;

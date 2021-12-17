@@ -17,10 +17,13 @@ public:
         disable_blue,
     };
 
+    fill_cube(core::engine_context & context);
+
 private:
-    virtual void configure(core::animation_config & config) override;
-    virtual void time_step() override;
+    virtual void configure() override;
     virtual void paint(core::graphics_device & device) override;
+
+    core::tick_subscription::pointer tick_sub_;
 };
 
 } // End of namespace

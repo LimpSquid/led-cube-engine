@@ -1,4 +1,5 @@
 #include <cube/core/engine.hpp>
+#include <cube/core/engine_context.hpp>
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/animation.hpp>
 #include <stdexcept>
@@ -6,12 +7,33 @@
 #include <thread>
 
 using namespace std::chrono;
-using namespace std::chrono_literals;
+
+namespace
+{
+
+template<typename TickerContainer>
+void poll(TickerContainer & tickers)
+{
+    auto const now = steady_clock::now();
+
+    for (auto & ticker : tickers) {
+        if (now >= ticker.next) {
+            auto const elapsed = duration_cast<milliseconds>(now - ticker.last);
+
+            ticker.last = now;
+            ticker.next += ticker.interval;
+            ticker.handler(now, elapsed);
+        }
+    }
+}
+
+} // End of namespace
 
 namespace cube::core
 {
 
-engine::engine(graphics_device *device) :
+engine::engine(engine_context & context, graphics_device *device) :
+    context_(context),
     device_(device),
     animation_(nullptr)
 {
@@ -26,10 +48,7 @@ void engine::load(animation * animation)
 
 void engine::run()
 {
-    milliseconds const tick_event_interval = 15ms;
     steady_clock::time_point now = steady_clock::now();
-    steady_clock::time_point tick_tp = now;
-    steady_clock::time_point time_step_tp = now;
     animation * animation = nullptr;
     bool init = false;
 
@@ -46,24 +65,11 @@ void engine::run()
 
         // Init new animation
         if (init) {
-            tick_tp += tick_event_interval;
-            time_step_tp += animation->config().time_step_interval;
-
             device_->show_animation(animation);
             continue;
         }
 
-        // Tick event
-        if (now >= tick_tp) {
-            animation->tick_event(tick_event_interval);
-            tick_tp += tick_event_interval;
-        }
-
-        // Time step event
-        if (now >= time_step_tp) {
-            animation->time_step_event();
-            time_step_tp += animation->config().time_step_interval;
-        }
+        poll(context_.tickers);
 
         // Finally render the animation and poll the device (may block)
         device_->render_animation();

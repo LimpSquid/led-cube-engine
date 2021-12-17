@@ -13,9 +13,7 @@ gradient::gradient(std::initializer_list<gradient_stop> initializer_list) :
 
 gradient::gradient() :
     gradient({})
-{
-
-}
+{ }
 
 void gradient::add(gradient_stop stop)
 {

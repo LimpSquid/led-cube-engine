@@ -20,12 +20,16 @@ const gradient hue =
     {1.00, color_cyan   },
 };
 
-}
+} // End of namespace
 
 namespace cube::gfx::animations
 {
 
-void stars::configure(animation_config & config)
+stars::stars(engine_context & context) :
+    animation_track(context)
+{ }
+
+void stars::configure()
 {
     fade_resolution_ = std::max(1, read_property(fade_resolution, 50));
     omega_ = M_PI / fade_resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
@@ -38,17 +42,18 @@ void stars::configure(animation_config & config)
         s.fade_step = -(std::rand() % fade_resolution_); // Negative so stars are initially black
     }
 
-    config.time_step_interval = read_property(fade_time_ms, 5000ms) / fade_resolution_;
-}
+    tick_sub_ = tick_subscription::create(
+        context(),
+        read_property(fade_time_ms, 5000ms) / fade_resolution_,
+        [this](auto, auto) {
+            for (star & s : stars_)
+                if (++s.fade_step > fade_resolution_)
+                    s = make_unique_star();
 
-void stars::time_step()
-{
-    for (star & s : stars_)
-        if (++s.fade_step > fade_resolution_)
-            s = make_unique_star();
-
-    hue_step_++;
-    update();
+            hue_step_++;
+            update();
+        }
+    );
 }
 
 void stars::paint(graphics_device & device)

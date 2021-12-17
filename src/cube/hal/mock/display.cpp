@@ -7,18 +7,22 @@
 
 using namespace cube::core;
 
+namespace
+{
+
+constexpr cube::hal::mock::window_properties window_resolution = {640, 480};
+
+} // End of namespace
+
 namespace cube::hal::mock
 {
 
 display::display() :
-    window_(window::instance())
-{
-}
+    window_(window::instance(window_resolution))
+{ }
 
 display::~display()
-{
-
-}
+{ }
 
 void display::show(graphics_buffer const & buffer)
 {

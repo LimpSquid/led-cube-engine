@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cube/core/animation.hpp>
+#include <cube/core/subscriptions.hpp>
 #include <cube/core/color.hpp>
 #include <sstream>
 #include <unordered_map>
-#include <vector>
 
 namespace cube::gfx
 {
@@ -100,7 +100,7 @@ public:
 
     enum : property_label_type
     {
-        animation_time_us   = 0,
+        animation_time_ms   = 0,
 
         property_custom     = 255, // First usable label for custom properties
     };
@@ -111,8 +111,8 @@ public:
     bool is_running() const;
     bool is_finished() const;
 
-    std::chrono::microseconds time_remaining() const;
-    std::chrono::microseconds time_total() const;
+    std::chrono::milliseconds time_remaining() const;
+    std::chrono::milliseconds time_total() const;
 
     void start();
     void pause();
@@ -139,16 +139,20 @@ public:
     }
 
 protected:
-    animation_track();
+    animation_track(core::engine_context & context);
+
+    core::engine_context & context();
 
 private:
     virtual void state_changed(animation_state const & state);
-    virtual void tick(std::chrono::microseconds const & interval) override;
-
     void set_state(animation_state const & value);
 
+    void tick(std::chrono::milliseconds const & elapsed);
+
+    core::engine_context & context_;
+    core::tick_subscription tick_sub_;
     animation_state state_;
-    std::chrono::microseconds time_;
+    std::chrono::milliseconds time_;
     std::unordered_map<property_label_type, std::string> properties_;
 };
 

@@ -36,6 +36,8 @@ class graphics_device
 public:
     virtual ~graphics_device() = default;
 
+    double fps() const;
+
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
     void line(voxel_t const & start, voxel_t const & end);
@@ -49,12 +51,21 @@ protected:
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
+    struct render_time
+    {
+        uint64_t nanos_dt{1}; // just to avoid division by 0
+        uint64_t nanos_previous{0};
+
+        void update();
+    };
+
     virtual void show(graphics_buffer const & buffer) = 0;
     virtual void poll() = 0;
 
     graphics_buffer buffer_;
     color draw_color_;
     animation * animation_;
+    render_time render_time_;
 };
 
 } // End of namespace

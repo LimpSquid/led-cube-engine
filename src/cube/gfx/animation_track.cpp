@@ -1,6 +1,7 @@
 #include <cube/gfx/animation_track.hpp>
 
-using namespace std::chrono_literals;
+using namespace cube::core;
+using namespace std::chrono;
 
 namespace cube::gfx
 {
@@ -30,14 +31,14 @@ bool animation_track::is_finished() const
     return state_ == finished;
 }
 
-std::chrono::microseconds animation_track::time_remaining() const
+milliseconds animation_track::time_remaining() const
 {
     return time_;
 }
 
-std::chrono::microseconds animation_track::time_total() const
+milliseconds animation_track::time_total() const
 {
-    return read_property<std::chrono::microseconds>(animation_time_us, 10s);
+    return read_property<milliseconds>(animation_time_ms, 10s);
 }
 
 void animation_track::start()
@@ -80,37 +81,40 @@ void animation_track::write_properties(std::vector<std::pair<property_label_type
         write_property(property.first, property.second);
 }
 
-animation_track::animation_track() :
+animation_track::animation_track(engine_context & context) :
+    context_(context),
+    tick_sub_(context, 100ms, [this](auto, auto elapsed) { tick(elapsed); }),
     state_(stopped)
-{
+{ }
 
+engine_context & animation_track::context()
+{
+    return context_;
 }
 
 void animation_track::state_changed(animation_state const &)
-{
-
-}
-
-void animation_track::tick(std::chrono::microseconds const & interval)
-{
-    switch (state_) {
-        case running:
-            if (interval < time_)
-                time_ -= interval;
-            else {
-                time_ = 0us;
-                set_state(finished);
-            }
-            break;
-        default:;
-    }
-}
+{ }
 
 void animation_track::set_state(animation_state const & value)
 {
     if (state_ != value) {
         state_ = value;
         state_changed(state_);
+    }
+}
+
+void animation_track::tick(milliseconds const & elapsed)
+{
+    switch (state_) {
+        case running:
+            if (elapsed < time_)
+                time_ -= elapsed;
+            else {
+                time_ = 0ms;
+                set_state(finished);
+            }
+            break;
+        default:;
     }
 }
 

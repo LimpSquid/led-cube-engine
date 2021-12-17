@@ -17,7 +17,11 @@ constexpr color default_color = color_magenta;
 namespace cube::gfx::animations
 {
 
-void double_sine_wave::configure(animation_config & config)
+double_sine_wave::double_sine_wave(engine_context & context) :
+    animation_track(context)
+{ }
+
+void double_sine_wave::configure()
 {
     auto const gradient_start = read_property(color_gradient_start, default_color);
     auto const gradient_end = read_property(color_gradient_end, !default_color);
@@ -32,14 +36,15 @@ void double_sine_wave::configure(animation_config & config)
     waves_[1].gradient_start = gradient_end; // Invert color of 2nd wave
     waves_[1].gradient_end = gradient_start;
 
-    config.time_step_interval = read_property(wave_period_time_ms, 1500ms) / period_;
-}
-
-void double_sine_wave::time_step()
-{
-    for (wave & w : waves_)
-        w.time_count = (w.time_count + 1) % period_;
-    update();
+    tick_sub_ = tick_subscription::create(
+        context(),
+        read_property(wave_period_time_ms, 1500ms) / period_,
+        [this](auto, auto) {
+            for (wave & w : waves_)
+                w.time_count = (w.time_count + 1) % period_;
+            update();
+        }
+    );
 }
 
 void double_sine_wave::paint(graphics_device & device)

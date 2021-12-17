@@ -10,9 +10,23 @@ namespace cube::hal::mock
 
 struct window_properties
 {
-    char const * const title{"mock"};
-    int width{1024};
-    int height{768};
+    constexpr window_properties(int w, int h, char const * const t) :
+        width(w),
+        height(h),
+        title(t)
+    { }
+
+    constexpr window_properties(int w, int h) :
+        window_properties(w, h, "mock")
+    { }
+
+    constexpr window_properties() :
+        window_properties(1024, 768, "mock")
+    { }
+
+    char const * const title;
+    int width;
+    int height;
 };
 
 class window

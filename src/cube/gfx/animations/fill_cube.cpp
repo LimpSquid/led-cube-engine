@@ -7,14 +7,17 @@ using namespace std::chrono;
 namespace cube::gfx::animations
 {
 
-void fill_cube::configure(animation_config & config)
-{
-    config.time_step_interval = read_property(cycle_interval_sec, 5s);
-}
+fill_cube::fill_cube(core::engine_context & context) :
+    animation_track(context)
+{ }
 
-void fill_cube::time_step()
+void fill_cube::configure()
 {
-    update();
+    tick_sub_ = tick_subscription::create(
+        context(),
+        read_property(cycle_interval_sec, 5s),
+        [this](auto, auto) { update(); }
+    );
 }
 
 void fill_cube::paint(graphics_device & device)

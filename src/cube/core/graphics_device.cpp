@@ -1,9 +1,26 @@
 #include <cube/core/graphics_device.hpp>
 #include <glm/glm.hpp>
 #include <algorithm>
+#include <chrono>
+
+using namespace std::chrono;
 
 namespace cube::core
 {
+
+void graphics_device::render_time::update()
+{
+    uint64_t now = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+    uint64_t elapsed = now - nanos_previous;
+
+    nanos_dt = nanos_dt - (nanos_dt >> 2) + (elapsed >> 2);
+    nanos_previous = now;
+}
+
+double graphics_device::fps() const
+{
+    return (1000000000.0 / render_time_.nanos_dt);
+}
 
 void graphics_device::update_state(graphics_state const & state)
 {
@@ -45,6 +62,8 @@ void graphics_device::render_animation()
         animation_->paint_event(*this);
         show(buffer_);
     }
+
+    render_time_.update();
 }
 
 void graphics_device::do_poll()

@@ -17,6 +17,8 @@ public:
         color_gradient_end,                 // end color of gradient
     };
 
+    double_sine_wave(core::engine_context & context);
+
 private:
     struct wave
     {
@@ -25,10 +27,10 @@ private:
         core::color gradient_end;
     };
 
-    virtual void configure(core::animation_config & config) override;
-    virtual void time_step() override;
+    virtual void configure() override;
     virtual void paint(core::graphics_device & device) override;
 
+    core::tick_subscription::pointer tick_sub_;
     std::array<wave, 2> waves_;
     int period_;
     double omega_;
