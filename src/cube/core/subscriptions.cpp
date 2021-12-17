@@ -1,6 +1,5 @@
 #include <cube/core/subscriptions.hpp>
 #include <cube/core/engine_context.hpp>
-#include <algorithm>
 
 using namespace std::chrono;
 
