@@ -8,7 +8,7 @@ namespace cube::gfx::animations
 {
 
 fill_cube::fill_cube(core::engine_context & context) :
-    animation_track(context)
+    configurable_animation(context)
 { }
 
 void fill_cube::configure()

@@ -25,7 +25,7 @@ namespace cube::gfx::animations
 {
 
 stars::stars(engine_context & context) :
-    animation_track(context)
+    configurable_animation(context)
 { }
 
 void stars::configure()

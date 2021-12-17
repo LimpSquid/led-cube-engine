@@ -17,7 +17,7 @@ namespace cube::gfx::animations
 {
 
 double_sine_wave::double_sine_wave(engine_context & context) :
-    animation_track(context)
+    configurable_animation(context)
 { }
 
 void double_sine_wave::configure()

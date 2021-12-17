@@ -1,13 +1,14 @@
 #pragma once
 
-#include <cube/gfx/animation_track.hpp>
+#include <cube/gfx/configurable_animation.hpp>
+#include <cube/core/subscriptions.hpp>
 #include <cube/core/voxel.hpp>
 
 namespace cube::gfx::animations
 {
 
 class stars :
-    public animation_track
+    public configurable_animation
 {
 public:
     enum : property_label_type

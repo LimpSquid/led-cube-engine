@@ -1,11 +1,13 @@
 #pragma once
 
 #include <cube/core/animation.hpp>
-#include <cube/core/subscriptions.hpp>
 #include <cube/core/color.hpp>
+#include <chrono>
+#include <vector>
 #include <sstream>
 #include <unordered_map>
 
+namespace cube::core { class engine_context; }
 namespace cube::gfx
 {
 
@@ -84,39 +86,16 @@ struct property_value_converter<property_value>
     static std::string convert(property_value const & value) { return value.property; }
 };
 
-class animation_track :
+class configurable_animation :
     public core::animation
 {
 public:
     using property_label_type = int;
 
-    enum animation_state
-    {
-        stopped = 0,
-        paused,
-        running,
-        finished,
-    };
-
     enum : property_label_type
     {
-        animation_time_ms   = 0,
-
         property_custom     = 255, // First usable label for custom properties
     };
-
-    animation_state state() const;
-    bool is_stopped() const;
-    bool is_paused() const;
-    bool is_running() const;
-    bool is_finished() const;
-
-    std::chrono::milliseconds time_remaining() const;
-    std::chrono::milliseconds time_total() const;
-
-    void start();
-    void pause();
-    void stop();
 
     template<typename T>
     void write_property(property_label_type label, T value)
@@ -139,34 +118,13 @@ public:
     }
 
 protected:
-    animation_track(core::engine_context & context);
+    configurable_animation(core::engine_context & context);
 
     core::engine_context & context();
 
 private:
-    virtual void state_changed(animation_state const & state);
-    void set_state(animation_state const & value);
-
-    void tick(std::chrono::milliseconds const & elapsed);
-
     core::engine_context & context_;
-    core::tick_subscription tick_sub_;
-    animation_state state_;
-    std::chrono::milliseconds time_;
     std::unordered_map<property_label_type, std::string> properties_;
 };
-
-template<class, class = void>
-struct is_animation_track : std::false_type { };
-template<class T>
-struct is_animation_track<T, std::void_t<decltype(
-    std::declval<T>().start(),
-    std::declval<T>().stop(),
-    std::declval<T>().pause(),
-    std::declval<T>().is_stopped(),
-    std::declval<T>().is_running(),
-    std::declval<T>().is_paused(),
-    std::declval<T>().is_finished()
-)>> : std::true_type { };
 
 } // end of namespace
