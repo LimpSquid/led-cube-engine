@@ -164,7 +164,7 @@ void window::compute_projection()
     gluPerspective(60, static_cast<double>(width) / height, 0.1, 30); // Todo: magic variables
 
     glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+    glLoadIdentity();
     glTranslated(-camera_.translation.x, -camera_.translation.y, -camera_.translation.z);
     glRotated(camera_.rotation.x, 1, 0, 0);
     //glRotated(camera_.rotation.y, 0, 1, 0);

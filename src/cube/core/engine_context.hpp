@@ -14,7 +14,9 @@ class engine_context
 
     struct ticker
     {
-        std::function<void(std::chrono::steady_clock::time_point, std::chrono::milliseconds)> handler;
+        std::function<void(
+            std::chrono::steady_clock::time_point,
+            std::chrono::milliseconds)> handler;
         std::chrono::milliseconds interval;
         std::chrono::steady_clock::time_point last;
         std::chrono::steady_clock::time_point next;

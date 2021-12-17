@@ -11,8 +11,8 @@ using namespace std::chrono;
 namespace
 {
 
-template<typename TickerContainer>
-void poll(TickerContainer & tickers)
+template<typename Container>
+void poll(Container & tickers)
 {
     auto const now = steady_clock::now();
 
@@ -37,7 +37,7 @@ engine::engine(engine_context & context, graphics_device *device) :
     device_(device),
     animation_(nullptr)
 {
-    if (nullptr == device_)
+    if (!device_)
         throw std::invalid_argument("Graphics device cannot be nullptr");
 }
 
@@ -48,32 +48,26 @@ void engine::load(animation * animation)
 
 void engine::run()
 {
-    steady_clock::time_point now = steady_clock::now();
     animation * animation = nullptr;
     bool init = false;
 
     for (;;) {
-        init = (animation != animation_);
-        animation = animation_;
-        now = steady_clock::now();
-
-        // Animation to be serviced?
-        if (nullptr == animation) {
-            std::this_thread::sleep_for(100ms);
-            continue;
-        }
-
-        // Init new animation
-        if (init) {
-            device_->show_animation(animation);
-            continue;
-        }
-
+        // Poll tickers
         poll(context_.tickers);
 
-        // Finally render the animation and poll the device (may block)
-        device_->render_animation();
+        // Poll device (may block)
         device_->do_poll();
+
+        // Service animation
+        init = (animation != animation_);
+        animation = animation_;
+
+        if (!animation)
+            std::this_thread::sleep_for(100us); // Todo: eventually do not sleep, but wait until some event has happened
+        else if (init)
+            device_->show_animation(animation);
+        else
+            device_->render_animation();
     }
 }
 

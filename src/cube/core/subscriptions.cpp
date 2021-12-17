@@ -14,7 +14,11 @@ uint64_t subscription = 0;
 namespace cube::core
 {
 
-tick_subscription::tick_subscription(engine_context & context, std::chrono::milliseconds interval, tick_handler_t handler) :
+tick_subscription::tick_subscription(
+    engine_context & context,
+    std::chrono::milliseconds interval,
+    tick_handler_t handler,
+    bool trigger_on_start) :
     context_(context),
     id_(subscription++)
 {
@@ -24,7 +28,7 @@ tick_subscription::tick_subscription(engine_context & context, std::chrono::mill
         [h=std::move(handler)](auto now, auto elapsed) { h(std::move(now), std::move(elapsed)); },
         interval,
         now,
-        now, // + interval in case we do not want to start it immediatly
+        trigger_on_start ? now : (now + interval),
         id_
     });
 }
