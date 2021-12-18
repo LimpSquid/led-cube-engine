@@ -49,7 +49,7 @@ void engine::load(animation * animation)
 void engine::run()
 {
     animation * animation = nullptr;
-    bool init = false;
+    bool new_animation = false;
 
     for (;;) {
         // Poll tickers
@@ -59,12 +59,12 @@ void engine::run()
         device_->do_poll();
 
         // Service animation
-        init = (animation != animation_);
+        new_animation = (animation != animation_);
         animation = animation_;
 
         if (!animation)
             std::this_thread::sleep_for(100us); // Todo: eventually do not sleep, but wait until some event has happened
-        else if (init)
+        else if (new_animation)
             device_->show_animation(animation);
         else
             device_->render_animation();

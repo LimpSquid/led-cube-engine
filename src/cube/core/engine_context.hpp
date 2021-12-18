@@ -6,7 +6,6 @@
 namespace cube::core
 {
 
-class engine;
 class engine_context
 {
     friend class tick_subscription;

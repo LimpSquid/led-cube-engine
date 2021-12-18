@@ -29,6 +29,7 @@ private:
 
     virtual void configure() override;
     virtual void paint(core::graphics_device & device) override;
+    virtual void stop() override;
     star make_unique_star() const;
 
     core::tick_subscription::pointer tick_sub_;

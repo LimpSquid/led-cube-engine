@@ -48,10 +48,15 @@ void graphics_device::fill()
 
 void graphics_device::show_animation(animation * animation)
 {
-    animation_ = animation;
-    if (animation_) {
-        animation_->init();
-        animation_->paint_event(*this);
+    // Finish old animation
+    if (animation_)
+        animation_->finish();
+
+    // Init new animation
+    if (animation) {
+        animation_ = animation;
+        animation->init();
+        animation->paint_event(*this);
         show(buffer_);
     }
 }

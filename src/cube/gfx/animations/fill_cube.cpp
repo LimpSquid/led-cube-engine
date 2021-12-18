@@ -32,4 +32,9 @@ void fill_cube::paint(graphics_device & device)
     p.fill_canvas();
 }
 
+void fill_cube::stop()
+{
+    tick_sub_.reset();
+}
+
 } // End of namespace

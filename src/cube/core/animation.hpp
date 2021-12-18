@@ -16,6 +16,7 @@ public:
 
     void init();
     void update();
+    void finish();
     void paint_event(graphics_device & device);
 
 protected:
@@ -24,6 +25,7 @@ protected:
 private:
     virtual void configure();
     virtual void paint(graphics_device & device) = 0;
+    virtual void stop();
 
     bool dirty_;
 };

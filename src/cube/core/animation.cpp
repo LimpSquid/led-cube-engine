@@ -19,6 +19,12 @@ void animation::update()
     dirty_ = true;
 }
 
+void animation::finish()
+{
+    dirty_ = false;
+    stop();
+}
+
 void animation::paint_event(graphics_device & device)
 {
     dirty_ = false;
@@ -30,6 +36,9 @@ animation::animation() :
 { }
 
 void animation::configure()
+{ }
+
+void animation::stop()
 { }
 
 } // End of namespace

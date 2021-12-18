@@ -73,6 +73,11 @@ void stars::paint(graphics_device & device)
     }
 }
 
+void stars::stop()
+{
+    tick_sub_.reset();
+}
+
 stars::star stars::make_unique_star() const
 {
     std::vector<star>::const_iterator search;

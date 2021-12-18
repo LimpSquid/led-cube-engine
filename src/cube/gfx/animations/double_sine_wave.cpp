@@ -69,4 +69,9 @@ void double_sine_wave::paint(graphics_device & device)
     }
 }
 
+void double_sine_wave::stop()
+{
+    tick_sub_.reset();
+}
+
 } // End of namespace
