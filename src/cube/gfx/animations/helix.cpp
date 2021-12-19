@@ -61,7 +61,7 @@ void helix::paint(graphics_device & device)
         int z = map(z1, unit_circle_range, cube_axis_range);
 
         p.set_color(hue_(std::sin(std::abs(step_ * omega_ + phase_shift))).vec() * fader_.value());
-        p.sphere({x, y, z}, 1.5);
+        p.sphere({x, y, z}, 2.0);
     }
 }
 
