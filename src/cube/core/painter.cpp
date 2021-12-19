@@ -1,7 +1,7 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/color.hpp>
+#include <cube/core/math.hpp>
 #include <glm/glm.hpp>
-#include <algorithm>
 
 namespace cube::core
 {
@@ -41,9 +41,9 @@ void painter::fill_canvas()
     device_.fill();
 }
 
-void painter::radiate(voxel_t const & origin, double length)
+void painter::sphere(voxel_t const & origin, double radius)
 {
-    glm::dvec3 const box = {length, length, length};
+    glm::dvec3 const box = {radius, radius, radius};
     glm::dvec3 const min = glm::dvec3(origin) - box;
     glm::dvec3 const max = glm::dvec3(origin) + box;
 
@@ -59,8 +59,8 @@ void painter::radiate(voxel_t const & origin, double length)
     for (int x = x_start; x <= x_end; x++){
         for (int y = y_start; y <= y_end; y++){
             for (int z = z_start; z <= z_end; z++) {
-                double radius = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
-                if (radius <= length)
+                double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
+                if (r <= radius)
                     device_.draw({x, y, z});
             }
         }

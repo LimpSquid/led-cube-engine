@@ -1,6 +1,5 @@
 #include <cube/core/graphics_device.hpp>
 #include <glm/glm.hpp>
-#include <algorithm>
 #include <chrono>
 
 using namespace std::chrono;

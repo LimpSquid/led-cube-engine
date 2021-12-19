@@ -34,10 +34,10 @@ color gradient::operator()(double gpos) const
 {
     gpos = std::clamp(gpos, 0.0, 1.0);
     auto gs1 = std::lower_bound(stops_.begin() + 1, stops_.end(), gpos,
-        [](gradient_stop const & lhs, double rhs) { return std::less<double>{}(lhs.gpos, rhs); });
+        [](gradient_stop const & lhs, double rhs) { return core::less_than(lhs.gpos, rhs); });
     auto gs0 = gs1 - 1; // safe, because we always have two gradient stops and start searching from index 1
 
-    return gs0->gcolor.vec() + ((gs1->gcolor.vec() - gs0->gcolor.vec()) * (gpos - gs0->gpos)) / (gs1->gpos - gs0->gpos);
+    return map(gpos, gs0->gpos, gs1->gpos, gs0->gcolor.vec(), gs1->gcolor.vec());
 }
 
 } // End of namespace

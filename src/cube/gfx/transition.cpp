@@ -1,5 +1,7 @@
 #include <cube/gfx/transition.hpp>
-#include <cmath>
+#include <cube/core/math.hpp>
+
+using namespace cube::core;
 
 namespace cube::gfx
 {
@@ -23,13 +25,14 @@ void basic_transition::start()
     step_ = 0;
     value_ = config_.from;
 
-    tick_sub_ = core::tick_subscription::create(
+    tick_sub_ = tick_subscription::create(
         context_,
         config_.time / config_.steps,
         [this](auto, auto) {
-            if (++step_ < config_.steps)
-                value_ = config_.from + (config_.to - config_.from) * map(static_cast<double>(step_) / config_.steps);
-            else {
+            if (++step_ < config_.steps) {
+                double progress = std::clamp(map(static_cast<double>(step_) / config_.steps), 0.0, 1.0);
+                value_ = config_.from + (config_.to - config_.from) * progress;
+            } else {
                 value_ = config_.to;
                 tick_sub_.reset();
             }
@@ -37,7 +40,7 @@ void basic_transition::start()
     );
 }
 
-linear_transition::linear_transition(core::engine_context & context, transition_config const & config) :
+linear_transition::linear_transition(engine_context & context, transition_config const & config) :
     basic_transition(context, config)
 { }
 
@@ -46,7 +49,7 @@ double linear_transition::map(double progress) const
     return progress;
 }
 
-sine_transition::sine_transition(core::engine_context & context, transition_config const & config) :
+sine_transition::sine_transition(engine_context & context, transition_config const & config) :
     basic_transition(context, config)
 { }
 

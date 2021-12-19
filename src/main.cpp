@@ -5,6 +5,7 @@
 #include <cube/gfx/animations/fill_cube.hpp>
 #include <cube/gfx/animations/double_sine_wave.hpp>
 #include <cube/gfx/animations/stars.hpp>
+#include <cube/gfx/animations/helix.hpp>
 #include <chrono>
 
 using namespace cube::core;
@@ -20,8 +21,10 @@ int main(int argc, char *argv[])
     animations::fill_cube fill_cube(context);
     animations::double_sine_wave double_sine_wave(context);
     animations::stars stars(context);
+    animations::helix helix(context);
 
     std::vector<animation *> animations = {
+        //&helix,
         &stars,
         // &fill_cube,
         &double_sine_wave,

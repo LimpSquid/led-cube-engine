@@ -2,7 +2,6 @@
 #include <cube/hal/mock/window.hpp>
 #include <cube/core/color.hpp>
 #include <GL/glew.h>
-#include <cmath>
 #include <cstring>
 
 using namespace cube::core;

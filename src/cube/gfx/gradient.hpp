@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cube/core/color.hpp>
+#include <cube/core/math.hpp>
 #include <boost/container/flat_set.hpp>
-#include <algorithm>
 
 namespace cube::gfx
 {
@@ -18,10 +18,10 @@ struct gradient_stop
     core::color gcolor;
 };
 
-inline bool operator<(gradient_stop const & lhs, gradient_stop const & rhs) { return std::less<double>{}(lhs.gpos, rhs.gpos); }
-inline bool operator>(gradient_stop const & lhs, gradient_stop const & rhs) { return std::greater<double>{}(lhs.gpos, rhs.gpos); }
-inline bool operator==(gradient_stop const & lhs, gradient_stop const & rhs) { return std::equal_to<double>{}(lhs.gpos, rhs.gpos); }
-inline bool operator!=(gradient_stop const & lhs, gradient_stop const & rhs) { return std::not_equal_to<double>{}(lhs.gpos, rhs.gpos); }
+inline bool operator<(gradient_stop const & lhs, gradient_stop const & rhs) { return core::less_than(lhs.gpos, rhs.gpos); }
+inline bool operator>(gradient_stop const & lhs, gradient_stop const & rhs) { return core::greater_than(lhs.gpos, rhs.gpos); }
+inline bool operator==(gradient_stop const & lhs, gradient_stop const & rhs) { return core::equal(lhs.gpos, rhs.gpos); }
+inline bool operator!=(gradient_stop const & lhs, gradient_stop const & rhs) { return !core::equal(lhs.gpos, rhs.gpos); }
 
 class gradient
 {

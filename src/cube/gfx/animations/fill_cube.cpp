@@ -2,13 +2,12 @@
 #include <cube/core/painter.hpp>
 
 using namespace cube::core;
-using namespace cube::gfx;
 using namespace std::chrono;
 
 namespace cube::gfx::animations
 {
 
-fill_cube::fill_cube(core::engine_context & context) :
+fill_cube::fill_cube(engine_context & context) :
     configurable_animation(context)
 { }
 

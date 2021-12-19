@@ -1,7 +1,23 @@
 #include <cube/core/color.hpp>
+#include <cube/core/math.hpp>
 
 namespace cube::core
 {
+
+color::color(color_vec_t const & vec)
+{
+    auto clamp = [](auto scalar) {
+        int x = std::round(scalar);
+        if (x < color_min_value) return color_min_value;
+        if (x > color_max_value) return color_max_value;
+        return color_t(x);
+    };
+
+    r = clamp(vec.r);
+    g = clamp(vec.g);
+    b = clamp(vec.b);
+    a = clamp(vec.a);
+}
 
 void alpha_blend(color const & c, color & bucket)
 {

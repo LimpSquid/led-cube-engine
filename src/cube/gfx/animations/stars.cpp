@@ -2,8 +2,8 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 
-using namespace cube::core;
 using namespace cube::gfx;
+using namespace cube::core;
 using namespace std::chrono;
 
 namespace

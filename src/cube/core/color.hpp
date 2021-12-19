@@ -2,8 +2,6 @@
 
 #include <glm/vec4.hpp>
 #include <limits>
-#include <cmath>
-#include <ostream>
 
 namespace cube::core
 {
@@ -32,20 +30,7 @@ struct color
         r(red), g(green), b(blue), a(alpha)
     { }
 
-    color(color_vec_t const & vec)
-    {
-        auto clamp = [](auto scalar) {
-            int x = std::round(scalar);
-            if (x < color_min_value) return color_min_value;
-            if (x > color_max_value) return color_max_value;
-            return color_t(x);
-        };
-
-        r = clamp(vec.r);
-        g = clamp(vec.g);
-        b = clamp(vec.b);
-        a = clamp(vec.a);
-    }
+    color(color_vec_t const & vec);
 
     constexpr operator color_vec_t() const { return {r, g, b, a}; }
     constexpr color_vec_t vec() const { return *this; }
@@ -58,13 +43,6 @@ struct color
     color_t b;
     color_t a;
 };
-
-inline std::ostream & operator<<(std::ostream & o, color const & c)
-{
-    return o
-        << "r: " << int(c.r) << ", " << "g: " << int(c.g) << ", "
-        << "b: " << int(c.b) << ", " << "a: " << int(c.a);
-}
 
 inline constexpr color operator!(color const & c)
 {
