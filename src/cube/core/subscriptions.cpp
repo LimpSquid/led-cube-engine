@@ -41,4 +41,13 @@ tick_subscription::~tick_subscription()
         context_.tickers.erase(search);
 }
 
+void tick_subscription::restart()
+{
+    auto search = std::find_if(context_.tickers.begin(), context_.tickers.end(),
+        [this](auto const & ticker) { return ticker.id == id_; });
+
+    if (search != context_.tickers.end())
+        search->next = steady_clock::now() + search->interval;
+}
+
 } // End of namespace

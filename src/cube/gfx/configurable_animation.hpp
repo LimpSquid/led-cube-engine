@@ -7,7 +7,6 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace cube::core { class engine_context; }
 namespace cube::gfx
 {
 
@@ -120,10 +119,7 @@ public:
 protected:
     configurable_animation(core::engine_context & context);
 
-    core::engine_context & context();
-
 private:
-    core::engine_context & context_;
     std::unordered_map<property_label_type, std::string> properties_;
 };
 

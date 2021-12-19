@@ -3,6 +3,11 @@
 namespace cube::core
 {
 
+engine_context & animation::context()
+{
+    return context_;
+}
+
 bool animation::dirty() const
 {
     return dirty_;
@@ -31,7 +36,8 @@ void animation::paint_event(graphics_device & device)
     paint(device);
 }
 
-animation::animation() :
+animation::animation(engine_context & context) :
+    context_(context),
     dirty_(true)
 { }
 

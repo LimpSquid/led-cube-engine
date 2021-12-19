@@ -32,6 +32,8 @@ public:
         bool trigger_on_start = false);
     ~tick_subscription();
 
+    void restart();
+
 private:
     engine_context & context_;
     uint64_t const id_;
