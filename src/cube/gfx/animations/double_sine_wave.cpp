@@ -1,7 +1,9 @@
 #include <cube/gfx/animations/double_sine_wave.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/core/math.hpp>
 
+#include <iostream>
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
@@ -9,7 +11,8 @@ using namespace std::chrono;
 namespace
 {
 
-constexpr double sine_offset = (cube::cube_size_1d - 1) / 2.0;
+constexpr Range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
+constexpr Range unit_circle_range = {-1.0, 1.0};
 constexpr color default_color = color_magenta;
 
 } // End of namespace
@@ -64,7 +67,7 @@ void double_sine_wave::paint(graphics_device & device)
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
             p.set_color(hue(std::abs(std::cos(i * omega_))).vec() * fader_.value());
 
-            int z = std::round(sine_offset * std::sin(i * omega_) + sine_offset);
+            int z = map(std::sin(i * omega_), unit_circle_range, cube_axis_range);
             int x = i - w.time_count;
 
             for (int y = 0; y < cube_size_1d; ++y)

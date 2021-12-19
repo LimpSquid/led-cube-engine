@@ -20,13 +20,22 @@ struct Range
     T to;
 };
 
+template<typename T>
+constexpr Range<T> operator*(Range<T> const & lhs, Range<T> const & rhs) { return {lhs.from * rhs.from, lhs.to * rhs.to}; }
+template<typename T>
+constexpr Range<T> operator*(Range<T> const & lhs, double scalar) { return {lhs.from * scalar, lhs.to * scalar}; }
+
 template<typename TIn, typename TOut>
 constexpr inline TOut map(
     TIn const & value,
     Range<TIn> const & in_range,
     Range<TOut> const & out_range)
 {
-    return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);
+    if constexpr((std::is_integral_v<TIn> && std::is_floating_point_v<TOut>) ||
+        (std::is_integral_v<TOut> && std::is_floating_point_v<TIn>))
+        return out_range.from + std::round((out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from));
+    else
+        return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);
 }
 
 template<typename TIn, typename TOut>
