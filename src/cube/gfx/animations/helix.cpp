@@ -29,7 +29,7 @@ void helix::configure()
 {
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
-    resolution_ = std::max(1, read_property(helix_resolution, 50));
+    resolution_ = std::max(1, read_property(helix_resolution, 75));
     omega_ = (2.0 * M_PI) / resolution_;
     step_ = 0;
 
