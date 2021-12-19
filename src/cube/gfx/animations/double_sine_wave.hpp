@@ -12,8 +12,8 @@ class double_sine_wave :
 public:
     enum : property_label_type
     {
-        wave_period = property_custom,      // wave period in number of pixels
-        wave_period_time_ms,                // time of one wave period to complete
+        wave_period = property_custom,      // number of voxels along the x-axis for one wave period
+        wave_period_time_ms,                // time in milliseconds to complete one wave period
         color_gradient_start,               // start color of gradient
         color_gradient_end,                 // end color of gradient
     };
@@ -33,8 +33,8 @@ private:
     virtual void stop() override;
 
     core::tick_subscription::pointer tick_sub_;
-    sine_transition fader_;
     std::array<wave, 2> waves_;
+    sine_transition fader_;
     int period_;
     double omega_;
 };

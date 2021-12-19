@@ -13,8 +13,8 @@ class stars :
 public:
     enum : property_label_type
     {
-        fade_resolution = property_custom,  // number of fade steps
-        fade_time_ms,                       // time to complete a single fade cycle for a star
+        fade_resolution = property_custom,  // number of fade steps of one star fade cycle
+        fade_time_ms,                       // time in milliseconds to complete one fade cycle
         number_of_stars,
     };
 
@@ -35,7 +35,7 @@ private:
     core::tick_subscription::pointer tick_sub_;
     std::vector<star> stars_;
     int hue_step_;
-    int fade_resolution_;
+    int resolution_;
     double omega_;
 };
 

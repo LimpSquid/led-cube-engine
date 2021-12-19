@@ -31,23 +31,23 @@ stars::stars(engine_context & context) :
 
 void stars::configure()
 {
-    fade_resolution_ = std::max(1, read_property(fade_resolution, 50));
-    omega_ = M_PI / fade_resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
+    resolution_ = std::max(1, read_property(fade_resolution, 50));
+    omega_ = M_PI / resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
     hue_step_ = 0;
 
     int number_of_stars = read_property(number_of_stars, cube_size_3d / 15);
     stars_.resize(std::min(cube_size_3d / 8, number_of_stars)); // Max number of stars is 1/8th of the cube's size
     for (star & s : stars_) {
         s = make_unique_star();
-        s.fade_step = -(std::rand() % fade_resolution_); // Negative so stars are initially black
+        s.fade_step = -(std::rand() % resolution_); // Negative so stars are initially black
     }
 
     tick_sub_ = tick_subscription::create(
         context(),
-        read_property(fade_time_ms, 5000ms) / fade_resolution_,
+        read_property(fade_time_ms, 5000ms) / resolution_,
         [this](auto, auto) {
             for (star & s : stars_)
-                if (++s.fade_step > fade_resolution_)
+                if (++s.fade_step > resolution_)
                     s = make_unique_star();
 
             hue_step_++;
@@ -66,7 +66,7 @@ void stars::paint(graphics_device & device)
         double hue_omega = omega_ * hue_omega_scalar;
         gradient fade({
             {0.0, color_black},
-            {1.0, hue(std::fabs(std::cos(hue_step_ * hue_omega - phase_shift)))},
+            {1.0, hue(std::abs(std::cos(hue_step_ * hue_omega - phase_shift)))},
         });
 
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black

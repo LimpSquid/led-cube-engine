@@ -23,8 +23,13 @@ int main(int argc, char *argv[])
     animations::stars stars(context);
     animations::helix helix(context);
 
+    helix.write_properties({
+        {animations::helix::helix_phase_shift_sin_factor, 0.01},
+        {animations::helix::helix_phase_shift_cos_factor, 0.05},
+    });
+
     std::vector<animation *> animations = {
-        //&helix,
+        &helix,
         &stars,
         // &fill_cube,
         &double_sine_wave,

@@ -11,8 +11,8 @@ basic_transition::basic_transition(core::engine_context & context, transition_co
     config_(config),
     value_(config_.from)
 {
-    if (config_.steps == 0)
-        throw std::runtime_error("transition_config::steps cannot be zero");
+    if (config_.resolution == 0)
+        throw std::runtime_error("transition_config::resolution cannot be zero");
 }
 
 double basic_transition::value() const
@@ -27,10 +27,10 @@ void basic_transition::start()
 
     tick_sub_ = tick_subscription::create(
         context_,
-        config_.time / config_.steps,
+        config_.time / config_.resolution,
         [this](auto, auto) {
-            if (++step_ < config_.steps) {
-                double progress = std::clamp(map(static_cast<double>(step_) / config_.steps), 0.0, 1.0);
+            if (++step_ < config_.resolution) {
+                double progress = std::clamp(map(static_cast<double>(step_) / config_.resolution), 0.0, 1.0);
                 value_ = config_.from + (config_.to - config_.from) * progress;
             } else {
                 value_ = config_.to;

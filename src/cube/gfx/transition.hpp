@@ -9,7 +9,7 @@ struct transition_config
 {
     double from;
     double to;
-    unsigned int steps;
+    unsigned int resolution;
     std::chrono::milliseconds time;
 };
 
