@@ -48,32 +48,32 @@ constexpr inline TOut map(
 
 constexpr inline bool equal(double lhs, double rhs)
 {
-    return std::abs(lhs - rhs) <= ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
+    return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
 }
 
 constexpr inline bool equal(float lhs, float rhs)
 {
-    return std::abs(lhs - rhs) <= ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
+    return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
 }
 
 constexpr inline bool greater_than(double lhs, double rhs)
 {
-    return (lhs - rhs) > ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
+    return (lhs - rhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
 }
 
 constexpr inline bool greater_than(float lhs, float rhs)
 {
-    return (lhs - rhs) > ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
+    return (lhs - rhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
 }
 
 constexpr inline bool less_than(double lhs, double rhs)
 {
-    return (rhs - lhs) > ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
+    return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
 }
 
 constexpr inline bool less_than(float lhs, float rhs)
 {
-    return (rhs - lhs) > ( (std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
+    return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
 }
 
 } // End of namespace
