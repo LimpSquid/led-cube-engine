@@ -53,6 +53,10 @@ inline constexpr color operator!(color const & c)
     return {r, g, b, c.a};
 }
 
+inline color_vec_t red_vec(double scalar) { return {scalar, 1.0, 1.0, 1.0}; }
+inline color_vec_t green_vec(double scalar) { return {1.0, scalar, 1.0, 1.0}; }
+inline color_vec_t blue_vec(double scalar) { return {1.0, 1.0, scalar, 1.0}; }
+inline color_vec_t alpha_vec(double scalar) { return {1.0, 1.0, 1.0, scalar}; }
 inline void scale(rgba_t & rgba, double scalar)
 {
     auto scaled = color(rgba).vec() * scalar;
