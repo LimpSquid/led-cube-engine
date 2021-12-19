@@ -2,6 +2,7 @@
 #include <cube/core/painter.hpp>
 
 using namespace cube::core;
+using namespace cube::gfx;
 using namespace std::chrono;
 
 namespace cube::gfx::animations

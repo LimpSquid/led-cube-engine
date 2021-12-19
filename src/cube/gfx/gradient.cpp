@@ -1,6 +1,8 @@
-#include <cube/core/gradient.hpp>
+#include <cube/gfx/gradient.hpp>
 
-namespace cube::core
+using namespace cube::core;
+
+namespace cube::gfx
 {
 
 gradient::gradient(std::initializer_list<gradient_stop> initializer_list) :

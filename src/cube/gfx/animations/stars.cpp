@@ -1,8 +1,9 @@
 #include <cube/gfx/animations/stars.hpp>
+#include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
-#include <cube/core/gradient.hpp>
 
 using namespace cube::core;
+using namespace cube::gfx;
 using namespace std::chrono;
 
 namespace

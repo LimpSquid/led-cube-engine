@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/core/subscriptions.hpp>
+#include <cube/gfx/transition.hpp>
 
 namespace cube::gfx::animations
 {
@@ -33,6 +33,7 @@ private:
     virtual void stop() override;
 
     core::tick_subscription::pointer tick_sub_;
+    sine_transition fader_;
     std::array<wave, 2> waves_;
     int period_;
     double omega_;

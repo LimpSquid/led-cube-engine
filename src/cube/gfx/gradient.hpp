@@ -4,18 +4,18 @@
 #include <boost/container/flat_set.hpp>
 #include <algorithm>
 
-namespace cube::core
+namespace cube::gfx
 {
 
 struct gradient_stop
 {
-    gradient_stop(double p, color c) :
+    gradient_stop(double p, core::color c) :
         gpos(std::clamp(p, 0.0, 1.0)),
         gcolor(std::move(c))
     { }
 
     double gpos;
-    color gcolor;
+    core::color gcolor;
 };
 
 inline bool operator<(gradient_stop const & lhs, gradient_stop const & rhs) { return std::less<double>{}(lhs.gpos, rhs.gpos); }
@@ -32,7 +32,7 @@ public:
     void add(gradient_stop stop);
     void reset();
 
-    color operator()(double gpos) const;
+    core::color operator()(double gpos) const;
 
 private:
     boost::container::flat_set<gradient_stop> stops_;

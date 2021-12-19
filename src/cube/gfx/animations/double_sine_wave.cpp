@@ -1,8 +1,9 @@
 #include <cube/gfx/animations/double_sine_wave.hpp>
+#include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
-#include <cube/core/gradient.hpp>
 
 using namespace cube::core;
+using namespace cube::gfx;
 using namespace std::chrono;
 
 namespace
@@ -17,7 +18,8 @@ namespace cube::gfx::animations
 {
 
 double_sine_wave::double_sine_wave(engine_context & context) :
-    configurable_animation(context)
+    configurable_animation(context),
+    fader_(context, {0.1, 1.0, 10, 1000ms})
 { }
 
 void double_sine_wave::configure()
@@ -44,6 +46,8 @@ void double_sine_wave::configure()
             update();
         }
     );
+
+    fader_.start();
 }
 
 void double_sine_wave::paint(graphics_device & device)
@@ -58,7 +62,7 @@ void double_sine_wave::paint(graphics_device & device)
         });
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
-            p.set_color(hue(std::fabs(std::cos(i * omega_))));
+            p.set_color(hue(std::fabs(std::cos(i * omega_))).vec() * fader_.value());
 
             int z = std::round(sine_offset * std::sin(i * omega_) + sine_offset);
             int x = i - w.time_count;

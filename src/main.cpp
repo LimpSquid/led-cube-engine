@@ -18,13 +18,7 @@ int main(int argc, char *argv[])
     engine cube_engine(context, new mock::display);
 
     animations::fill_cube fill_cube(context);
-    fill_cube.write_properties({
-        {animations::fill_cube::cycle_interval_sec, 1s},
-    });
     animations::double_sine_wave double_sine_wave(context);
-    double_sine_wave.write_properties({
-        {animations::double_sine_wave::color_gradient_end, color_green},
-    });
     animations::stars stars(context);
 
     std::vector<animation *> animations = {

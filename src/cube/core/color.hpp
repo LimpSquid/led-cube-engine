@@ -47,9 +47,9 @@ struct color
         a = clamp(vec.a);
     }
 
-    operator color_vec_t() const { return {r, g, b, a}; }
-    color_vec_t vec() const { return *this; }
-    rgba_t rgba() const { return rgba_t(r | (g << 8) | (b << 16) | (a << 24)); }
+    constexpr operator color_vec_t() const { return {r, g, b, a}; }
+    constexpr color_vec_t vec() const { return *this; }
+    constexpr rgba_t rgba() const { return rgba_t(r | (g << 8) | (b << 16) | (a << 24)); }
     bool transparent() const { return a == color_min_value; }
     bool opaque() const { return a == color_max_value; }
 
@@ -75,6 +75,12 @@ inline constexpr color operator!(color const & c)
     return {r, g, b, c.a};
 }
 
+inline void scale(rgba_t & rgba, double scalar)
+{
+    auto scaled = color(rgba).vec() * scalar;
+    rgba = color(scaled).rgba();
+}
+
 inline bool operator==(color const & lhs, color const & rhs) { return lhs.rgba() == rhs.rgba(); }
 inline bool operator!=(color const & lhs, color const & rhs) { return lhs.rgba() != rhs.rgba(); }
 
@@ -90,7 +96,9 @@ constexpr color color_yellow        = {255, 255, 000};
 constexpr color color_orange        = {255, 128, 000};
 
 void alpha_blend(color const & c, color & bucket);
+void alpha_blend(rgba_t const & c, rgba_t & bucket);
 void blend(color const & c, color & bucket);
+void blend(rgba_t const & c, rgba_t & bucket);
 void blend(color const & c, rgba_t & bucket);
 
 } // End of namespace

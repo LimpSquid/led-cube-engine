@@ -23,13 +23,28 @@ struct graphics_state
 
 struct graphics_buffer
 {
-    rgba_t data[cube_size_3d];
+    rgba_t data[cube_size_3d]{0};
 
     void operator=(graphics_buffer const & other)
     {
         memcpy(data, other.data, sizeof(data));
     }
 };
+
+inline void scale(graphics_buffer & buffer, double scalar)
+{
+    rgba_t * data = buffer.data;
+    for (int i = 0; i < cube_size_3d; ++i)
+        scale(*data++, scalar);
+}
+
+inline void blend(graphics_buffer const & lhs, graphics_buffer & rhs)
+{
+    rgba_t const * lhs_data = lhs.data;
+    rgba_t * rhs_data = rhs.data;
+    for (int i = 0; i < cube_size_3d; ++i)
+        blend(*lhs_data++, *rhs_data++);
+}
 
 class graphics_device
 {
