@@ -31,8 +31,7 @@ constexpr inline TOut map(
     Range<TIn> const & in_range,
     Range<TOut> const & out_range)
 {
-    if constexpr((std::is_integral_v<TIn> && std::is_floating_point_v<TOut>) ||
-        (std::is_integral_v<TOut> && std::is_floating_point_v<TIn>))
+    if constexpr(std::is_integral_v<TOut> && std::is_floating_point_v<TIn>)
         return out_range.from + std::round((out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from));
     else
         return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);

@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     });
 
     std::vector<animation *> animations = {
-        //&helix,
-        //&stars,
+        &helix,
+        &stars,
         // &fill_cube,
         &double_sine_wave,
     };
