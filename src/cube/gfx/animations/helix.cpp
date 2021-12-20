@@ -32,6 +32,7 @@ void helix::configure()
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
     resolution_ = std::max(1, read_property(helix_resolution, 75));
+    thickness_ = read_property(helix_thickness, 3.0);
     omega_ = (2.0 * M_PI) / resolution_;
     step_ = 0;
 
@@ -63,7 +64,7 @@ void helix::paint(graphics_device & device)
         int z = map(z1, unit_circle_range, cube_axis_range);
 
         p.set_color(hue_(std::sin(std::abs(step_ * omega_ + phase_shift))).vec() * rgb_vec(fader_.value()));
-        p.scatter({x, y, z}, 3.0);
+        p.scatter({x, y, z}, thickness_);
     }
 }
 

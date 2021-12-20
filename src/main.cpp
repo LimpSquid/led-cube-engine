@@ -22,23 +22,35 @@ int main(int argc, char *argv[])
     animations::double_sine_wave double_sine_wave(context);
     animations::stars stars(context);
     animations::helix helix(context);
+    animations::helix fat_helix(context);
 
     helix.write_properties({
+        {animations::helix::helix_phase_shift_sin_factor, 0.02},
+        {animations::helix::helix_phase_shift_cos_factor, 0.1},
+        {animations::helix::color_gradient_start, color_cyan},
+        {animations::helix::color_gradient_end, color_yellow},
+    });
+
+    fat_helix.write_properties({
         {animations::helix::helix_phase_shift_sin_factor, 0.01},
         {animations::helix::helix_phase_shift_cos_factor, 0.05},
+        {animations::helix::helix_thickness, 10.0},
+        {animations::helix::color_gradient_start, color_orange},
+        {animations::helix::color_gradient_end, color_magenta},
     });
 
     std::vector<animation *> animations = {
         &helix,
         &stars,
+        &fat_helix,
         // &fill_cube,
-        &double_sine_wave,
+        //&double_sine_wave,
     };
     int animations_index = 0;
 
     tick_subscription tick_sub(
         context,
-        15s,
+        20s,
         [&](auto, auto) { cube_engine.load(animations[animations_index++ % animations.size()]); },
         true
     );
