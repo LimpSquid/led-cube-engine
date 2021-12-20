@@ -46,6 +46,14 @@ constexpr inline TOut map(
     return map(value, Range(in_from, in_to), Range(out_from, out_to));
 }
 
+template<typename T>
+constexpr inline bool within_range(T const & value, Range<T> const & range, bool inclusive = true)
+{
+    if (inclusive)
+        return (value >= range.from && value <= range.to);
+    return (value > range.from && value < range.to);
+}
+
 constexpr inline bool equal(double lhs, double rhs)
 {
     return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
@@ -75,5 +83,26 @@ constexpr inline bool less_than(float lhs, float rhs)
 {
     return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
 }
+
+constexpr inline bool less_than_or_equal(double lhs, double rhs)
+{
+    return less_than(lhs, rhs) || equal(lhs, rhs);
+}
+
+constexpr inline bool less_than_or_equal(float lhs, float rhs)
+{
+    return less_than(lhs, rhs) || equal(lhs, rhs);
+}
+
+constexpr inline bool greater_than_or_equal(double lhs, double rhs)
+{
+    return greater_than(lhs, rhs) || equal(lhs, rhs);
+}
+
+constexpr inline bool greater_than_or_equal(float lhs, float rhs)
+{
+    return greater_than(lhs, rhs) || equal(lhs, rhs);
+}
+
 
 } // End of namespace

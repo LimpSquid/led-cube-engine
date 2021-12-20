@@ -47,10 +47,7 @@ void alpha_blend(rgba_t const & c, rgba_t & bucket)
 
 void blend(color const & c, color & bucket)
 {
-    // Two special cases are handled here:
-    // - In case 'c' is color_clear, we will "clear" the bucket
-    // - In case 'bucket' is cleared, then we will fill it with color 'c' without blending
-    if (c == color_clear || bucket == color_clear)
+    if (c.opaque())
         bucket = c;
     else
         alpha_blend(c, bucket); // blend the new color with the existing color in the bucket
@@ -58,8 +55,7 @@ void blend(color const & c, color & bucket)
 
 void blend(rgba_t const & c, rgba_t & bucket)
 {
-    // Same as above
-    if (c == color_clear.rgba() || bucket == color_clear.rgba())
+    if (opaque(c))
         bucket = c;
     else
         alpha_blend(c, bucket);

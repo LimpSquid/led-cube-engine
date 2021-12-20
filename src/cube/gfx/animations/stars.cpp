@@ -31,7 +31,7 @@ stars::stars(engine_context & context) :
 
 void stars::configure()
 {
-    resolution_ = std::max(1, read_property(fade_resolution, 50));
+    resolution_ = std::max(1, read_property(fade_resolution, 100));
     omega_ = M_PI / resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
     hue_step_ = 0;
 

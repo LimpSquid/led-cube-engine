@@ -15,7 +15,7 @@ public:
     void draw(voxel_t const & voxel);
     void wipe_canvas();
     void fill_canvas();
-    void sphere(voxel_t const & origin, double radius);
+    void scatter(voxel_t const & origin, double radius, bool smooth = true);
 
 private:
     void update_state();

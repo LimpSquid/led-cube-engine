@@ -3,6 +3,8 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 
+#include <iostream> // @Commit: remove
+
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
@@ -60,8 +62,8 @@ void helix::paint(graphics_device & device)
         int x = map(x1, unit_circle_range, cube_axis_range);
         int z = map(z1, unit_circle_range, cube_axis_range);
 
-        p.set_color(hue_(std::sin(std::abs(step_ * omega_ + phase_shift))).vec() * fader_.value());
-        p.sphere({x, y, z}, 2.0);
+        p.set_color(hue_(std::sin(std::abs(step_ * omega_ + phase_shift))).vec() * rgb_vec(fader_.value()));
+        p.scatter({x, y, z}, 3.0);
     }
 }
 
