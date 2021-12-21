@@ -66,4 +66,11 @@ void recurring_timer::stop()
         context_.tickers.erase(search);
 }
 
+single_shot_timer::single_shot_timer(engine_context & context, timer_handler_t handler) :
+    recurring_timer(context, [this, h = std::move(handler)](auto now, auto elapsed) {
+        stop(); // stop before handler as the handler may restart the timer
+        h(std::move(now), std::move(elapsed));
+    })
+{ }
+
 } // End of namespace

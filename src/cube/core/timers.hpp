@@ -30,4 +30,12 @@ private:
     uint64_t const id_;
 };
 
+class single_shot_timer :
+    public recurring_timer
+{
+public:
+    single_shot_timer(engine_context & context, timer_handler_t handler);
+};
+
+
 } // End of namespace
