@@ -8,7 +8,7 @@ namespace cube::core
 
 class engine_context
 {
-    friend class tick_subscription;
+    friend class recurring_timer;
     friend class engine;
 
     struct ticker

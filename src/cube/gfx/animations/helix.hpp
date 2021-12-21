@@ -25,11 +25,11 @@ public:
     helix(core::engine_context & context);
 
 private:
-    virtual void configure() override;
+    virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;
 
-    core::tick_subscription::pointer tick_sub_;
+    core::recurring_timer update_timer_;
     gradient hue_;
     sine_transition fader_;
     int resolution_;

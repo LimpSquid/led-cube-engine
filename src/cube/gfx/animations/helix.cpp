@@ -24,10 +24,14 @@ namespace cube::gfx::animations
 
 helix::helix(engine_context & context) :
     configurable_animation(context),
+    update_timer_(context, [this](auto, auto) {
+        step_++;
+        update();
+    }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }
 
-void helix::configure()
+void helix::start()
 {
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
@@ -36,15 +40,7 @@ void helix::configure()
     omega_ = (2.0 * M_PI) / resolution_;
     step_ = 0;
 
-    tick_sub_ = tick_subscription::create(
-        context(),
-        read_property(helix_rotation_time_ms, 1500ms) / resolution_,
-        [this](auto, auto) {
-            step_++;
-            update();
-        }
-    );
-
+    update_timer_.start(read_property(helix_rotation_time_ms, 1500ms) / resolution_);
     fader_.start();
 }
 
@@ -70,7 +66,7 @@ void helix::paint(graphics_device & device)
 
 void helix::stop()
 {
-    tick_sub_.reset();
+    update_timer_.stop();
 }
 
 } // End of namespace

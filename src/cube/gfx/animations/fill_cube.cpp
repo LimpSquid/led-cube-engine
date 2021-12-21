@@ -8,16 +8,13 @@ namespace cube::gfx::animations
 {
 
 fill_cube::fill_cube(engine_context & context) :
-    configurable_animation(context)
+    configurable_animation(context),
+    update_timer_(context, [this](auto, auto) { update(); })
 { }
 
-void fill_cube::configure()
+void fill_cube::start()
 {
-    tick_sub_ = tick_subscription::create(
-        context(),
-        read_property(cycle_interval_sec, 5s),
-        [this](auto, auto) { update(); }
-    );
+    update_timer_.start(read_property(cycle_interval_sec, 5s));
 }
 
 void fill_cube::paint(graphics_device & device)
@@ -34,7 +31,7 @@ void fill_cube::paint(graphics_device & device)
 
 void fill_cube::stop()
 {
-    tick_sub_.reset();
+    update_timer_.stop();
 }
 
 } // End of namespace

@@ -16,7 +16,7 @@ bool animation::dirty() const
 void animation::init()
 {
     dirty_ = true;
-    configure();
+    start();
 }
 
 void animation::update()
@@ -41,7 +41,7 @@ animation::animation(engine_context & context) :
     dirty_(true)
 { }
 
-void animation::configure()
+void animation::start()
 { }
 
 void animation::stop()

@@ -21,10 +21,15 @@ namespace cube::gfx::animations
 
 double_sine_wave::double_sine_wave(engine_context & context) :
     configurable_animation(context),
+    update_timer_(context, [this](auto, auto) {
+        for (wave & w : waves_)
+            w.time_count = (w.time_count + 1) % period_;
+        update();
+    }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }
 
-void double_sine_wave::configure()
+void double_sine_wave::start()
 {
     auto const gradient_start = read_property(color_gradient_start, default_color);
     auto const gradient_end = read_property(color_gradient_end, !default_color);
@@ -39,16 +44,7 @@ void double_sine_wave::configure()
     waves_[1].gradient_start = gradient_end; // Invert color of 2nd wave
     waves_[1].gradient_end = gradient_start;
 
-    tick_sub_ = tick_subscription::create(
-        context(),
-        read_property(wave_period_time_ms, 1500ms) / period_,
-        [this](auto, auto) {
-            for (wave & w : waves_)
-                w.time_count = (w.time_count + 1) % period_;
-            update();
-        }
-    );
-
+    update_timer_.start(read_property(wave_period_time_ms, 1500ms) / period_);
     fader_.start();
 }
 
@@ -77,7 +73,7 @@ void double_sine_wave::paint(graphics_device & device)
 
 void double_sine_wave::stop()
 {
-    tick_sub_.reset();
+    update_timer_.stop();
 }
 
 } // End of namespace

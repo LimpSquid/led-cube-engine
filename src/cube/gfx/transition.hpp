@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cube/core/subscriptions.hpp>
+#include <cube/core/timers.hpp>
 
 namespace cube::gfx
 {
@@ -24,8 +24,7 @@ public:
 private:
     virtual double map(double progress) const = 0; // map 0.0 - 1.0
 
-    core::engine_context & context_;
-    core::tick_subscription::pointer tick_sub_;
+    core::recurring_timer timer_;
 
     transition_config config_;
     double value_;

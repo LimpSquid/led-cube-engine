@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/core/subscriptions.hpp>
+#include <cube/core/timers.hpp>
 #include <cube/core/voxel.hpp>
 
 namespace cube::gfx::animations
@@ -27,12 +27,12 @@ private:
         int fade_step;
     };
 
-    virtual void configure() override;
+    virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;
     star make_unique_star() const;
 
-    core::tick_subscription::pointer tick_sub_;
+    core::recurring_timer update_timer_;
     std::vector<star> stars_;
     int hue_step_;
     int resolution_;

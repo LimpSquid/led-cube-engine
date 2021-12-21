@@ -26,7 +26,7 @@ protected:
     animation(engine_context & context);
 
 private:
-    virtual void configure();
+    virtual void start();
     virtual void paint(graphics_device & device) = 0;
     virtual void stop();
 

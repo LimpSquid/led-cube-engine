@@ -7,7 +7,15 @@ namespace cube::gfx
 {
 
 basic_transition::basic_transition(core::engine_context & context, transition_config const & config) :
-    context_(context),
+    timer_(context, [this](auto, auto) {
+        if (++step_ < config_.resolution) {
+            double progress = std::clamp(map(static_cast<double>(step_) / config_.resolution), 0.0, 1.0);
+            value_ = config_.from + (config_.to - config_.from) * progress;
+        } else {
+            value_ = config_.to;
+            timer_.stop();
+        }
+    }),
     config_(config),
     value_(config_.from)
 {
@@ -25,19 +33,7 @@ void basic_transition::start()
     step_ = 0;
     value_ = config_.from;
 
-    tick_sub_ = tick_subscription::create(
-        context_,
-        config_.time / config_.resolution,
-        [this](auto, auto) {
-            if (++step_ < config_.resolution) {
-                double progress = std::clamp(map(static_cast<double>(step_) / config_.resolution), 0.0, 1.0);
-                value_ = config_.from + (config_.to - config_.from) * progress;
-            } else {
-                value_ = config_.to;
-                tick_sub_.reset();
-            }
-        }
-    );
+    timer_.start(config_.time / config_.resolution);
 }
 
 linear_transition::linear_transition(engine_context & context, transition_config const & config) :

@@ -26,10 +26,17 @@ namespace cube::gfx::animations
 {
 
 stars::stars(engine_context & context) :
-    configurable_animation(context)
+    configurable_animation(context),
+    update_timer_(context, [this](auto, auto) {
+        for (star & s : stars_)
+            if (++s.fade_step > resolution_)
+                s = make_unique_star();
+        hue_step_++;
+        update();
+    })
 { }
 
-void stars::configure()
+void stars::start()
 {
     resolution_ = std::max(1, read_property(fade_resolution, 100));
     omega_ = M_PI / resolution_; // omega = 0.5 * ((2 * pi) / resolution), multiply by 0.5 as we only use half a sine period for fading
@@ -42,18 +49,7 @@ void stars::configure()
         s.fade_step = -(std::rand() % resolution_); // Negative so stars are initially black
     }
 
-    tick_sub_ = tick_subscription::create(
-        context(),
-        read_property(fade_time_ms, 5000ms) / resolution_,
-        [this](auto, auto) {
-            for (star & s : stars_)
-                if (++s.fade_step > resolution_)
-                    s = make_unique_star();
-
-            hue_step_++;
-            update();
-        }
-    );
+    update_timer_.start(read_property(fade_time_ms, 5000ms) / resolution_);
 }
 
 void stars::paint(graphics_device & device)
@@ -76,7 +72,7 @@ void stars::paint(graphics_device & device)
 
 void stars::stop()
 {
-    tick_sub_.reset();
+    update_timer_.stop();
 }
 
 stars::star stars::make_unique_star() const

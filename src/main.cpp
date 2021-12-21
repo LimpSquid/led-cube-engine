@@ -1,6 +1,6 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
-#include <cube/core/subscriptions.hpp>
+#include <cube/core/timers.hpp>
 #include <cube/hal/mock/display.hpp>
 #include <cube/gfx/animations/fill_cube.hpp>
 #include <cube/gfx/animations/double_sine_wave.hpp>
@@ -48,12 +48,10 @@ int main(int argc, char *argv[])
     };
     int animations_index = 0;
 
-    tick_subscription tick_sub(
-        context,
-        20s,
-        [&](auto, auto) { cube_engine.load(animations[animations_index++ % animations.size()]); },
-        true
-    );
+    recurring_timer timer(context, [&](auto, auto) {
+        cube_engine.load(animations[animations_index++ % animations.size()]);
+    });
+    timer.start(20s, true);
     cube_engine.run(); // Todo: eventually we need to cycle through animations
 
     return EXIT_SUCCESS;
