@@ -59,7 +59,7 @@ void helix::paint(graphics_device & device)
         int x = map(x1, unit_circle_range, cube_axis_range);
         int z = map(z1, unit_circle_range, cube_axis_range);
 
-        p.set_color(hue_(std::sin(std::abs(step_ * omega_ + phase_shift))).vec() * rgb_vec(fader_.value()));
+        p.set_color(hue_(abs_sin(step_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
         p.scatter({x, y, z}, thickness_);
     }
 }

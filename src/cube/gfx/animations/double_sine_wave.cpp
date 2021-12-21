@@ -60,7 +60,7 @@ void double_sine_wave::paint(graphics_device & device)
         });
 
         for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
-            p.set_color(hue(std::abs(std::cos(i * omega_))).vec() * rgb_vec(fader_.value()));
+            p.set_color(hue(abs_cos(i * omega_)).vec() * rgb_vec(fader_.value()));
 
             int z = map(std::sin(i * omega_), unit_circle_range, cube_axis_range);
             int x = i - w.time_count;

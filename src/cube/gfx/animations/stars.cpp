@@ -62,7 +62,7 @@ void stars::paint(graphics_device & device)
         double hue_omega = omega_ * hue_omega_scalar;
         gradient fade({
             {0.0, color_black},
-            {1.0, hue(std::abs(std::cos(hue_step_ * hue_omega - phase_shift)))},
+            {1.0, hue(abs_cos(hue_step_ * hue_omega - phase_shift))},
         });
 
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black

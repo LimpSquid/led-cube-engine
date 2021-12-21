@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
     });
 
     fat_helix.write_properties({
-        {animations::helix::helix_phase_shift_sin_factor, 0.01},
-        {animations::helix::helix_phase_shift_cos_factor, 0.05},
-        {animations::helix::helix_thickness, 10.0},
-        {animations::helix::color_gradient_start, color_orange},
-        {animations::helix::color_gradient_end, color_magenta},
+        {animations::helix::helix_phase_shift_sin_factor, 0.02},
+        {animations::helix::helix_phase_shift_cos_factor, 0.1},
+        {animations::helix::helix_thickness, 15.0},
+        {animations::helix::color_gradient_start, color_red},
+        {animations::helix::color_gradient_end, color_orange},
     });
 
     std::vector<animation *> animations = {

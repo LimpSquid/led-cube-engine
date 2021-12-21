@@ -104,5 +104,25 @@ constexpr inline bool greater_than_or_equal(float lhs, float rhs)
     return greater_than(lhs, rhs) || equal(lhs, rhs);
 }
 
+template<typename T>
+constexpr inline T abs_sin(T const & value)
+{
+    static_assert(std::is_floating_point_v<T>);
+    return std::abs(std::sin(value));
+}
+
+template<typename T>
+constexpr inline T abs_cos(T const & value)
+{
+    static_assert(std::is_floating_point_v<T>);
+    return std::abs(std::cos(value));
+}
+
+template<typename T>
+constexpr inline T abs_tan(T const & value)
+{
+    static_assert(std::is_floating_point_v<T>);
+    return std::abs(std::tan(value));
+}
 
 } // End of namespace
