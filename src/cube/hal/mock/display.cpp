@@ -9,7 +9,7 @@ using namespace cube::core;
 namespace
 {
 
-constexpr cube::hal::mock::window_properties window_resolution = {640, 480};
+constexpr cube::hal::mock::window_properties window_resolution = {960, 720};
 
 } // End of namespace
 

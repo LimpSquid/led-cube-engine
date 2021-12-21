@@ -65,9 +65,11 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
                 double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
                 if (less_than_or_equal(r, radius)) {
                     if (smooth) {
-                        // cosine to inverse the factor (r / radius), additionally it should
-                        // be a bit smoother than mapping the scalar linearly
-                        double scalar = std::cos(0.5 * M_PI * (r / radius));
+                        // 1) cosine to inverse the factor (r / radius), additionally it should
+                        //    be a bit smoother than mapping the scalar linearly
+                        // 2) we use an offset to only scale the color after (r / radius) reaches
+                        //    a certain threshold
+                        double scalar = std::min(1.0, 0.4 + std::cos(0.5 * M_PI * (r / radius)));
                         set_color(original_color.vec() * scalar);
                     }
                     draw({x, y, z});
