@@ -17,7 +17,7 @@ This project uses CMake to build the executable. Make sure you have CMake versio
     ```
 1. If desired change the LED cube engine's target (default is `mock`):
     ```bash
-    $ cmake -D LCE_TARGET=<new_target>
+    $ cmake -D LCE_TARGET=<new_target> .
     ```
 1. Build source:
     ```bash
