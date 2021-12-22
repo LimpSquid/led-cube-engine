@@ -1,11 +1,12 @@
 #pragma once
 
+#include <hal/specs.hpp>
 #include <cassert>
 
 namespace cube
 {
 
-constexpr int cube_size_1d = 16;
+constexpr int cube_size_1d = hal::cube_size;
 constexpr int cube_size_2d = cube_size_1d * cube_size_1d;
 constexpr int cube_size_3d = cube_size_1d * cube_size_1d * cube_size_1d;
 constexpr int cube_axis_min_value = 0;

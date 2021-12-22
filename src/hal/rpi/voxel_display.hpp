@@ -18,3 +18,5 @@ private:
 };
 
 } // End of namespace
+
+namespace hal { using graphics_device_t = rpi::voxel_display; }

@@ -5,7 +5,7 @@
 #include <cube/gfx/animations/double_sine_wave.hpp>
 #include <cube/gfx/animations/stars.hpp>
 #include <cube/gfx/animations/helix.hpp>
-#include <hal/target.hpp>
+#include <hal/graphics_device.hpp>
 #include <chrono>
 
 using namespace cube::core;
