@@ -5,5 +5,5 @@
 #elif TARGET_RPI
 #include "rpi/voxel_display.hpp"
 #else
-#error "Oopsie, missing the target."
+#error "Oopsie, unknown target."
 #endif
