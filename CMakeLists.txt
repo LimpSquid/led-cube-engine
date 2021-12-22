@@ -2,7 +2,7 @@
 # Project config #
 ##################
 
-cmake_minimum_required(VERSION 3.11.0)
+cmake_minimum_required(VERSION 3.13.0)
 project(led-cube-engine VERSION 0.0.0)
 
 # Options
