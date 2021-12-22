@@ -44,7 +44,7 @@ void double_sine_wave::start()
     waves_[1].gradient_start = gradient_end; // Invert color of 2nd wave
     waves_[1].gradient_end = gradient_start;
 
-    update_timer_.start(read_property(wave_period_time_ms, 1500ms) / period_);
+    update_timer_.start(read_property(wave_period_time_ms, 1250ms) / period_);
     fader_.start();
 }
 

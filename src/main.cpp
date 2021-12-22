@@ -1,22 +1,21 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/timers.hpp>
-#include <cube/hal/mock/display.hpp>
 #include <cube/gfx/animations/fill_cube.hpp>
 #include <cube/gfx/animations/double_sine_wave.hpp>
 #include <cube/gfx/animations/stars.hpp>
 #include <cube/gfx/animations/helix.hpp>
+#include <hal/target.hpp>
 #include <chrono>
 
 using namespace cube::core;
 using namespace std::chrono;
 namespace animations = cube::gfx::animations;
-namespace mock = cube::hal::mock;
 
 int main(int argc, char *argv[])
 {
     engine_context context;
-    engine cube_engine(context, new mock::display);
+    engine cube_engine(context, new hal::graphics_device_t);
 
     animations::fill_cube fill_cube(context);
     animations::double_sine_wave double_sine_wave(context);
@@ -44,7 +43,7 @@ int main(int argc, char *argv[])
         &stars,
         &fat_helix,
         // &fill_cube,
-        //&double_sine_wave,
+        &double_sine_wave,
     };
     int animations_index = 0;
 

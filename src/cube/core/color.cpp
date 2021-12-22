@@ -58,7 +58,7 @@ void blend(rgba_t const & c, rgba_t & bucket)
     if (opaque(c))
         bucket = c;
     else
-        alpha_blend(c, bucket);
+        alpha_blend(c, bucket); // blend the new color with the existing color in the bucket
 }
 
 void blend(color const & c, rgba_t & bucket)

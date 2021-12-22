@@ -2,18 +2,18 @@
 
 #include <cube/core/graphics_device.hpp>
 
-namespace cube::hal
+namespace hal::rpi
 {
 
 class voxel_display :
-    public core::graphics_device
+    public cube::core::graphics_device
 {
 public:
     voxel_display();
     virtual ~voxel_display() override;
 
 private:
-    virtual void show(core::graphics_buffer const & buffer) override;
+    virtual void show(cube::core::graphics_buffer const & buffer) override;
     virtual void poll() override;
 };
 

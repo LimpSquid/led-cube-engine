@@ -1,11 +1,10 @@
-#include <cube/hal/voxel_display.hpp>
-#include <cube/core/color.hpp>
+#include <hal/rpi/voxel_display.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 using namespace cube::core;
 
-namespace cube::hal
+namespace hal::rpi
 {
 
 voxel_display::voxel_display()

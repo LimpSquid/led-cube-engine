@@ -5,7 +5,7 @@
 
 struct GLFWwindow;
 
-namespace cube::hal::mock
+namespace hal::mock
 {
 
 struct window_properties

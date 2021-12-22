@@ -3,7 +3,7 @@
 // pull in some math libraries from cpp standard
 #include <algorithm>
 #include <cmath>
-#include <cfloat>
+#include <limits>
 
 namespace cube::core
 {
@@ -47,60 +47,43 @@ constexpr inline TOut map(
 }
 
 template<typename T>
-constexpr inline bool within_range(T const & value, Range<T> const & range, bool inclusive = true)
+constexpr inline bool within_range(T const & value, Range<T> const & range)
 {
-    if (inclusive)
-        return (value >= range.from && value <= range.to);
-    return (value > range.from && value < range.to);
+    return (value >= range.from && value <= range.to);
 }
 
-constexpr inline bool equal(double lhs, double rhs)
+template<typename T>
+constexpr inline bool equal(T lhs, T rhs)
 {
-    return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
+    static_assert(std::is_floating_point_v<T>);
+    return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * std::numeric_limits<T>::epsilon());
 }
 
-constexpr inline bool equal(float lhs, float rhs)
+template<typename T>
+constexpr inline bool greater_than(T lhs, T rhs)
 {
-    return std::abs(lhs - rhs) <= ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
+    static_assert(std::is_floating_point_v<T>);
+    return (lhs - rhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * std::numeric_limits<T>::epsilon());
 }
 
-constexpr inline bool greater_than(double lhs, double rhs)
+template<typename T>
+constexpr inline bool less_than(T lhs, T rhs)
 {
-    return (lhs - rhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
+    static_assert(std::is_floating_point_v<T>);
+    return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * std::numeric_limits<T>::epsilon());
 }
 
-constexpr inline bool greater_than(float lhs, float rhs)
+template<typename T>
+constexpr inline bool less_than_or_equal(T lhs, T rhs)
 {
-    return (lhs - rhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
-}
-
-constexpr inline bool less_than(double lhs, double rhs)
-{
-    return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * DBL_EPSILON);
-}
-
-constexpr inline bool less_than(float lhs, float rhs)
-{
-    return (rhs - lhs) > ((std::abs(lhs) < std::abs(rhs) ? std::abs(rhs) : std::abs(lhs)) * FLT_EPSILON);
-}
-
-constexpr inline bool less_than_or_equal(double lhs, double rhs)
-{
+    static_assert(std::is_floating_point_v<T>);
     return less_than(lhs, rhs) || equal(lhs, rhs);
 }
 
-constexpr inline bool less_than_or_equal(float lhs, float rhs)
+template<typename T>
+constexpr inline bool greater_than_or_equal(T lhs, T rhs)
 {
-    return less_than(lhs, rhs) || equal(lhs, rhs);
-}
-
-constexpr inline bool greater_than_or_equal(double lhs, double rhs)
-{
-    return greater_than(lhs, rhs) || equal(lhs, rhs);
-}
-
-constexpr inline bool greater_than_or_equal(float lhs, float rhs)
-{
+    static_assert(std::is_floating_point_v<T>);
     return greater_than(lhs, rhs) || equal(lhs, rhs);
 }
 

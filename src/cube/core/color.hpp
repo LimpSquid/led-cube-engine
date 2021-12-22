@@ -18,7 +18,7 @@ struct color
         color(0, 0, 0, 0)
     { }
 
-    explicit constexpr color(rgba_t rgba) :
+    constexpr color(rgba_t rgba) :
         color(rgba, rgba >> 8, rgba >> 16, rgba >> 24)
     { }
 
@@ -64,26 +64,31 @@ constexpr color color_magenta       = {255, 000, 255};
 constexpr color color_yellow        = {255, 255, 000};
 constexpr color color_orange        = {255, 128, 000};
 
-inline bool operator==(color const & lhs, color const & rhs) { return lhs.rgba() == rhs.rgba(); }
-inline bool operator!=(color const & lhs, color const & rhs) { return lhs.rgba() != rhs.rgba(); }
-
-inline void scale(rgba_t & rgba, double scalar)
-{
-    auto scaled = color(rgba).vec() * scalar;
-    rgba = color(scaled).rgba();
-}
-
-constexpr inline bool opaque(rgba_t const & rgba)
-{
-    return color(rgba).opaque();
-}
-
 constexpr inline color_vec_t red_vec(double scalar) { return {scalar, 1.0, 1.0, 1.0}; }
 constexpr inline color_vec_t green_vec(double scalar) { return {1.0, scalar, 1.0, 1.0}; }
 constexpr inline color_vec_t blue_vec(double scalar) { return {1.0, 1.0, scalar, 1.0}; }
 constexpr inline color_vec_t alpha_vec(double scalar) { return {1.0, 1.0, 1.0, scalar}; }
 constexpr inline color_vec_t rgb_vec(double scalar) { return {scalar, scalar, scalar, 1.0}; }
 constexpr inline color_vec_t rgba_vec(double scalar) { return {scalar, scalar, scalar, scalar}; }
+
+inline bool operator==(color const & lhs, color const & rhs) { return lhs.rgba() == rhs.rgba(); }
+inline bool operator!=(color const & lhs, color const & rhs) { return lhs.rgba() != rhs.rgba(); }
+
+inline void scale(rgba_t & rgba, color_vec_t scalar)
+{
+    auto scaled = color(rgba).vec() * scalar;
+    rgba = color(scaled).rgba();
+}
+
+inline void scale(rgba_t & rgba, double scalar)
+{
+    return scale(rgba, rgba_vec(scalar));
+}
+
+constexpr inline bool opaque(rgba_t const & rgba)
+{
+    return color(rgba).opaque();
+}
 
 void alpha_blend(color const & c, color & bucket);
 void alpha_blend(rgba_t const & c, rgba_t & bucket);

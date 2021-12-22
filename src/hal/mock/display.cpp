@@ -1,19 +1,19 @@
-#include <cube/hal/mock/display.hpp>
-#include <cube/hal/mock/window.hpp>
-#include <cube/core/color.hpp>
+#include <hal/mock/display.hpp>
+#include <hal/mock/window.hpp>
 #include <GL/glew.h>
 #include <cstring>
 
+using namespace cube;
 using namespace cube::core;
 
 namespace
 {
 
-constexpr cube::hal::mock::window_properties window_resolution = {960, 720};
+constexpr hal::mock::window_properties window_resolution = {960, 720};
 
 } // End of namespace
 
-namespace cube::hal::mock
+namespace hal::mock
 {
 
 display::display() :
