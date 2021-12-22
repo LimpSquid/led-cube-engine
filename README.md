@@ -1,5 +1,5 @@
 # Getting started
-This project uses CMake to build an executable, so make sure you have version 3.13 or higher installed. To build and run the executable follow these steps:
+This project uses CMake to build the executable. Make sure you have CMake version 3.13 or higher installed. To build and run the executable follow these steps:
 
 1. Clone this repository:
     ```bash
