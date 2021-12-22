@@ -5,5 +5,5 @@
 #elif TARGET_RPI
 #include "rpi/specs_fwd.hpp"
 #else
-#error "Oopsie, missing a header."
+#error "Oopsie, unknown target."
 #endif
