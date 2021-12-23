@@ -24,23 +24,21 @@ namespace cube::gfx::animations
 
 helix::helix(engine_context & context) :
     configurable_animation(context),
-    update_timer_(context, [this](auto, auto) {
-        step_++;
-        update();
-    }),
+    scene_(*this, [this]() { step_++; }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }
 
 void helix::start()
 {
+    int step_interval = read_property(helix_rotation_time_ms, 1500ms) / animation_scene_interval;
+
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
-    resolution_ = std::max(1, read_property(helix_resolution, 75));
     thickness_ = read_property(helix_thickness, 3.0);
-    omega_ = (2.0 * M_PI) / resolution_;
+    omega_ = (2.0 * M_PI) / step_interval;
     step_ = 0;
 
-    update_timer_.start(read_property(helix_rotation_time_ms, 1500ms) / resolution_);
+    scene_.start();
     fader_.start();
 }
 
@@ -66,7 +64,7 @@ void helix::paint(graphics_device & device)
 
 void helix::stop()
 {
-    update_timer_.stop();
+    scene_.stop();
 }
 
 } // End of namespace

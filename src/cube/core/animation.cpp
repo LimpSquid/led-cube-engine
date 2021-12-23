@@ -1,4 +1,5 @@
 #include <cube/core/animation.hpp>
+#include <cube/specs.hpp>
 
 namespace cube::core
 {
@@ -46,5 +47,23 @@ void animation::start()
 
 void animation::stop()
 { }
+
+animation_scene::animation_scene(animation & animation, std::optional<scene_update_handler_t> handler) :
+    timer_(animation.context(), [&animation, h = std::move(handler)](auto, auto) {
+        if (h)
+            (*h)();
+        animation.update();
+    })
+{ }
+
+void animation_scene::start()
+{
+    timer_.start(animation_scene_interval);
+}
+
+void animation_scene::stop()
+{
+    timer_.stop();
+}
 
 } // End of namespace

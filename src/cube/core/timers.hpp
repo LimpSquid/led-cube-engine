@@ -36,5 +36,4 @@ struct single_shot_timer :
     single_shot_timer(engine_context & context, timer_handler_t handler);
 };
 
-
 } // End of namespace

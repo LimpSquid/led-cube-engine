@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cube/core/timers.hpp>
 #include <boost/noncopyable.hpp>
 
-namespace cube::core { class engine_context; }
 namespace cube::core
 {
 
@@ -32,6 +32,20 @@ private:
 
     engine_context & context_;
     bool dirty_;
+};
+
+using scene_update_handler_t = std::function<void()>;
+
+class animation_scene
+{
+public:
+    animation_scene(animation & animation, std::optional<scene_update_handler_t> handler);
+
+    void start();
+    void stop();
+
+private:
+    recurring_timer timer_;
 };
 
 }

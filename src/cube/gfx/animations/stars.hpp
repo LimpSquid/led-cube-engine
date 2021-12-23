@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/core/timers.hpp>
 #include <cube/core/voxel.hpp>
 
 namespace cube::gfx::animations
@@ -13,9 +12,8 @@ class stars :
 public:
     enum : property_label_type
     {
-        fade_resolution = property_custom,  // number of fade steps of one star fade cycle
-        fade_time_ms,                       // time in milliseconds to complete one fade cycle
-        number_of_stars,
+        fade_time_ms = property_custom, // time in milliseconds to complete one fade cycle
+        number_of_stars,                // total number of stars in the cube
     };
 
     stars(core::engine_context & context);
@@ -32,11 +30,12 @@ private:
     virtual void stop() override;
     star make_unique_star() const;
 
-    core::recurring_timer update_timer_;
+    core::animation_scene scene_;
     std::vector<star> stars_;
     int hue_step_;
-    int resolution_;
+    int step_interval_;
     double omega_;
+    double omega_hue_;
 };
 
 } // End of namespace
