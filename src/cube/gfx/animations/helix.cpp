@@ -3,8 +3,6 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 
-#include <iostream> // @Commit: remove
-
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
@@ -14,7 +12,6 @@ namespace
 
 constexpr Range helix_phase_shift_range = {0.0, 1.75 * M_PI}; // Show 7/8th of a helix
 constexpr Range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr Range unit_circle_range = {-1.0, 1.0};
 constexpr color default_color = color_cyan;
 
 } // End of namespace

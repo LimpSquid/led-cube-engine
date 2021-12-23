@@ -11,7 +11,6 @@ namespace
 {
 
 constexpr Range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr Range unit_circle_range = {-1.0, 1.0};
 constexpr color default_color = color_magenta;
 
 } // End of namespace

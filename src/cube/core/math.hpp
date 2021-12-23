@@ -20,6 +20,8 @@ struct Range
     T to;
 };
 
+constexpr Range unit_circle_range = {-1.0, 1.0};
+
 template<typename T>
 constexpr Range<T> operator*(Range<T> const & lhs, Range<T> const & rhs) { return {lhs.from * rhs.from, lhs.to * rhs.to}; }
 template<typename T>
@@ -91,21 +93,21 @@ template<typename T>
 constexpr inline T abs_sin(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::sin(value), -1.0, 1.0, 0.0, 1.0);
+    return map(std::sin(value), unit_circle_range, Range(0.0, 1.0));
 }
 
 template<typename T>
 constexpr inline T abs_cos(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::cos(value), -1.0, 1.0, 0.0, 1.0);
+    return map(std::cos(value), unit_circle_range, Range(0.0, 1.0));
 }
 
 template<typename T>
 constexpr inline T abs_tan(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::tan(value), -1.0, 1.0, 0.0, 1.0);
+    return map(std::tan(value), unit_circle_range, Range(0.0, 1.0));
 }
 
 } // End of namespace
