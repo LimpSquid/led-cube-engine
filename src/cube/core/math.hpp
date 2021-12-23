@@ -14,7 +14,10 @@ struct Range
     constexpr Range(T const & f, T const & t) :
         from(f),
         to(t)
-    { }
+    {
+        if (from == to)
+            throw std::runtime_error("from == to");
+    }
 
     T from;
     T to;
@@ -101,13 +104,6 @@ constexpr inline T abs_cos(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
     return map(std::cos(value), unit_circle_range, Range(0.0, 1.0));
-}
-
-template<typename T>
-constexpr inline T abs_tan(T const & value)
-{
-    static_assert(std::is_floating_point_v<T>);
-    return map(std::tan(value), unit_circle_range, Range(0.0, 1.0));
 }
 
 } // End of namespace
