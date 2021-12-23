@@ -15,7 +15,7 @@ constexpr int cube_axis_max_value = cube_size_1d - 1;
 static_assert((cube_size_1d & 0x01) == 0); // Must be even
 
 // global animation specs
-constexpr int animation_scene_fps = 50;
+constexpr int animation_scene_fps = hal::animation_scene_fps;
 constexpr auto animation_scene_interval = std::chrono::milliseconds(1000) / animation_scene_fps;
 
 } // End of namespace
