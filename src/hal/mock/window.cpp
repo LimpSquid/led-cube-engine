@@ -10,6 +10,7 @@ namespace
 
 constexpr double translation_step = 0.04;
 constexpr double mouse_drag_sensitivity = 0.1;
+constexpr double mouse_scroll_resolution = 0.075;
 
 // All degrees angles down below
 constexpr double x_axis_min = -160;
@@ -93,7 +94,7 @@ void window::init_window(window_properties const & properties)
         exit(EXIT_FAILURE);
 
     // Init camera
-    camera_.translation = glm::dvec3(0, 0, (properties.width * 1.5f) / properties.height);
+    camera_.translation = glm::dvec3(0, 0, (properties.width * 1.75) / properties.height);
     camera_.rotation = default_view;
 }
 
@@ -103,6 +104,7 @@ void window::init_inputs()
     glfwSetKeyCallback(glfw_window_, glfw_key_callback);
     glfwSetMouseButtonCallback(glfw_window_, glfw_mouse_button_callback);
     glfwSetCursorPosCallback(glfw_window_, glfw_cursor_pos_callback);
+    glfwSetScrollCallback(glfw_window_, glfw_scroll_callback);
 }
 
 void window::draw_triad()
@@ -196,6 +198,12 @@ void window::glfw_cursor_pos_callback(GLFWwindow * const glfw_window, double xpo
     self.process_cursor_pos_change(xpos, ypos);
 }
 
+void window::glfw_scroll_callback(GLFWwindow * const glfw_window, double xoffset, double yoffset)
+{
+    window & self = *reinterpret_cast<window *>(glfwGetWindowUserPointer(glfw_window));
+    self.process_scroll_change(xoffset, yoffset);
+}
+
 void window::process_key_press(int key, int /* scancode */, int /* modifiers */)
 {
     switch(key) {
@@ -223,8 +231,8 @@ void window::process_mouse_button_release(int button, int /* modifiers */)
 void window::process_cursor_pos_change(double xpos, double ypos)
 {
     if (mouse_.dragging) {
-        double rdz = (xpos - mouse_.previous_xpos) * mouse_drag_sensitivity;
-        double rdx = (ypos - mouse_.previous_ypos) * mouse_drag_sensitivity;
+        double rdz = (xpos - mouse_.previous_cursor_pos.x) * mouse_drag_sensitivity;
+        double rdx = (ypos - mouse_.previous_cursor_pos.y) * mouse_drag_sensitivity;
 
         camera_.rotation.z = std::clamp(camera_.rotation.z + rdz, z_axis_min, z_axis_max);
         camera_.rotation.x = std::clamp(camera_.rotation.x + rdx, x_axis_min, x_axis_max);
@@ -232,8 +240,13 @@ void window::process_cursor_pos_change(double xpos, double ypos)
         //std::cout << "x: " << camera_.rotation.x << " y: " << camera_.rotation.y << " z: " << camera_.rotation.z << "\n";
     }
 
-    mouse_.previous_xpos = xpos;
-    mouse_.previous_ypos = ypos;
+    mouse_.previous_cursor_pos.x = xpos;
+    mouse_.previous_cursor_pos.y = ypos;
+}
+
+void window::process_scroll_change(double xoffset, double yoffset)
+{
+    camera_.translation.z += -yoffset * mouse_scroll_resolution * camera_.translation.z; // Increase/decrease step size based on how far we are away from the object
 }
 
 void window::process_inputs()

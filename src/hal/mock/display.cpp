@@ -9,6 +9,7 @@ using namespace cube::core;
 namespace
 {
 
+constexpr double cube_off_brightness = 20.5 / (cube_size_1d * cube_size_1d);
 constexpr hal::mock::window_properties window_resolution = {960, 720};
 
 } // End of namespace
@@ -47,7 +48,7 @@ void display::poll()
         for (y = 0, pos[1] = -0.5; y < cube_size_1d; y++, pos[1] += pos_step) {
             for (z = 0, pos[2] = -0.5; z < cube_size_1d; z++, pos[2] += pos_step) {
                 // Draw "off" cube
-                glColor3d(0.08, 0.08, 0.08);
+                glColor3d(cube_off_brightness, cube_off_brightness, cube_off_brightness);
                 glVertex3dv(pos);
 
                 // Blend in colors
