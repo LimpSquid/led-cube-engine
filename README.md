@@ -1,5 +1,7 @@
 # LED Cube Engine
-![demo](resources/demo.gif)
+<p align="center">
+    <img src="resources/demo.gif" alt="OpenGL Mock Demo"/>
+</p>
 
 ## Getting started
 This project uses CMake to build the executable. Make sure you have CMake version 3.13 or higher installed. To build and run the executable follow these steps:
