@@ -1,4 +1,8 @@
-# Getting started
+# LED Cube Engine
+---
+![demo](resources/demo.gif)
+
+## Getting started
 This project uses CMake to build the executable. Make sure you have CMake version 3.13 or higher installed. To build and run the executable follow these steps:
 
 1. Clone this repository:
@@ -28,13 +32,9 @@ This project uses CMake to build the executable. Make sure you have CMake versio
     $ bin/led-cube-engine
     ```
 
-# Target dependencies
+## Target dependencies
 Below a table with the supported targets and their respective dependencies.
 target|description|dependencies
 -|-|-
 `mock`|A mock environment to run the animations on your local machine via OpenGL|`OpenGL`, `GLEW` and `GLFW`
 `rpi`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|**T.B.D**
-
-# Mock demo
-Below you find a demo the capabilities of the OpenGL based mocked LED cube.
-![demo](resources/demo.gif)
