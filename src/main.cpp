@@ -15,7 +15,7 @@ namespace animations = cube::gfx::animations;
 int main(int argc, char *argv[])
 {
     engine_context context;
-    engine cube_engine(context, new hal::graphics_device_t);
+    engine cube_engine(context, graphics_device_factory<hal::graphics_device_t>{});
 
     animations::fill_cube fill_cube(context);
     animations::double_sine_wave double_sine_wave(context);

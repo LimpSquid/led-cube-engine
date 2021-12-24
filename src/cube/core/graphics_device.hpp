@@ -4,6 +4,7 @@
 #include <cube/core/animation.hpp>
 #include <cube/core/color.hpp>
 #include <cube/core/voxel.hpp>
+#include <cube/core/engine_context.hpp>
 #include <cstring>
 
 namespace cube::core
@@ -46,6 +47,7 @@ inline void blend(graphics_buffer const & lhs, graphics_buffer & rhs)
         blend(*lhs_data++, *rhs_data++);
 }
 
+class engine_context;
 class graphics_device
 {
 public:
@@ -60,9 +62,12 @@ public:
 
     void show_animation(animation * animation);
     void render_animation(); // Render drawn voxels to the actual display
-    void do_poll(); // Do a poll, which may block
 
 protected:
+    graphics_device(engine_context & context);
+
+    io_context_t & io_context();
+
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
@@ -75,8 +80,8 @@ private:
     };
 
     virtual void show(graphics_buffer const & buffer) = 0;
-    virtual void poll() = 0;
 
+    io_context_t & io_context_;
     graphics_buffer buffer_;
     color draw_color_;
     animation * animation_;

@@ -10,7 +10,6 @@ pkg_search_module(GLFW 2.1 REQUIRED glfw3) # See: https://www.glfw.org/docs/3.0/
 target_include_directories(${PROJECT_NAME}
     PRIVATE ${OPENGL_INCLUDE_DIR}
     PRIVATE ${GLFW_INCLUDE_DIRS})
-
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${OPENGL_LIBRARIES}
     PRIVATE ${GLFW_LIBRARIES}

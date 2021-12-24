@@ -14,7 +14,6 @@ public:
 
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;
-    virtual void poll() override;
 };
 
 } // End of namespace

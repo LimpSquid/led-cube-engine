@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/core/graphics_device.hpp>
+#include <cube/core/asio_util.hpp>
 
 namespace hal::mock
 {
@@ -11,15 +12,18 @@ class display :
     public cube::core::graphics_device
 {
 public:
-    display();
+    display(cube::core::engine_context & context);
     virtual ~display() override;
 
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;
-    virtual void poll() override;
+
+    void schedule_update();
+    void update();
 
     window & window_;
     cube::core::graphics_buffer buffer_;
+    cube::core::parent_tracker tracker_;
 };
 
 } // End of namespace

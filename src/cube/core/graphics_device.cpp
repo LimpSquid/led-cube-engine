@@ -81,9 +81,13 @@ void graphics_device::render_animation()
     render_time_.update();
 }
 
-void graphics_device::do_poll()
+graphics_device::graphics_device(engine_context & context) :
+    io_context_(context.io_context)
+{ }
+
+io_context_t & graphics_device::io_context()
 {
-    poll();
+    return io_context_;
 }
 
 int graphics_device::map_to_offset(int x, int y, int z) const

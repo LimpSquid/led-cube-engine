@@ -32,15 +32,6 @@ void poll(Container & tickers)
 namespace cube::core
 {
 
-engine::engine(engine_context & context, graphics_device *device) :
-    context_(context),
-    device_(device),
-    animation_(nullptr)
-{
-    if (!device_)
-        throw std::invalid_argument("Graphics device cannot be nullptr");
-}
-
 void engine::load(animation * animation)
 {
     animation_ = animation;
@@ -55,19 +46,19 @@ void engine::run()
         // Poll tickers
         poll(context_.tickers);
 
-        // Poll device (may block)
-        device_->do_poll();
-
-        // Service animation
+        // Service animation on graphics device
         new_animation = (animation != animation_);
         animation = animation_;
 
-        if (!animation)
-            std::this_thread::sleep_for(100us); // Todo: eventually do not sleep, but wait until some event has happened
-        else if (new_animation)
-            device_->show_animation(animation);
-        else
-            device_->render_animation();
+        if (animation) {
+            if (new_animation)
+                device_->show_animation(animation);
+            else
+                device_->render_animation();
+        }
+
+        // Poll asio
+        context_.io_context.run_one_for(10ms);
     }
 }
 

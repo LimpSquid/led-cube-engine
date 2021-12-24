@@ -1,10 +1,12 @@
 #include <hal/mock/display.hpp>
 #include <hal/mock/window.hpp>
 #include <GL/glew.h>
+#include <boost/asio/post.hpp>
 #include <cstring>
 
 using namespace cube;
 using namespace cube::core;
+using namespace boost;
 
 namespace
 {
@@ -17,9 +19,13 @@ constexpr hal::mock::window_properties window_resolution = {960, 720};
 namespace hal::mock
 {
 
-display::display() :
-    window_(window::instance(window_resolution))
-{ }
+display::display(engine_context & context) :
+    graphics_device(context),
+    window_(window::instance(window_resolution)),
+    tracker_(make_parent_tracker())
+{
+    schedule_update();
+}
 
 display::~display()
 { }
@@ -29,7 +35,15 @@ void display::show(graphics_buffer const & buffer)
     buffer_ = buffer;
 }
 
-void display::poll()
+void display::schedule_update()
+{
+    asio::post(io_context().get_executor(), [this, t = weak(tracker_)]() {
+        if (parent_in_scope(t)) // In case display gets destroyed and the handler has yet to be executed
+            update();
+    });
+}
+
+void display::update()
 {
     if (window_.close())
         exit(0);
@@ -63,6 +77,9 @@ void display::poll()
     glDisable(GL_BLEND);
 
     window_.update();
+
+    // Schedule next update
+    schedule_update();
 }
 
 } // End of namespace
