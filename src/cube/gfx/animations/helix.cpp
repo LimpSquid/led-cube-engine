@@ -10,8 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-constexpr Range helix_phase_shift_range = {0.0, 1.75 * M_PI}; // Show 7/8th of a helix
-constexpr Range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
+constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_cyan;
 
 } // End of namespace
@@ -31,7 +30,8 @@ void helix::start()
 
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
-    thickness_ = read_property(helix_thickness, 3.0);
+    thickness_ = read_property(helix_thickness, 2.5);
+    length_ =  2.0 * M_PI * read_property(helix_length, 0.875);
     omega_ = (2.0 * M_PI) / step_interval;
     step_ = std::rand() % UINT16_MAX;
 
@@ -48,7 +48,7 @@ void helix::paint(graphics_device & device)
     double phase_shift_cos_factor = read_property(helix_phase_shift_cos_factor, 0.0);
 
     for (int y = 0; y < cube_size_1d; y++) {
-        double phase_shift = map(y, cube_axis_range, helix_phase_shift_range);
+        double phase_shift = map(y, cube_axis_range, range(0.0, length_));
         double x1 = std::sin(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_sin_factor));
         double z1 = std::cos(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_cos_factor));
         int x = map(x1, unit_circle_range, cube_axis_range);

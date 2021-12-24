@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     animations::stars stars(context);
     animations::helix helix(context);
     animations::helix fat_helix(context);
+    animations::helix long_helix(context);
 
     helix.write_properties({
         {animations::helix::helix_phase_shift_sin_factor, 0.02},
@@ -38,10 +39,19 @@ int main(int argc, char *argv[])
         {animations::helix::color_gradient_end, color_orange},
     });
 
+    long_helix.write_properties({
+        {animations::helix::helix_phase_shift_sin_factor, 0.04},
+        {animations::helix::color_gradient_start, color_magenta},
+        {animations::helix::color_gradient_end, color_orange},
+        {animations::helix::helix_length, 4.0},
+        {animations::helix::helix_thickness, 1.5},
+    });
+
     std::vector<animation *> animations = {
         &helix,
         &stars,
         &fat_helix,
+        &long_helix,
         // &fill_cube,
         &double_sine_wave,
     };

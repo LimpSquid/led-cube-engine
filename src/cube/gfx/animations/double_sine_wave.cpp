@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-constexpr Range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
+constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_magenta;
 
 } // End of namespace

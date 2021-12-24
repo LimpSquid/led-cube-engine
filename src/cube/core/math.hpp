@@ -9,9 +9,9 @@ namespace cube::core
 {
 
 template<typename T>
-struct Range
+struct range
 {
-    constexpr Range(T const & f, T const & t) :
+    constexpr range(T const & f, T const & t) :
         from(f),
         to(t)
     {
@@ -24,9 +24,9 @@ struct Range
 };
 
 template<typename T>
-struct SafeRange
+struct safe_range
 {
-    constexpr SafeRange(Range<T> const & unsafe) :
+    constexpr safe_range(range<T> const & unsafe) :
         from(unsafe.from),
         to(unsafe.to)
     { }
@@ -36,30 +36,30 @@ struct SafeRange
     boost::safe_numerics::safe<T> to;
 };
 
-constexpr Range unit_circle_range = {-1.0, 1.0};
+constexpr range unit_circle_range = {-1.0, 1.0};
 
 template<typename T>
-constexpr inline Range<T> make_limit_range()
+constexpr inline range<T> make_limit_range()
 {
-    return Range(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    return range(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 }
 
 template<typename TOut, typename TIn>
-constexpr inline Range<TOut> range_cast(Range<TIn> const & in)
+constexpr inline range<TOut> range_cast(range<TIn> const & in)
 {
-    return Range<TOut>(in.from, in.to);
+    return range<TOut>(in.from, in.to);
 }
 
 template<typename T>
-constexpr Range<T> operator*(Range<T> const & lhs, Range<T> const & rhs) { return {lhs.from * rhs.from, lhs.to * rhs.to}; }
+constexpr range<T> operator*(range<T> const & lhs, range<T> const & rhs) { return {lhs.from * rhs.from, lhs.to * rhs.to}; }
 template<typename T>
-constexpr Range<T> operator*(Range<T> const & lhs, double scalar) { return {lhs.from * scalar, lhs.to * scalar}; }
+constexpr range<T> operator*(range<T> const & lhs, double scalar) { return {lhs.from * scalar, lhs.to * scalar}; }
 
 template<typename TIn, typename TOut>
 constexpr inline TOut map(
     TIn const & value,
-    Range<TIn> const & in_range,
-    Range<TOut> const & out_range)
+    range<TIn> const & in_range,
+    range<TOut> const & out_range)
 {
     auto do_map = [](auto const & value, auto const & in_range, auto const & out_range) {
         return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);
@@ -70,7 +70,7 @@ constexpr inline TOut map(
     if constexpr(std::is_integral_v<TIn> && std::is_floating_point_v<TOut>)
         return do_map(value, range_cast<TOut>(in_range), out_range);
     else if constexpr(std::is_integral_v<TIn> && std::is_integral_v<TOut>)
-        return do_map(boost::safe_numerics::safe<TIn>(value), SafeRange(in_range), SafeRange(out_range));
+        return do_map(boost::safe_numerics::safe<TIn>(value), safe_range(in_range), safe_range(out_range));
     else
         return do_map(value, in_range, out_range);
 }
@@ -81,11 +81,11 @@ constexpr inline TOut map(
     TIn const &  in_from, TIn const & in_to,
     TOut const & out_from, TOut const &  out_to)
 {
-    return map(value, Range(in_from, in_to), Range(out_from, out_to));
+    return map(value, range(in_from, in_to), range(out_from, out_to));
 }
 
 template<typename T>
-constexpr inline bool within_range(T const & value, Range<T> const & range)
+constexpr inline bool within_range(T const & value, range<T> const & range)
 {
     return (value >= range.from && value <= range.to);
 }
@@ -129,14 +129,14 @@ template<typename T>
 constexpr inline T abs_sin(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::sin(value), unit_circle_range, Range(0.0, 1.0));
+    return map(std::sin(value), unit_circle_range, range(0.0, 1.0));
 }
 
 template<typename T>
 constexpr inline T abs_cos(T const & value)
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::cos(value), unit_circle_range, Range(0.0, 1.0));
+    return map(std::cos(value), unit_circle_range, range(0.0, 1.0));
 }
 
 } // End of namespace
