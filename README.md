@@ -1,5 +1,4 @@
 # LED Cube Engine
----
 ![demo](resources/demo.gif)
 
 ## Getting started
