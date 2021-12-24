@@ -11,7 +11,7 @@ namespace
 
 constexpr double hue_omega_scalar = 0.5;
 constexpr double hue_phase_shift_scalar = 0.25;
-const gradient hue =
+gradient const hue =
 {
     {0.00, color_red},
     {0.25, color_cyan},

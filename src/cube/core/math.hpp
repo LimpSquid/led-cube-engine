@@ -1,9 +1,9 @@
 #pragma once
 
-// pull in some math libraries from cpp standard
+#include <boost/safe_numerics/safe_integer.hpp>
 #include <algorithm>
-#include <cmath>
 #include <limits>
+#include <cmath>
 
 namespace cube::core
 {
@@ -23,7 +23,32 @@ struct Range
     T to;
 };
 
+template<typename T>
+struct SafeRange
+{
+    constexpr SafeRange(Range<T> const & unsafe) :
+        from(unsafe.from),
+        to(unsafe.to)
+    { }
+
+    static_assert(std::is_integral_v<T>);
+    boost::safe_numerics::safe<T> from;
+    boost::safe_numerics::safe<T> to;
+};
+
 constexpr Range unit_circle_range = {-1.0, 1.0};
+
+template<typename T>
+constexpr inline Range<T> make_limit_range()
+{
+    return Range(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+}
+
+template<typename TOut, typename TIn>
+constexpr inline Range<TOut> range_cast(Range<TIn> const & in)
+{
+    return Range<TOut>(in.from, in.to);
+}
 
 template<typename T>
 constexpr Range<T> operator*(Range<T> const & lhs, Range<T> const & rhs) { return {lhs.from * rhs.from, lhs.to * rhs.to}; }
@@ -36,10 +61,18 @@ constexpr inline TOut map(
     Range<TIn> const & in_range,
     Range<TOut> const & out_range)
 {
-    if constexpr(std::is_integral_v<TOut> && std::is_floating_point_v<TIn>)
-        return out_range.from + std::round((out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from));
-    else
+    auto do_map = [](auto const & value, auto const & in_range, auto const & out_range) {
         return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);
+    };
+
+    if constexpr(std::is_floating_point_v<TIn> && std::is_integral_v<TOut>)
+        return std::round(do_map(value, in_range, range_cast<TIn>(out_range)));
+    if constexpr(std::is_integral_v<TIn> && std::is_floating_point_v<TOut>)
+        return do_map(value, range_cast<TOut>(in_range), out_range);
+    else if constexpr(std::is_integral_v<TIn> && std::is_integral_v<TOut>)
+        return do_map(boost::safe_numerics::safe<TIn>(value), SafeRange(in_range), SafeRange(out_range));
+    else
+        return do_map(value, in_range, out_range);
 }
 
 template<typename TIn, typename TOut>

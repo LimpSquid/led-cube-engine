@@ -33,7 +33,7 @@ void helix::start()
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
     thickness_ = read_property(helix_thickness, 3.0);
     omega_ = (2.0 * M_PI) / step_interval;
-    step_ = 0;
+    step_ = std::rand() % UINT16_MAX;
 
     scene_.start();
     fader_.start();
