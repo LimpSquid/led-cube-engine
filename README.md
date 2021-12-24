@@ -34,3 +34,7 @@ target|description|dependencies
 -|-|-
 `mock`|A mock environment to run the animations on your local machine via OpenGL|`OpenGL`, `GLEW` and `GLFW`
 `rpi`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|**T.B.D**
+
+# Mock demo
+Below you find a demo the capabilities of the OpenGL based mocked LED cube.
+![demo](resources/demo.gif)
