@@ -2,6 +2,7 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
+#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -12,6 +13,10 @@ namespace
 
 constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_cyan;
+constexpr milliseconds default_rotation_time = 1500ms;
+constexpr double default_thickness = 2.5;
+constexpr double default_length = 0.875;
+constexpr double default_phase_shift_factor = 0.0;
 
 } // End of namespace
 
@@ -19,19 +24,19 @@ namespace cube::gfx::animations
 {
 
 helix::helix(engine_context & context) :
-    configurable_animation(context),
+    configurable_animation(context, "helix"),
     scene_(*this, [this]() { step_++; }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }
 
 void helix::start()
 {
-    int step_interval = read_property(helix_rotation_time_ms, 1500ms) / animation_scene_interval;
+    int step_interval = read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval;
 
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});
-    thickness_ = read_property(helix_thickness, 2.5);
-    length_ =  2.0 * M_PI * read_property(helix_length, 0.875);
+    thickness_ = read_property(helix_thickness, default_thickness);
+    length_ =  2.0 * M_PI * read_property(helix_length, default_length);
     omega_ = (2.0 * M_PI) / step_interval;
     step_ = std::rand() % UINT16_MAX;
 
@@ -44,8 +49,8 @@ void helix::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    double phase_shift_sin_factor = read_property(helix_phase_shift_sin_factor, 0.0);
-    double phase_shift_cos_factor = read_property(helix_phase_shift_cos_factor, 0.0);
+    double phase_shift_sin_factor = read_property(helix_phase_shift_sin_factor, default_phase_shift_factor);
+    double phase_shift_cos_factor = read_property(helix_phase_shift_cos_factor, default_phase_shift_factor);
 
     for (int y = 0; y < cube_size_1d; y++) {
         double phase_shift = map(y, cube_axis_range, range(0.0, length_));
@@ -62,6 +67,19 @@ void helix::paint(graphics_device & device)
 void helix::stop()
 {
     scene_.stop();
+}
+
+std::vector<helix::property_pair> helix::parse(nlohmann::json const & json) const
+{
+    return {
+        {helix_rotation_time_ms, parse_field(json, helix_rotation_time_ms, default_rotation_time)},
+        {helix_phase_shift_cos_factor, parse_field(json, helix_phase_shift_cos_factor, default_phase_shift_factor)},
+        {helix_phase_shift_sin_factor, parse_field(json, helix_phase_shift_sin_factor, default_phase_shift_factor)},
+        {helix_thickness, parse_field(json, helix_thickness, default_thickness)},
+        {helix_length, parse_field(json, helix_length, default_length)},
+        {color_gradient_start, parse_field(json, color_gradient_start, default_color)},
+        {color_gradient_end, parse_field(json, color_gradient_end, !default_color)},
+    };
 }
 
 } // End of namespace

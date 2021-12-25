@@ -1,6 +1,7 @@
 #include <cube/gfx/animations/stars.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -8,6 +9,9 @@ using namespace std::chrono;
 
 namespace
 {
+
+constexpr milliseconds default_fade_time = 5000ms;
+constexpr int default_number_of_stars = cube::cube_size_3d / 15;
 
 constexpr double hue_omega_scalar = 0.5;
 constexpr double hue_phase_shift_scalar = 0.25;
@@ -26,7 +30,7 @@ namespace cube::gfx::animations
 {
 
 stars::stars(engine_context & context) :
-    configurable_animation(context),
+    configurable_animation(context, "stars"),
     scene_(*this, [this]() {
         for (star & s : stars_)
             if (++s.fade_step > step_interval_)
@@ -37,12 +41,12 @@ stars::stars(engine_context & context) :
 
 void stars::start()
 {
-    step_interval_ = read_property(fade_time_ms, 5000ms) / animation_scene_interval;
+    step_interval_ = read_property(fade_time_ms, default_fade_time) / animation_scene_interval;
     omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
     omega_hue_= omega_ * hue_omega_scalar;
     hue_step_ = 0;
 
-    int number_of_stars = read_property(number_of_stars, cube_size_3d / 15);
+    int number_of_stars = read_property(number_of_stars, default_number_of_stars);
     stars_.resize(std::min(cube_size_3d / 8, number_of_stars)); // Max number of stars is 1/8th of the cube's size
     for (star & s : stars_) {
         s = make_unique_star();
@@ -72,6 +76,14 @@ void stars::paint(graphics_device & device)
 void stars::stop()
 {
     scene_.stop();
+}
+
+std::vector<stars::property_pair> stars::parse(nlohmann::json const & json) const
+{
+    return {
+        {fade_time_ms, parse_field<milliseconds>(json, fade_time_ms, default_fade_time)},
+        {number_of_stars, parse_field<int>(json, number_of_stars, default_number_of_stars)},
+    };
 }
 
 stars::star stars::make_unique_star() const

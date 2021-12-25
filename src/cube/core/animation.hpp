@@ -15,6 +15,7 @@ public:
 
     engine_context & context();
 
+    char const * const name() const;
     bool dirty() const;
 
     void init();
@@ -23,7 +24,7 @@ public:
     void paint_event(graphics_device & device);
 
 protected:
-    animation(engine_context & context);
+    animation(engine_context & context, char const * const name);
 
 private:
     virtual void start();
@@ -31,6 +32,7 @@ private:
     virtual void stop();
 
     engine_context & context_;
+    char const * const name_;
     bool dirty_;
 };
 

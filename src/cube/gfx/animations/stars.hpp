@@ -10,11 +10,11 @@ class stars :
     public configurable_animation
 {
 public:
-    enum : property_label_type
-    {
-        fade_time_ms = property_custom, // time in milliseconds to complete one fade cycle
-        number_of_stars,                // total number of stars in the cube
-    };
+    PROPERTY_ENUM
+    (
+        fade_time_ms,
+        number_of_stars
+    )
 
     stars(core::engine_context & context);
 
@@ -28,6 +28,8 @@ private:
     virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;
+    virtual std::vector<property_pair> parse(nlohmann::json const & json) const override;
+
     star make_unique_star() const;
 
     core::animation_scene scene_;

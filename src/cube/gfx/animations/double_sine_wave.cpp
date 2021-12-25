@@ -2,6 +2,7 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
+#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -12,6 +13,8 @@ namespace
 
 constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_magenta;
+constexpr milliseconds default_period_time = 1250ms;
+constexpr int default_period = 2 * cube::cube_size_1d;
 
 } // End of namespace
 
@@ -19,7 +22,7 @@ namespace cube::gfx::animations
 {
 
 double_sine_wave::double_sine_wave(engine_context & context) :
-    configurable_animation(context),
+    configurable_animation(context, "double_sine_wave"),
     update_timer_(context, [this](auto, auto) {
         for (wave & w : waves_)
             w.time_count = (w.time_count + 1) % period_;
@@ -32,7 +35,7 @@ void double_sine_wave::start()
 {
     auto const gradient_start = read_property(color_gradient_start, default_color);
     auto const gradient_end = read_property(color_gradient_end, !default_color);
-    period_ = std::max(1, read_property(wave_period, int(2 * cube_size_1d)));
+    period_ = std::max(1, read_property(wave_period, default_period));
     omega_ = (2.0 * M_PI) / period_;
 
     waves_[0].time_count = 0;
@@ -43,7 +46,7 @@ void double_sine_wave::start()
     waves_[1].gradient_start = gradient_end; // Invert color of 2nd wave
     waves_[1].gradient_end = gradient_start;
 
-    update_timer_.start(read_property(wave_period_time_ms, 1250ms) / period_);
+    update_timer_.start(read_property(wave_period_time_ms, default_period_time) / period_);
     fader_.start();
 }
 
@@ -73,6 +76,16 @@ void double_sine_wave::paint(graphics_device & device)
 void double_sine_wave::stop()
 {
     update_timer_.stop();
+}
+
+std::vector<double_sine_wave::property_pair> double_sine_wave::parse(nlohmann::json const & json) const
+{
+    return {
+        {wave_period, parse_field(json, wave_period, default_period)},
+        {wave_period_time_ms, parse_field(json, wave_period_time_ms, default_period_time)},
+        {color_gradient_start, parse_field(json, color_gradient_start, default_color)},
+        {color_gradient_end, parse_field(json, color_gradient_end, !default_color)},
+    };
 }
 
 } // End of namespace
