@@ -81,8 +81,8 @@ void stars::stop()
 std::vector<stars::property_pair> stars::parse(nlohmann::json const & json) const
 {
     return {
-        {fade_time_ms, parse_field<milliseconds>(json, fade_time_ms, default_fade_time)},
-        {number_of_stars, parse_field<int>(json, number_of_stars, default_number_of_stars)},
+        {fade_time_ms, parse_field(json, fade_time_ms, default_fade_time)},
+        {number_of_stars, parse_field(json, number_of_stars, default_number_of_stars)},
     };
 }
 

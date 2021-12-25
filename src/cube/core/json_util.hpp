@@ -45,6 +45,16 @@ T parse_field(nlohmann::json const & json, Key const & key)
     return parse_field<T>(json, to_string(key));
 }
 
+inline nlohmann::json to_json(color const & c)
+{
+    return {
+        {"red", c.r},
+        {"green", c.g},
+        {"blue", c.b},
+        {"alpha", c.a},
+    };
+}
+
 inline color from_json(nlohmann::json const & json)
 {
     auto const red = parse_field<color_t>(json, "red");

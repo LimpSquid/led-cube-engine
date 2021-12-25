@@ -13,6 +13,11 @@ void configurable_animation::write_properties(std::vector<std::pair<property_lab
         write_property(property.first, property.second);
 }
 
+void configurable_animation::load_properties(nlohmann::json const & json)
+{
+    write_properties(parse(json));
+}
+
 configurable_animation::configurable_animation(engine_context & context, char const * const name) :
     animation(context, name)
 { }

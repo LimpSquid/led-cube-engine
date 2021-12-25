@@ -49,7 +49,7 @@ public:
     }
 
     void write_properties(std::vector<property_pair> const & properties);
-    void write_properties(nlohmann::json const & properties);
+    void load_properties(nlohmann::json const & json);
 
 protected:
     configurable_animation(core::engine_context & context, char const * const name);

@@ -1,12 +1,13 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/timers.hpp>
-#include <cube/gfx/animations/fill_cube.hpp>
+#include <cube/core/json_util.hpp>
 #include <cube/gfx/animations/double_sine_wave.hpp>
 #include <cube/gfx/animations/stars.hpp>
 #include <cube/gfx/animations/helix.hpp>
 #include <hal/graphics_device.hpp>
 #include <chrono>
+#include <iostream>
 
 using namespace cube::core;
 using namespace std::chrono;
@@ -17,19 +18,20 @@ int main(int argc, char *argv[])
     engine_context context;
     engine cube_engine(context, graphics_device_factory<hal::graphics_device_t>{});
 
-    animations::fill_cube fill_cube(context);
     animations::double_sine_wave double_sine_wave(context);
     animations::stars stars(context);
     animations::helix helix(context);
     animations::helix fat_helix(context);
     animations::helix long_helix(context);
 
-    helix.write_properties({
-        {animations::helix::helix_phase_shift_sin_factor, 0.02},
-        {animations::helix::helix_phase_shift_cos_factor, 0.1},
-        {animations::helix::color_gradient_start, color_cyan},
-        {animations::helix::color_gradient_end, color_yellow},
-    });
+    nlohmann::json j = {
+        {"helix_rotation_time_ms", 1250},
+        {"helix_phase_shift_sin_factor", 0.02},
+        {"helix_phase_shift_cos_factor", 0.01},
+        {"color_gradient_start", to_json(color_cyan)},
+        {"color_gradient_end", to_json(color_yellow)},
+    };
+    helix.load_properties(j);
 
     fat_helix.write_properties({
         {animations::helix::helix_phase_shift_sin_factor, 0.02},
@@ -52,7 +54,6 @@ int main(int argc, char *argv[])
         &stars,
         &fat_helix,
         &long_helix,
-        // &fill_cube,
         &double_sine_wave,
     };
     int animations_index = 0;
