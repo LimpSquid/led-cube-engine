@@ -53,7 +53,7 @@ class graphics_device
 public:
     virtual ~graphics_device() = default;
 
-    double fps() const;
+    std::chrono::nanoseconds avg_render_interval() const;
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);

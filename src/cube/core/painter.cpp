@@ -59,8 +59,8 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
 
     color const original_color = state_.draw_color;
 
-    for (int x = x_start; x <= x_end; x++){
-        for (int y = y_start; y <= y_end; y++){
+    for (int x = x_start; x <= x_end; x++) {
+        for (int y = y_start; y <= y_end; y++) {
             for (int z = z_start; z <= z_end; z++) {
                 double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
                 if (less_than_or_equal(r, radius)) {
@@ -72,6 +72,7 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
                         double scalar = std::min(1.0, 0.4 + std::cos(0.5 * M_PI * (r / radius)));
                         set_color(original_color.vec() * scalar);
                     }
+
                     draw({x, y, z});
                 }
             }

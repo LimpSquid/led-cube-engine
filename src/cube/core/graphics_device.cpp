@@ -25,9 +25,9 @@ void graphics_device::render_time::update()
     nanos_previous = now;
 }
 
-double graphics_device::fps() const
+nanoseconds graphics_device::avg_render_interval() const
 {
-    return (1000000000.0 / render_time_.nanos_dt);
+    return nanoseconds(render_time_.nanos_dt);
 }
 
 void graphics_device::update_state(graphics_state const & state)
