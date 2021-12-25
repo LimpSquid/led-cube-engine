@@ -36,8 +36,6 @@ public:
     void load(animation * animation);
     void run();
 
-    // Todo: eventually add ZMQ and ASIO stuff to the cube which external systems can use as well.
-
 private:
     engine_context & context_;
     animation * animation_;
