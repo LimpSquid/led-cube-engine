@@ -14,7 +14,6 @@ using namespace cube::core;
 using namespace std::chrono;
 namespace animations = cube::gfx::animations;
 
-
 namespace
 {
 

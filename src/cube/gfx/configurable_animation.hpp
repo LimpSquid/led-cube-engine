@@ -17,7 +17,11 @@
         { \
             BOOST_PP_SEQ_FOR_EACH_I(PROPERTY_ENUM_PROCESS_ONE, %%, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)) \
         }; \
-        return strings[value]; \
+        static size_t size = sizeof(strings) / sizeof(strings[0]); \
+        if constexpr (std::is_signed_v<configurable_animation::property_label_type>) \
+            return (value < 0 || value >= size) ? "???" : strings[value]; \
+        else \
+            return (value >= size) ? "???" : strings[value]; \
     }
 
 namespace cube::gfx
