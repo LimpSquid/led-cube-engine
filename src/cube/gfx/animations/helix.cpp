@@ -12,8 +12,7 @@ using namespace std::chrono;
 namespace
 {
 
-char const * const animation_name = "helix";
-library_publisher<animations::helix> const library_pub = {animation_name};
+animation_publisher<animations::helix> const publisher = {"helix"};
 
 constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_cyan;
@@ -28,7 +27,7 @@ namespace cube::gfx::animations
 {
 
 helix::helix(engine_context & context) :
-    configurable_animation(context, animation_name),
+    configurable_animation(context),
     scene_(*this, [this]() { step_++; }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }

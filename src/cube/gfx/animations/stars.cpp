@@ -11,8 +11,7 @@ using namespace std::chrono;
 namespace
 {
 
-char const * const animation_name = "stars";
-library_publisher<animations::stars> const library_pub = {animation_name};
+animation_publisher<animations::stars> const publisher = {"stars"};
 
 constexpr milliseconds default_fade_time = 5000ms;
 constexpr int default_number_of_stars = cube::cube_size_3d / 15;
@@ -34,7 +33,7 @@ namespace cube::gfx::animations
 {
 
 stars::stars(engine_context & context) :
-    configurable_animation(context, animation_name),
+    configurable_animation(context),
     scene_(*this, [this]() {
         for (star & s : stars_)
             if (++s.fade_step > step_interval_)

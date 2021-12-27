@@ -12,8 +12,7 @@ using namespace std::chrono;
 namespace
 {
 
-char const * const animation_name = "double_sine_wave";
-library_publisher<animations::double_sine_wave> const library_pub = {animation_name};
+animation_publisher<animations::double_sine_wave> const publisher = {"double_sine_wave"};
 
 constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_magenta;
@@ -26,7 +25,7 @@ namespace cube::gfx::animations
 {
 
 double_sine_wave::double_sine_wave(engine_context & context) :
-    configurable_animation(context, animation_name),
+    configurable_animation(context),
     update_timer_(context, [this](auto, auto) {
         for (wave & w : waves_)
             w.time_count = (w.time_count + 1) % period_;

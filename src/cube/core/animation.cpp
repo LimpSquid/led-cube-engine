@@ -9,11 +9,6 @@ engine_context & animation::context()
     return context_;
 }
 
-char const * const animation::name() const
-{
-    return name_;
-}
-
 bool animation::dirty() const
 {
     return dirty_;
@@ -42,9 +37,8 @@ void animation::paint_event(graphics_device & device)
     paint(device);
 }
 
-animation::animation(engine_context & context, char const * const name) :
+animation::animation(engine_context & context) :
     context_(context),
-    name_(name),
     dirty_(true)
 { }
 

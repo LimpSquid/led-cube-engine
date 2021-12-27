@@ -2,12 +2,7 @@
 
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/core/expected.hpp>
-#include <nlohmann/json.hpp>
-#include <unordered_map>
-#include <memory>
-#include <functional>
 
-namespace cube::core { class engine_context; }
 namespace cube::gfx
 {
 
@@ -30,9 +25,9 @@ private:
 };
 
 template<typename Animation>
-struct library_publisher
+struct animation_publisher
 {
-    library_publisher(char const * const animation_name)
+    animation_publisher(char const * const animation_name)
     {
         library::instance().publish_animation(animation_name, [](core::engine_context & context)
             { return std::make_unique<Animation>(context); });
