@@ -27,7 +27,7 @@ configurable_animation::configurable_animation(engine_context & context, char co
 
 std::vector<configurable_animation::property_pair> configurable_animation::parse(nlohmann::json const &) const
 {
-    throw std::runtime_error("JSON not supported for animation: "s + name());
+    throw std::runtime_error("JSON properties not supported for animation: "s + name());
 }
 
 } // End of namespace

@@ -56,11 +56,12 @@ auto const animation_definition = R"(
     {
         "animation": "helix",
         "properties": {
+            "helix_rotation_time_ms": 2500,
             "helix_phase_shift_sin_factor": 0.04,
             "helix_thickness": 1.5,
             "helix_length": 4.0,
             "color_gradient_start": { "name": "magenta" },
-            "color_gradient_end": { "name": "orange" }
+            "color_gradient_end": { "name": "cyan" }
         }
     }
 ]
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 
     auto animations = cube::gfx::load_animations(animation_definition, context);
     if (!animations)
-        throw std::runtime_error(animations.error().what);
+        throw std::runtime_error("Failed to load animations: " + animations.error().what);
 
     int animations_index = 0;
     recurring_timer timer(context, [&](auto, auto) {
