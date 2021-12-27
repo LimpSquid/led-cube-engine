@@ -52,8 +52,6 @@ class basic_expected<void, E>
 public:
     explicit operator bool() const { return !error_.has_value(); }
 
-    E const & operator*() const { check_error(); return *error_; }
-    E & operator*() { check_error(); return *error_; }
     E const & error() const { check_error(); return *error_; }
     E & error() { check_error(); return *error_; }
 
