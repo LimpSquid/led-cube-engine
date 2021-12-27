@@ -14,10 +14,7 @@ struct range
     constexpr range(T const & f, T const & t) :
         from(f),
         to(t)
-    {
-        if (from == to)
-            throw std::runtime_error("from == to");
-    }
+    { }
 
     T from;
     T to;

@@ -2,6 +2,7 @@
 
 #include <glm/vec4.hpp>
 #include <limits>
+#include <string>
 
 namespace cube::core
 {
@@ -90,6 +91,7 @@ constexpr inline bool opaque(rgba_t const & rgba)
     return color(rgba).opaque();
 }
 
+color from_string(std::string c);
 void alpha_blend(color const & c, color & bucket);
 void alpha_blend(rgba_t const & c, rgba_t & bucket);
 void blend(color const & c, color & bucket);

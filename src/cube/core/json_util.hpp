@@ -57,6 +57,10 @@ inline nlohmann::json to_json(color const & c)
 
 inline color from_json(nlohmann::json const & json)
 {
+    auto const name = parse_field(json, "name", std::string{});
+    if (name.length())
+        return from_string(name);
+
     auto const red = parse_field<color_t>(json, "red");
     auto const green = parse_field<color_t>(json, "green");
     auto const blue = parse_field<color_t>(json, "blue");

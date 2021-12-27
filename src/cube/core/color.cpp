@@ -1,5 +1,6 @@
 #include <cube/core/color.hpp>
 #include <cube/core/math.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace cube::core
 {
@@ -17,6 +18,26 @@ color::color(color_vec_t const & vec)
     g = clamp(vec.g);
     b = clamp(vec.b);
     a = clamp(vec.a);
+}
+
+color from_string(std::string c)
+{
+    boost::algorithm::to_lower(c);
+
+#define STATEMENT_FOR(name) \
+    if (c == #name) return color_##name;
+    STATEMENT_FOR(transparent)
+    STATEMENT_FOR(black)
+    STATEMENT_FOR(white)
+    STATEMENT_FOR(red)
+    STATEMENT_FOR(green)
+    STATEMENT_FOR(blue)
+    STATEMENT_FOR(cyan)
+    STATEMENT_FOR(magenta)
+    STATEMENT_FOR(yellow)
+    STATEMENT_FOR(orange)
+#undef STATEMENT_FOR
+    return {};
 }
 
 void alpha_blend(color const & c, color & bucket)

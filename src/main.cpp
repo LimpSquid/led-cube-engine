@@ -49,16 +49,8 @@ auto const animation_definition = R"(
             "helix_phase_shift_sin_factor": 0.02,
             "helix_phase_shift_cos_factor": 0.01,
             "helix_thickness": 10.0,
-            "color_gradient_start": {
-                "red": 255,
-                "green": 0,
-                "blue": 0
-            },
-            "color_gradient_end": {
-                "red": 255,
-                "green": 128,
-                "blue": 0
-            }
+            "color_gradient_start": { "name": "red" },
+            "color_gradient_end": { "name": "orange" }
         }
     },
     {
@@ -67,16 +59,8 @@ auto const animation_definition = R"(
             "helix_phase_shift_sin_factor": 0.04,
             "helix_thickness": 1.5,
             "helix_length": 4.0,
-            "color_gradient_start": {
-                "red": 255,
-                "green": 0,
-                "blue": 255
-            },
-            "color_gradient_end": {
-                "red": 255,
-                "green": 128,
-                "blue": 0
-            }
+            "color_gradient_start": { "name": "magenta" },
+            "color_gradient_end": { "name": "orange" }
         }
     }
 ]
