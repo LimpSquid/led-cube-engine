@@ -1,4 +1,5 @@
 #include <cube/gfx/animations/helix.hpp>
+#include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
@@ -10,6 +11,9 @@ using namespace std::chrono;
 
 namespace
 {
+
+char const * const animation_name = "helix";
+library_publisher<animations::helix> const library_pub = {animation_name};
 
 constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color = color_cyan;
@@ -24,7 +28,7 @@ namespace cube::gfx::animations
 {
 
 helix::helix(engine_context & context) :
-    configurable_animation(context, "helix"),
+    configurable_animation(context, animation_name),
     scene_(*this, [this]() { step_++; }),
     fader_(context, {0.1, 1.0, 10, 1000ms})
 { }

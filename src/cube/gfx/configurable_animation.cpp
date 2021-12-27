@@ -15,6 +15,9 @@ void configurable_animation::write_properties(std::vector<std::pair<property_lab
 
 void configurable_animation::load_properties(nlohmann::json const & json)
 {
+    if (!json.is_object())
+        throw std::runtime_error("Expected JSON object got: "s + json.type_name());
+
     write_properties(parse(json));
 }
 
