@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #define PROPERTY_ENUM(...) ENUM(property, property_label_type, 255, __VA_ARGS__)
-#define PROPERTY_ENUM_SHARED(...) \
+#define COMMON_PROPERTY_ENUM(...) \
     static_assert(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__) < 255); \
     ENUM(property, property_label_type, 0, __VA_ARGS__)
 
@@ -22,7 +22,7 @@ public:
     using property_label_type = int;
     using property_pair = std::pair<property_label_type, property_value>;
 
-    PROPERTY_ENUM_SHARED
+    COMMON_PROPERTY_ENUM
     (
         animation_label,
     )
@@ -58,3 +58,5 @@ private:
 };
 
 } // end of namespace
+
+#undef COMMON_PROPERTY_ENUM // Only used in this file
