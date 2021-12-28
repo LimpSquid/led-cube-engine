@@ -3,7 +3,7 @@
 #include <cube/gfx/property_value.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
-#include <nlohmann/json.hpp>
+#include <3rdparty/nlohmann/json.hpp>
 #include <vector>
 #include <unordered_map>
 

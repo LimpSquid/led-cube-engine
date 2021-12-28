@@ -2,7 +2,7 @@
 
 #include <cube/core/math.hpp>
 #include <cube/specs.hpp>
-#include <glm/vec3.hpp>
+#include <3rdparty/glm/vec3.hpp>
 
 namespace cube::core
 {

@@ -1,7 +1,7 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/color.hpp>
 #include <cube/core/math.hpp>
-#include <glm/glm.hpp>
+#include <3rdparty/glm/glm.hpp>
 
 namespace cube::core
 {
