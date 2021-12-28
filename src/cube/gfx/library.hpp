@@ -7,7 +7,7 @@ namespace cube::gfx
 {
 
 using animation_pointer_t = std::unique_ptr<configurable_animation>;
-using incubator_t = std::function<animation_pointer_t(core::engine_context &)>;
+using animation_incubator_t = std::function<animation_pointer_t(core::engine_context &)>;
 
 class library
 {
@@ -16,12 +16,12 @@ public:
 
     std::vector<std::string> available_animations() const;
     core::expected_or_error<animation_pointer_t> incubate(std::string const & animation, core::engine_context & context) const;
-    void publish_animation(std::string const & name, incubator_t incubator);
+    void publish_animation(std::string const & name, animation_incubator_t incubator);
 
 private:
     library() = default;
 
-    std::unordered_map<std::string, incubator_t> animations_;
+    std::unordered_map<std::string, animation_incubator_t> animations_;
 };
 
 template<typename Animation>

@@ -22,7 +22,7 @@ std::vector<std::string> library::available_animations() const
     return result;
 }
 
-void library::publish_animation(std::string const & name, incubator_t incubator)
+void library::publish_animation(std::string const & name, animation_incubator_t incubator)
 {
     animations_[name] = std::move(incubator);
 }
@@ -37,7 +37,7 @@ expected_or_error<animation_pointer_t> library::incubate(std::string const & ani
     auto incubated = search->second(context);
     if (!incubated)
         return unexpected_error{"Unable to incubate animation: "s + animation};
-    return incubated;
+    return {std::move(incubated)};
 }
 
 expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::json const & json, engine_context & context)
