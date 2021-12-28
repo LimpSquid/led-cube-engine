@@ -81,7 +81,17 @@ void double_sine_wave::stop()
     update_timer_.stop();
 }
 
-std::vector<double_sine_wave::property_pair> double_sine_wave::parse(nlohmann::json const & json) const
+nlohmann::json double_sine_wave::properties_to_json() const
+{
+    return {
+        make_field(read_property(wave_period, default_period), wave_period),
+        make_field(read_property(wave_period_time_ms, default_period_time), wave_period_time_ms),
+        make_field(read_property(color_gradient_start, default_color), color_gradient_start),
+        make_field(read_property(color_gradient_end, !default_color), color_gradient_end),
+    };
+}
+
+std::vector<double_sine_wave::property_pair> double_sine_wave::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {wave_period, parse_field(json, wave_period, default_period)},

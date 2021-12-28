@@ -28,7 +28,8 @@ private:
     virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;
-    virtual std::vector<property_pair> parse(nlohmann::json const & json) const override;
+    virtual nlohmann::json properties_to_json() const override;
+    virtual std::vector<property_pair> properties_from_json(nlohmann::json const & json) const override;
 
     core::animation_scene scene_;
     gradient hue_;

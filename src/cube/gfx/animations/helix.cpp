@@ -72,7 +72,20 @@ void helix::stop()
     scene_.stop();
 }
 
-std::vector<helix::property_pair> helix::parse(nlohmann::json const & json) const
+nlohmann::json helix::properties_to_json() const
+{
+    return {
+        make_field(read_property(helix_rotation_time_ms, default_rotation_time), helix_rotation_time_ms),
+        make_field(read_property(helix_phase_shift_cos_factor, default_phase_shift_factor), helix_phase_shift_cos_factor),
+        make_field(read_property(helix_phase_shift_sin_factor, default_phase_shift_factor), helix_phase_shift_sin_factor),
+        make_field(read_property(helix_thickness, default_thickness), helix_thickness),
+        make_field(read_property(helix_length, default_length), helix_length),
+        make_field(read_property(color_gradient_start, default_color), color_gradient_start),
+        make_field(read_property(color_gradient_end, !default_color), color_gradient_end),
+    };
+}
+
+std::vector<helix::property_pair> helix::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {helix_rotation_time_ms, parse_field(json, helix_rotation_time_ms, default_rotation_time)},

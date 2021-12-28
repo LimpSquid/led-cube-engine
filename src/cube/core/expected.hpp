@@ -30,13 +30,13 @@ public:
 private:
     static_assert(!std::is_same_v<E, void>, "E must not be void");
 
-    void check_value()
+    void check_value() const
     {
         if (!value_)
             throw std::runtime_error("Tried to access value but has error");
     }
 
-    void check_error()
+    void check_error() const
     {
         if (!error_)
             throw std::runtime_error("Tried to access error but has expected value");
@@ -58,7 +58,7 @@ public:
 private:
     static_assert(!std::is_same_v<E, void>, "E must not be void");
 
-    void check_error()
+    void check_error() const
     {
         if (!error_)
             throw std::runtime_error("Tried to access error but has expected value");

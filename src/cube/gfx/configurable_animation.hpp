@@ -4,7 +4,6 @@
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
 #include <3rdparty/nlohmann/json.hpp>
-#include <vector>
 #include <unordered_map>
 
 #define PROPERTY_ENUM(...) ENUM(property, property_label_type, 255, __VA_ARGS__)
@@ -30,31 +29,40 @@ public:
     template<typename T>
     void write_property(property_label_type label, T value)
     {
-        properties_[label] = property_value_converter<T>{}(value);
+        properties_[label] = property_value{std::move(value)};
     }
 
-    template<typename T>
-    T read_property(property_label_type label, T def = T()) const
+    template<typename T, typename L>
+    T read_property(L label, T def = {}) const
     {
-        auto const search = properties_.find(label);
+        using std::operator""s;
 
-        if (search == properties_.end() || search->second.empty())
+        auto const search = properties_.find(label);
+        if (search == properties_.end())
             return def;
 
-        // Todo: maybe do some checking if we are able to convert the string to the given type.
-        return property_value_converter<T>{}(search->second);
+        try {
+            return std::get<T>(search->second);
+        } catch(std::bad_variant_access const & ex) {
+            if constexpr(std::is_enum_v<L>) // If the enum was used we can give a more detailed description
+                throw std::invalid_argument("Property type mismatch for property: "s + to_string(label));
+            else
+                throw std::invalid_argument("Property type mismatch");
+        }
     }
 
     void write_properties(std::vector<property_pair> const & properties);
     void load_properties(nlohmann::json const & json);
+    nlohmann::json dump_properties() const;
 
 protected:
     configurable_animation(core::engine_context & context);
 
 private:
-    virtual std::vector<property_pair> parse(nlohmann::json const & json) const = 0;
+    virtual nlohmann::json properties_to_json() const { return {}; }; // @Todo: virtual pure
+    virtual std::vector<property_pair> properties_from_json(nlohmann::json const & json) const = 0;
 
-    std::unordered_map<property_label_type, std::string> properties_;
+    std::unordered_map<property_label_type, property_value> properties_;
 };
 
 } // end of namespace

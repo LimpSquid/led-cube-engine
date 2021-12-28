@@ -31,7 +31,8 @@ private:
     virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;
-    virtual std::vector<property_pair> parse(nlohmann::json const & json) const override;
+    virtual nlohmann::json properties_to_json() const override;
+    virtual std::vector<property_pair> properties_from_json(nlohmann::json const & json) const override;
 
     core::recurring_timer update_timer_;
     std::array<wave, 2> waves_;

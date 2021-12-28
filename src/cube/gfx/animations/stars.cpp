@@ -49,8 +49,8 @@ void stars::start()
     omega_hue_= omega_ * hue_omega_scalar;
     hue_step_ = 0;
 
-    int number_of_stars = read_property(number_of_stars, default_number_of_stars);
-    stars_.resize(std::min(cube_size_3d / 8, number_of_stars)); // Max number of stars is 1/8th of the cube's size
+    int num_stars = read_property(number_of_stars, default_number_of_stars);
+    stars_.resize(std::min(cube_size_3d / 8, num_stars)); // Max number of stars is 1/8th of the cube's size
     for (star & s : stars_) {
         s = make_unique_star();
         s.fade_step = -(std::rand() % step_interval_); // Negative so stars are initially black
@@ -81,7 +81,15 @@ void stars::stop()
     scene_.stop();
 }
 
-std::vector<stars::property_pair> stars::parse(nlohmann::json const & json) const
+nlohmann::json stars::properties_to_json() const
+{
+    return {
+        make_field(read_property(fade_time_ms, default_fade_time), fade_time_ms),
+        make_field(read_property(number_of_stars, default_number_of_stars), number_of_stars),
+    };
+}
+
+std::vector<stars::property_pair> stars::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {fade_time_ms, parse_field(json, fade_time_ms, default_fade_time)},

@@ -18,12 +18,11 @@ std::map<std::string, std::function<int(int, char const * const [])>> const proc
 void exit_help()
 {
     std::cout
-        << "Usage: led-cube-engine <process> [arg...]\n"
-        << '\n'
+        << "Usage: led-cube-engine <process> [arg...]\n\n"
         << "Available processes:\n";
 
     for (auto const & proc : procs)
-        std::cout << "- " << proc.first << '\n';
+        std::cout << "  - " << proc.first << '\n';
     std::exit(EXIT_FAILURE);
 }
 

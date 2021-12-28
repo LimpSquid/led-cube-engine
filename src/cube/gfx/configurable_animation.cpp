@@ -2,8 +2,17 @@
 #include <cube/core/json_util.hpp>
 
 using namespace cube::core;
+using namespace cube::gfx;
 using namespace std::chrono;
 using std::operator""s;
+
+namespace
+{
+
+std::string const default_label = "";
+
+} // End of namespace
+
 
 namespace cube::gfx
 {
@@ -20,9 +29,20 @@ void configurable_animation::load_properties(nlohmann::json const & json)
         throw std::runtime_error("Expected JSON object got: "s + json.type_name());
 
     write_properties({
-        {animation_label, parse_field(json, animation_label, ""s)},
+        {animation_label, parse_field(json, animation_label, default_label)},
     });
-    write_properties(parse(json));
+    write_properties(properties_from_json(json));
+}
+
+nlohmann::json configurable_animation::dump_properties() const
+{
+    nlohmann::json json =
+    {
+        make_field(read_property(animation_label, default_label), animation_label)
+    };
+
+    json.merge_patch(properties_to_json());
+    return json;
 }
 
 configurable_animation::configurable_animation(engine_context & context) :

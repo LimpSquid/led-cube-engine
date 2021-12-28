@@ -14,7 +14,6 @@ using namespace cube::core;
 using namespace cube::gfx;
 using namespace std::chrono;
 
-
 namespace
 {
 
@@ -42,7 +41,7 @@ auto const animation_definition = R"(
     },
     {
         "animation": "stars",
-        "enabled": false
+        "enabled": true
     },
     {
         "animation": "helix",
