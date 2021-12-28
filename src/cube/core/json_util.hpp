@@ -2,7 +2,6 @@
 
 #include <cube/core/color.hpp>
 #include <3rdparty/nlohmann/json.hpp>
-#include <optional>
 
 namespace cube::core
 {
