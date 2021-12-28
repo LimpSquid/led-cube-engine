@@ -73,10 +73,10 @@ auto const animation_definition = R"(
 
 } // End of namespace
 
-namespace cube::programs
+namespace cube::process
 {
 
-int main_run(int argc, char *argv[])
+int main_render(int ac, char const * const av[])
 {
     engine_context context;
     engine cube_engine(context, graphics_device_factory<hal::graphics_device_t>{});

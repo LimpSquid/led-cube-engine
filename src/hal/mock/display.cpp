@@ -11,7 +11,8 @@ using namespace boost;
 namespace
 {
 
-constexpr double cube_off_brightness = 20.5 / (cube_size_1d * cube_size_1d);
+constexpr double point_size = 0.3 * cube::cube_size_1d;
+constexpr double cube_off_brightness = 0.00025 * (cube_size_1d * cube_size_1d);
 constexpr hal::mock::window_properties window_resolution = {960, 720};
 
 } // End of namespace
@@ -46,13 +47,13 @@ void display::schedule_update()
 void display::update()
 {
     if (window_.close())
-        exit(0);
+        std::exit(0);
     window_.clear();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
 
-    glPointSize(4);
+    glPointSize(point_size);
     glBegin(GL_POINTS);
 
     double pos[3];

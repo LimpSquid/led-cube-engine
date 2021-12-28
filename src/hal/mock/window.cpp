@@ -77,7 +77,7 @@ void window::init_window(window_properties const & properties)
     // Init glfw
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
 
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -85,13 +85,13 @@ void window::init_window(window_properties const & properties)
 
     glfw_window_ = glfwCreateWindow(properties.width, properties.height, properties.title, NULL, NULL);
     if (!glfw_window_)
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     glfwMakeContextCurrent(glfw_window_);
 
     glfwSetWindowUserPointer(glfw_window_, this);
 
     if (glewInit())
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
 
     // Init camera
     camera_.translation = glm::dvec3(0, 0, (properties.width * 1.75) / properties.height);

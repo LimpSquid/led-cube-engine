@@ -48,8 +48,7 @@ expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::js
     library & lib = library::instance();
     std::vector<animation_pointer_t> result;
 
-    try
-    {
+    try {
         for (auto const & element : json) {
             if (!parse_field(element, "enabled", true))
                 continue;
@@ -65,9 +64,7 @@ expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::js
                 (*incubated)->load_properties(properties);
             result.push_back(std::move(*incubated));
         }
-    }
-    catch (std::exception const & ex)
-    {
+    } catch (std::exception const & ex) {
         return unexpected_error{ex.what()};
     }
 

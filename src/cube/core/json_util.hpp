@@ -16,10 +16,18 @@ struct json_field_converter
 template<typename T>
 T parse_field(nlohmann::json const & json, char const * const key, T def)
 {
+    using std::operator""s;
+
     auto const i = json.find(key);
     if (i == json.end())
         return def;
-    return json_field_converter<T>{}(*i);
+
+    try {
+        return json_field_converter<T>{}(*i);
+    } catch(std::exception const & ex) {
+        throw std::invalid_argument("Unable to convert field: '"s + key
+            + "' in JSON: " + json.dump() + ", error: " + ex.what());
+    }
 }
 
 template<typename T>
@@ -30,7 +38,13 @@ T parse_field(nlohmann::json const & json, char const * const key)
     auto const i = json.find(key);
     if (i == json.end())
         throw std::invalid_argument("Field: '"s + key + "' not present in JSON: " + json.dump());
-    return json_field_converter<T>{}(*i);
+
+    try {
+        return json_field_converter<T>{}(*i);
+    } catch(std::exception const & ex) {
+        throw std::invalid_argument("Unable to convert field: '"s + key
+            + "' in JSON: " + json.dump() + ", error: " + ex.what());
+    }
 }
 
 template<typename T, typename Key>
