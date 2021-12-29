@@ -32,6 +32,11 @@ void poll(Container & tickers)
 namespace cube::core
 {
 
+engine_context & engine::context()
+{
+    return context_;
+}
+
 void engine::load(animation * animation)
 {
     animation_ = animation;

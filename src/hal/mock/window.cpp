@@ -8,19 +8,19 @@
 namespace
 {
 
-constexpr double translation_step = 0.04;
-constexpr double mouse_drag_sensitivity = 0.1;
-constexpr double mouse_scroll_resolution = 0.075;
+constexpr double translation_step{0.04};
+constexpr double mouse_drag_sensitivity{0.1};
+constexpr double mouse_scroll_resolution{0.075};
 
 // All degrees angles down below
-constexpr double x_axis_min = -160;
-constexpr double x_axis_max = -20;
-constexpr double z_axis_min = -360;
-constexpr double z_axis_max = 360;
-constexpr glm::dvec3 x_axis_view = {-90, 0, 0};
-constexpr glm::dvec3 y_axis_view = {-90, 0, 90};
-constexpr glm::dvec3 z_axis_view = {0, 0, 0};
-constexpr glm::dvec3 default_view = x_axis_view + glm::dvec3(25, 0, -35);
+constexpr double x_axis_min{-160};
+constexpr double x_axis_max{-20};
+constexpr double z_axis_min{-360};
+constexpr double z_axis_max{360};
+constexpr glm::dvec3 x_axis_view{-90, 0, 0};
+constexpr glm::dvec3 y_axis_view{-90, 0, 90};
+constexpr glm::dvec3 z_axis_view{0, 0, 0};
+constexpr glm::dvec3 default_view{x_axis_view + glm::dvec3(25, 0, -35)};
 
 void glfw_error_callback(int, const char * const desc)
 {
@@ -244,7 +244,7 @@ void window::process_cursor_pos_change(double xpos, double ypos)
     mouse_.previous_cursor_pos.y = ypos;
 }
 
-void window::process_scroll_change(double xoffset, double yoffset)
+void window::process_scroll_change(double /* xoffset */, double yoffset)
 {
     camera_.translation.z += -yoffset * mouse_scroll_resolution * camera_.translation.z; // Increase/decrease step size based on how far we are away from the object
 }

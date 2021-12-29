@@ -11,9 +11,9 @@ namespace hal::mock
 struct window_properties
 {
     constexpr window_properties(int w, int h, char const * const t) :
+        title(t),
         width(w),
-        height(h),
-        title(t)
+        height(h)
     { }
 
     constexpr window_properties(int w, int h) :

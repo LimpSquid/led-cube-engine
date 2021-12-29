@@ -1,7 +1,7 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/color.hpp>
 #include <cube/core/math.hpp>
-#include <3rdparty/glm/glm.hpp>
+#include <3rdparty/glm/geometric.hpp>
 
 namespace cube::core
 {
@@ -46,16 +46,16 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
     if (equal(radius, 0.0))
         return draw(origin);
 
-    glm::dvec3 const box = {radius, radius, radius};
+    glm::dvec3 const box{radius, radius, radius};
     glm::dvec3 const min = glm::dvec3(origin) - box;
     glm::dvec3 const max = glm::dvec3(origin) + box;
 
-    int const x_start = std::max(0, static_cast<int>(std::roundf(min.x)));
-    int const y_start = std::max(0, static_cast<int>(std::roundf(min.y)));
-    int const z_start = std::max(0, static_cast<int>(std::roundf(min.z)));
-    int const x_end = std::min(cube_size_1d - 1, static_cast<int>(std::roundf(max.x)));
-    int const y_end = std::min(cube_size_1d - 1, static_cast<int>(std::roundf(max.y)));
-    int const z_end = std::min(cube_size_1d - 1, static_cast<int>(std::roundf(max.z)));
+    int const x_start = std::max(0, static_cast<int>(std::round(min.x)));
+    int const y_start = std::max(0, static_cast<int>(std::round(min.y)));
+    int const z_start = std::max(0, static_cast<int>(std::round(min.z)));
+    int const x_end = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.x)));
+    int const y_end = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.y)));
+    int const z_end = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.z)));
 
     color const original_color = state_.draw_color;
 

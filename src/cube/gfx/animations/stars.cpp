@@ -11,14 +11,14 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::stars> const publisher = {"stars"};
+animation_publisher<animations::stars> const publisher{"stars"};
 
-constexpr milliseconds default_fade_time = 5000ms;
-constexpr int default_number_of_stars = cube::cube_size_3d / 15;
+constexpr milliseconds default_fade_time{5000ms};
+constexpr int default_number_of_stars{cube::cube_size_3d / 15};
 
-constexpr double hue_omega_scalar = 0.5;
-constexpr double hue_phase_shift_scalar = 0.25;
-gradient const hue =
+constexpr double hue_omega_scalar{0.5};
+constexpr double hue_phase_shift_scalar{0.25};
+gradient const hue
 {
     {0.00, color_red},
     {0.25, color_cyan},
@@ -44,7 +44,7 @@ stars::stars(engine_context & context) :
 
 void stars::start()
 {
-    step_interval_ = read_property(fade_time_ms, default_fade_time) / animation_scene_interval;
+    step_interval_ = static_cast<int>(read_property(fade_time_ms, default_fade_time) / animation_scene_interval);
     omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
     omega_hue_= omega_ * hue_omega_scalar;
     hue_step_ = 0;

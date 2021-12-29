@@ -11,14 +11,14 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::helix> const publisher = {"helix"};
+animation_publisher<animations::helix> const publisher{"helix"};
 
-constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr color default_color = color_cyan;
-constexpr milliseconds default_rotation_time = 1500ms;
-constexpr double default_thickness = 2.5;
-constexpr double default_length = 0.875;
-constexpr double default_phase_shift_factor = 0.0;
+constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
+constexpr color default_color{color_cyan};
+constexpr milliseconds default_rotation_time{1500ms};
+constexpr double default_thickness{2.5};
+constexpr double default_length{0.875};
+constexpr double default_phase_shift_factor{0.0};
 
 } // End of namespace
 
@@ -33,7 +33,7 @@ helix::helix(engine_context & context) :
 
 void helix::start()
 {
-    int step_interval = read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval;
+    int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval);
 
     hue_.add({0.0, read_property(color_gradient_start, default_color)});
     hue_.add({1.0, read_property(color_gradient_end, !default_color)});

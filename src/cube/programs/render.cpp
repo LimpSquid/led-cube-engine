@@ -1,78 +1,48 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
-#include <cube/core/timers.hpp>
-#include <cube/core/json_util.hpp>
-#include <cube/gfx/animations/double_sine_wave.hpp>
-#include <cube/gfx/animations/stars.hpp>
-#include <cube/gfx/animations/helix.hpp>
 #include <cube/gfx/library.hpp>
 #include <hal/graphics_device.hpp>
-#include <chrono>
+#include <3rdparty/nlohmann/json.hpp>
+#include <boost/program_options.hpp>
 #include <iostream>
 
 using namespace cube::core;
 using namespace cube::gfx;
 using namespace std::chrono;
+namespace po = boost::program_options;
 
 namespace
 {
 
-auto const animation_definition = R"(
-[
-    {
-        "animation": "lightning",
-        "enabled": true
-    },
-    {
-        "animation": "helix",
-        "enabled": true,
-        "properties": {
-            "animation_label": "normal helix",
-            "helix_rotation_time_ms": 1250,
-            "helix_phase_shift_sin_factor": 0.02,
-            "helix_phase_shift_cos_factor": 0.01,
-            "color_gradient_start": {
-                "red": 255,
-                "green": 0,
-                "blue": 0
-            },
-            "color_gradient_end": {
-                "red": 0,
-                "green": 0,
-                "blue": 255
-            }
-        }
-    },
-    {
-        "animation": "stars",
-        "enabled": true
-    },
-    {
-        "animation": "helix",
-        "enabled": false,
-        "properties": {
-            "animation_label": "fat helix",
-            "helix_phase_shift_sin_factor": 0.02,
-            "helix_phase_shift_cos_factor": 0.01,
-            "helix_thickness": 10.0,
-            "color_gradient_start": { "name": "orange" },
-            "color_gradient_end": { "name": "green" }
-        }
-    },
-    {
-        "animation": "helix",
-        "properties": {
-            "animation_label": "long helix",
-            "helix_rotation_time_ms": 1500,
-            "helix_phase_shift_sin_factor": 0.04,
-            "helix_thickness": 1.5,
-            "helix_length": 4.0,
-            "color_gradient_start": { "name": "magenta" },
-            "color_gradient_end": { "name": "cyan" }
-        }
+engine & engine_instance()
+{
+    static engine_context context;
+    static engine instance(context, graphics_device_factory<hal::graphics_device_t>{});
+    return instance;
+}
+
+void handle_animation(std::vector<std::string> const & args)
+{
+    if (args.size() > 0 && args.size() <= 2) {
+        auto & engine = engine_instance();
+        auto animation = library::instance().incubate(args[0], engine.context());
+
+        if (!animation)
+            throw std::runtime_error(animation.error().what);
+        if (args.size() == 2)
+            (*animation)->load_properties(nlohmann::json::parse(args[1]));
+
+        engine.load(animation->get());
+        engine.run(); // Does not return
     }
-]
-)"_json;
+
+    std::cout
+        << "Usage: led-cube-engine render --animation <name> [properties]\n\n"
+        << "Examples:\n"
+        << "  led-cube-engine render --animation helix\n"
+        << "  led-cube-engine render --animation lightning '{\"cloud_color\": {\"name\": \"orange\"}}'\n";
+    std::exit(EXIT_FAILURE);
+}
 
 } // End of namespace
 
@@ -81,22 +51,24 @@ namespace cube::programs
 
 int main_render(int ac, char const * const av[])
 {
-    engine_context context;
-    engine cube_engine(context, graphics_device_factory<hal::graphics_device_t>{});
+    po::options_description desc("Available options");
+    desc.add_options()
+        ("help,h", "produce a help message")
+        ("file,f", "render animations from file")
+        ("animation,", po::value<std::vector<std::string>>()
+            ->zero_tokens()
+            ->multitoken()
+            ->notifier(handle_animation), "render an animation");
 
-    auto animations = load_animations(animation_definition, context);
-    if (!animations)
-        throw std::runtime_error("Failed to load animations: " + animations.error().what);
+    po::variables_map cli_variables;
+    po::store(po::parse_command_line(ac, av, desc), cli_variables);
+    po::notify(cli_variables);
 
-    int animations_index = 0;
-    recurring_timer timer(context, [&](auto, auto) {
-        auto * animation = (*animations)[animations_index++ % animations->size()].get();
-        cube_engine.load(animation);
-    });
-    timer.start(20s, true);
-    cube_engine.run(); // Todo: eventually we need to cycle through animations
-
-    return EXIT_SUCCESS;
+    // Print help if no handler exited
+    std::cout
+        << "Usage: led-cube-engine render <option> [arg...]\n\n"
+        << desc << '\n';
+    return EXIT_FAILURE;
 }
 
 } // End of namespace

@@ -15,7 +15,7 @@ std::map<std::string, std::function<int(int, char const * const [])>> const prog
     {"library", main_library}
 };
 
-void exit_help()
+void exit_with_help()
 {
     std::cout
         << "Usage: led-cube-engine <program> [arg...]\n\n"
@@ -32,10 +32,10 @@ int main(int ac, char const * const av[])
 {
     auto const search = ac >= 2 ? programs.find(av[1]) : programs.find(default_program);
     if (search == programs.cend())
-        exit_help();
+        exit_with_help();
 
     try {
-        return search->second(ac, av);
+        return search->second(ac - 1, &av[1]);
     } catch (std::exception const & ex) {
         std::cerr << "Application exited with error: " << ex.what() << '\n';
         return EXIT_FAILURE;

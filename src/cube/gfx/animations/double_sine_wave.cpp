@@ -12,12 +12,12 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::double_sine_wave> const publisher = {"double_sine_wave"};
+animation_publisher<animations::double_sine_wave> const publisher{"double_sine_wave"};
 
-constexpr range cube_axis_range = {cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr color default_color = color_magenta;
-constexpr milliseconds default_period_time = 1250ms;
-constexpr int default_period = 2 * cube::cube_size_1d;
+constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
+constexpr color default_color{color_magenta};
+constexpr milliseconds default_period_time{1250ms};
+constexpr int default_period{2 * cube::cube_size_1d};
 
 } // End of namespace
 

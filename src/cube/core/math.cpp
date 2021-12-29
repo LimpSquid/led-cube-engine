@@ -7,7 +7,7 @@ namespace
 
 struct rand_seeder
 {
-    rand_seeder() { std::srand(std::time(nullptr)); }
+    rand_seeder() { std::srand(static_cast<unsigned int>(std::time(nullptr))); }
 };
 
 [[gnu::used]] rand_seeder const seeder_;

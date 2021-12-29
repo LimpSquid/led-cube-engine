@@ -11,9 +11,9 @@ using namespace boost;
 namespace
 {
 
-constexpr double point_size = 80.0 / cube_size_1d;
-constexpr double cube_off_brightness = 0.75 / cube_size_1d;
-constexpr hal::mock::window_properties window_resolution = {960, 720};
+constexpr double point_size{80.0 / cube_size_1d};
+constexpr double cube_off_brightness{0.75 / cube_size_1d};
+constexpr hal::mock::window_properties window_resolution{960, 720};
 
 } // End of namespace
 

@@ -11,11 +11,11 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::lightning> const publisher = {"lightning"};
+animation_publisher<animations::lightning> const publisher{"lightning"};
 
-constexpr int default_number_of_clouds = 5;
-constexpr double default_size = 0.625 * cube::cube_size_1d;
-constexpr color default_color = color_blue;
+constexpr int default_number_of_clouds{5};
+constexpr double default_size{0.625 * cube::cube_size_1d};
+constexpr color default_color{color_blue};
 
 } // End of namespace
 
@@ -35,7 +35,7 @@ void lightning::start()
     hue_.add({1.0, color_white});
 
     int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
-    clouds_.resize(5);
+    clouds_.resize(num_clouds);
     for (auto & cloud : clouds_)
         spawn_cloud(cloud);
     scene_.start();

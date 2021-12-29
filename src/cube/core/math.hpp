@@ -33,7 +33,7 @@ struct safe_range
     boost::safe_numerics::safe<T> to;
 };
 
-constexpr range unit_circle_range = {-1.0, 1.0};
+constexpr range unit_circle_range{-1.0, 1.0};
 
 template<typename T>
 constexpr inline range<T> make_limit_range()
@@ -63,11 +63,15 @@ constexpr inline TOut map(
     };
 
     if constexpr(std::is_floating_point_v<TIn> && std::is_integral_v<TOut>)
-        return std::round(do_map(value, in_range, range_cast<TIn>(out_range)));
+        return static_cast<TOut>(std::round(do_map(value, in_range, range_cast<TIn>(out_range))));
     if constexpr(std::is_integral_v<TIn> && std::is_floating_point_v<TOut>)
         return do_map(value, range_cast<TOut>(in_range), out_range);
     else if constexpr(std::is_integral_v<TIn> && std::is_integral_v<TOut>)
         return do_map(boost::safe_numerics::safe<TIn>(value), safe_range(in_range), safe_range(out_range));
+    // In case mapping resulted in a floating point value and the output type is integral, similar to the first if statement
+    else if constexpr(std::is_floating_point_v<decltype(do_map(std::declval<TIn>(), std::declval<range<TIn>>(), std::declval<range<TOut>>()))>
+        && std::is_integral_v<TOut>)
+        return static_cast<TOut>(std::round(do_map(value, in_range, out_range)));
     else
         return do_map(value, in_range, out_range);
 }

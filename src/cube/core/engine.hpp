@@ -29,10 +29,11 @@ public:
     template<typename T>
     engine(engine_context & context, graphics_device_factory<T> factory) :
         context_(context),
-        device_(factory(context)),
-        animation_(nullptr)
+        animation_(nullptr),
+        device_(factory(context))
     { }
 
+    engine_context & context();
     void load(animation * animation);
     void run();
 

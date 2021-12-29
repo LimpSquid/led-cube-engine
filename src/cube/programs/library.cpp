@@ -16,8 +16,6 @@ auto bool_switch_notifier(H handler)
     return [h = std::move(handler)](bool run) { if (run) h(); };
 }
 
-po::variables_map cli_options;
-
 void handle_list()
 {
     auto const animations = library::instance().available_animations();
@@ -33,12 +31,12 @@ void handle_list()
     std::exit(EXIT_SUCCESS);
 }
 
-void handle_info(std::vector<std::string> const & animations)
+void handle_info(std::vector<std::string> const & args)
 {
-    auto const unique_animations = std::set<std::string>(animations.begin(), animations.end());
+    auto const animations = std::set<std::string>(args.begin(), args.end());
     engine_context context{};
 
-    for (auto it = unique_animations.begin(); it != unique_animations.end(); ++it) {
+    for (auto it = animations.begin(); it != animations.end(); ++it) {
         auto incubated = library::instance().incubate(*it, context);
 
         if (incubated) {
@@ -52,7 +50,7 @@ void handle_info(std::vector<std::string> const & animations)
         }
 
         // Separator
-        if (std::distance(it, unique_animations.end()) > 1)
+        if (std::distance(it, animations.end()) > 1)
             std::cout << "=====\n\n";
     }
 
@@ -68,12 +66,16 @@ int main_library(int ac, char const * const av[])
 {
     po::options_description desc("Available options");
     desc.add_options()
-        ("help", "produce help message")
-        ("list", po::bool_switch()->notifier(bool_switch_notifier(handle_list)), "list available animations")
-        ("info", po::value<std::vector<std::string>>()->multitoken()->notifier(handle_info), "print info about one or more animations");
+        ("help,h", "produce a help message")
+        ("list", po::bool_switch()
+            ->notifier(bool_switch_notifier(handle_list)), "list available animations")
+        ("info", po::value<std::vector<std::string>>()
+            ->multitoken()
+            ->notifier(handle_info), "print info about one or more animations");
 
-    po::store(po::parse_command_line(ac, av, desc), cli_options);
-    po::notify(cli_options);
+    po::variables_map cli_variables;
+    po::store(po::parse_command_line(ac, av, desc), cli_variables);
+    po::notify(cli_variables);
 
     // Print help if no handler exited
     std::cout

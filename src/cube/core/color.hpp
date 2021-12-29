@@ -10,8 +10,8 @@ namespace cube::core
 using rgba_t = uint32_t;
 using color_t = unsigned char;
 using color_vec_t = glm::dvec4;
-constexpr color_t color_min_value = std::numeric_limits<color_t>::min();
-constexpr color_t color_max_value = std::numeric_limits<color_t>::max();
+constexpr color_t color_min_value{std::numeric_limits<color_t>::min()};
+constexpr color_t color_max_value{std::numeric_limits<color_t>::max()};
 
 struct color
 {
@@ -20,7 +20,7 @@ struct color
     { }
 
     constexpr color(rgba_t rgba) :
-        color(rgba, rgba >> 8, rgba >> 16, rgba >> 24)
+        color(color_t(rgba), color_t(rgba >> 8), color_t(rgba >> 16), color_t(rgba >> 24))
     { }
 
     constexpr color(color_t red, color_t green, color_t blue) :
@@ -47,23 +47,23 @@ struct color
 
 inline constexpr color operator!(color const & c)
 {
-    color_t r = color_max_value - c.r;
-    color_t g = color_max_value - c.g;
-    color_t b = color_max_value - c.b;
+    color_t r = static_cast<color_t>(color_max_value - c.r);
+    color_t g = static_cast<color_t>(color_max_value - c.g);
+    color_t b = static_cast<color_t>(color_max_value - c.b);
 
     return {r, g, b, c.a};
 }
 
-constexpr color color_transparent   = {000, 000, 000, 000};
-constexpr color color_black         = {000, 000, 000};
-constexpr color color_white         = {255, 255, 255};
-constexpr color color_red           = {255, 000, 000};
-constexpr color color_green         = {000, 255, 000};
-constexpr color color_blue          = {000, 000, 255};
-constexpr color color_cyan          = {000, 255, 255};
-constexpr color color_magenta       = {255, 000, 255};
-constexpr color color_yellow        = {255, 255, 000};
-constexpr color color_orange        = {255, 128, 000};
+constexpr color color_transparent   {000, 000, 000, 000};
+constexpr color color_black         {000, 000, 000};
+constexpr color color_white         {255, 255, 255};
+constexpr color color_red           {255, 000, 000};
+constexpr color color_green         {000, 255, 000};
+constexpr color color_blue          {000, 000, 255};
+constexpr color color_cyan          {000, 255, 255};
+constexpr color color_magenta       {255, 000, 255};
+constexpr color color_yellow        {255, 255, 000};
+constexpr color color_orange        {255, 128, 000};
 
 constexpr inline color_vec_t red_vec(double scalar) { return {scalar, 1.0, 1.0, 1.0}; }
 constexpr inline color_vec_t green_vec(double scalar) { return {1.0, scalar, 1.0, 1.0}; }
