@@ -41,7 +41,11 @@ nlohmann::json configurable_animation::dump_properties() const
         make_field(read_property(animation_label, default_label), animation_label)
     };
 
-    json.merge_patch(properties_to_json());
+    nlohmann::json const other = properties_to_json();
+    if (!other.empty()) {
+        assert(other.is_object());
+        json.update(other); // If other is no object this will throw an exception
+    }
     return json;
 }
 

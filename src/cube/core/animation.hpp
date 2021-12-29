@@ -39,7 +39,7 @@ using scene_update_handler_t = std::function<void()>;
 class animation_scene
 {
 public:
-    animation_scene(animation & animation, std::optional<scene_update_handler_t> handler);
+    animation_scene(animation & animation, std::optional<scene_update_handler_t> handler = {});
 
     void start();
     void stop();

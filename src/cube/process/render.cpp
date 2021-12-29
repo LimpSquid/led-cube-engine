@@ -20,8 +20,12 @@ namespace
 auto const animation_definition = R"(
 [
     {
+        "animation": "lightning",
+        "enabled": true
+    },
+    {
         "animation": "helix",
-        "enabled": false,
+        "enabled": true,
         "properties": {
             "animation_label": "normal helix",
             "helix_rotation_time_ms": 1250,
@@ -87,8 +91,6 @@ int main_render(int ac, char const * const av[])
     int animations_index = 0;
     recurring_timer timer(context, [&](auto, auto) {
         auto * animation = (*animations)[animations_index++ % animations->size()].get();
-        std::cout << "Started animation: " <<
-            animation->read_property(configurable_animation::animation_label, std::string("unknown")) << '\n';
         cube_engine.load(animation);
     });
     timer.start(20s, true);

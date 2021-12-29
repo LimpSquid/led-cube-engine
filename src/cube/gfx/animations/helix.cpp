@@ -1,6 +1,5 @@
 #include <cube/gfx/animations/helix.hpp>
 #include <cube/gfx/library.hpp>
-#include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 #include <cube/core/json_util.hpp>
@@ -70,6 +69,7 @@ void helix::paint(graphics_device & device)
 void helix::stop()
 {
     scene_.stop();
+    fader_.stop();
 }
 
 nlohmann::json helix::properties_to_json() const

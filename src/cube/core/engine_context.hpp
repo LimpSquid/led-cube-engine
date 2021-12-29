@@ -26,6 +26,7 @@ class engine_context
         std::chrono::steady_clock::time_point last;
         std::chrono::steady_clock::time_point next;
         uint64_t id;
+        bool suspended;
     };
 
     std::vector<ticker> tickers;

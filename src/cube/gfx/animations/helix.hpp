@@ -2,7 +2,7 @@
 
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/gradient.hpp>
-#include <cube/gfx/transition.hpp>
+#include <cube/gfx/easing.hpp>
 
 namespace cube::gfx::animations
 {
@@ -33,7 +33,7 @@ private:
 
     core::animation_scene scene_;
     gradient hue_;
-    sine_transition fader_;
+    ease_in_sine fader_;
     int step_;
     double omega_;
     double thickness_;

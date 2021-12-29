@@ -9,10 +9,23 @@ namespace
 uint64_t ticker_id = 0;
 
 template<typename Container>
-auto find_ticker(Container & tickers, uint64_t id)
+auto & find_ticker_or_throw(Container & tickers, uint64_t id)
 {
-    return std::find_if(tickers.begin(), tickers.end(),
+    auto search = std::find_if(tickers.begin(), tickers.end(),
         [id](auto const & ticker) { return ticker.id == id; });
+
+    if (search == tickers.end())
+        throw std::runtime_error("Unable to find tiker with id: " + std::to_string(id));
+    return *search;
+}
+
+template<typename Container>
+void remove_ticker(Container & tickers, uint64_t id)
+{
+    auto begin = std::remove_if(tickers.begin(), tickers.end(),
+        [id](auto const & ticker) { return ticker.id == id; });
+
+    tickers.erase(begin, tickers.end());
 }
 
 } // End of namespace
@@ -22,48 +35,40 @@ namespace cube::core
 
 recurring_timer::recurring_timer(engine_context & context, timer_handler_t handler) :
     context_(context),
-    handler_(std::move(handler)),
     id_(ticker_id++)
-{ }
+{
+    context_.tickers.push_back(engine_context::ticker{
+        [h = std::move(handler)](auto now, auto elapsed) { h(std::move(now), std::move(elapsed)); },
+        {/* interval */}, {/* last */}, { /* next */ },
+        id_,
+        true
+    });
+}
 
 recurring_timer::~recurring_timer()
 {
-    stop();
+    remove_ticker(context_.tickers, id_);
+}
+
+bool recurring_timer::is_running() const
+{
+    return !find_ticker_or_throw(context_.tickers, id_).suspended;
 }
 
 void recurring_timer::start(milliseconds interval, bool trigger_on_start)
 {
-    auto search = find_ticker(context_.tickers, id_);
+    auto & ticker = find_ticker_or_throw(context_.tickers, id_);
+    auto const now = steady_clock::now();
 
-    if (search == context_.tickers.end()) {
-        auto const now = steady_clock::now();
-        context_.tickers.push_back(engine_context::ticker{
-            [this](auto now, auto elapsed) { handler_(std::move(now), std::move(elapsed)); },
-            interval,
-            now,
-            trigger_on_start ? now : (now + interval),
-            id_
-        });
-    }
-}
-
-void recurring_timer::restart()
-{
-    auto search = find_ticker(context_.tickers, id_);
-
-    if (search != context_.tickers.end()) {
-        auto const now = steady_clock::now();
-        search->last = now;
-        search->next = now + search->interval;
-    }
+    ticker.interval = interval;
+    ticker.last = now;
+    ticker.next = trigger_on_start ? now : (now + interval);
+    ticker.suspended = false;
 }
 
 void recurring_timer::stop()
 {
-    auto search = find_ticker(context_.tickers, id_);
-
-    if (search != context_.tickers.end())
-        context_.tickers.erase(search);
+    find_ticker_or_throw(context_.tickers, id_).suspended = true;
 }
 
 single_shot_timer::single_shot_timer(engine_context & context, timer_handler_t handler) :

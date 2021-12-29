@@ -59,7 +59,7 @@ protected:
     configurable_animation(core::engine_context & context);
 
 private:
-    virtual nlohmann::json properties_to_json() const { return {}; }; // @Todo: virtual pure
+    virtual nlohmann::json properties_to_json() const = 0;
     virtual std::vector<property_pair> properties_from_json(nlohmann::json const & json) const = 0;
 
     std::unordered_map<property_label_type, property_value> properties_;

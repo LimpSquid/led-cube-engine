@@ -20,13 +20,12 @@ public:
     recurring_timer(engine_context & context, timer_handler_t handler);
     ~recurring_timer();
 
+    bool is_running() const;
     void start(std::chrono::milliseconds interval, bool trigger_on_start = false);
-    void restart();
     void stop();
 
 private:
     engine_context & context_;
-    timer_handler_t const handler_;
     uint64_t const id_;
 };
 

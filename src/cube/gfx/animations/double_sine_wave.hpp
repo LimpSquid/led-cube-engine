@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/gfx/transition.hpp>
+#include <cube/gfx/easing.hpp>
 
 namespace cube::gfx::animations
 {
@@ -36,7 +36,7 @@ private:
 
     core::recurring_timer update_timer_;
     std::array<wave, 2> waves_;
-    sine_transition fader_;
+    ease_in_sine fader_;
     int period_;
     double omega_;
 };

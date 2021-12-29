@@ -79,6 +79,7 @@ void double_sine_wave::paint(graphics_device & device)
 void double_sine_wave::stop()
 {
     update_timer_.stop();
+    fader_.stop();
 }
 
 nlohmann::json double_sine_wave::properties_to_json() const

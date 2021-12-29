@@ -17,7 +17,7 @@ void poll(Container & tickers)
     auto const now = steady_clock::now();
 
     for (auto & ticker : tickers) {
-        if (now >= ticker.next) {
+        if (!ticker.suspended && now >= ticker.next) {
             auto const elapsed = duration_cast<milliseconds>(now - ticker.last);
 
             ticker.last = now;
