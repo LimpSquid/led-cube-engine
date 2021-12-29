@@ -66,7 +66,7 @@ namespace cube::programs
 
 int main_library(int ac, char const * const av[])
 {
-    po::options_description desc("Allowed options");
+    po::options_description desc("Available options");
     desc.add_options()
         ("help", "produce help message")
         ("list", po::bool_switch()->notifier(bool_switch_notifier(handle_list)), "list available animations")
@@ -76,7 +76,9 @@ int main_library(int ac, char const * const av[])
     po::notify(cli_options);
 
     // Print help if no handler exited
-    std::cout << desc << "\n";
+    std::cout
+        << "Usage: led-cube-engine library <option> [arg...]\n\n"
+        << desc << '\n';
     return EXIT_FAILURE;
 }
 
