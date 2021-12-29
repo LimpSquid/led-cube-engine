@@ -8,7 +8,6 @@ using namespace cube::programs;
 namespace
 {
 
-char const * const default_program = "render";
 std::map<std::string, std::function<int(int, char const * const [])>> const programs =
 {
     {"render", main_render},
@@ -30,7 +29,9 @@ void exit_with_help()
 
 int main(int ac, char const * const av[])
 {
-    auto const search = ac >= 2 ? programs.find(av[1]) : programs.find(default_program);
+    if (ac < 2)
+        exit_with_help();
+    auto const search = programs.find(av[1]);
     if (search == programs.cend())
         exit_with_help();
 

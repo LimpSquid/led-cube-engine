@@ -39,9 +39,16 @@ To build and run the `mock` target follow the steps below:
     ```bash
     $ cmake --build .
     ```
-1. Run executable
+1. Render an animation:
     ```bash
-    $ bin/led-cube-engine
+    $ bin/led-cube-engine render --animation stars
+    $ bin/led-cube-engine render --animation lightning '{"cloud_color": {"name": "orange"}}'
+    ```
+1. Finally, here are some interesting commands to check out:
+    ```bash
+    $ bin/led-cube-engine library --list
+    $ bin/led-cube-engine library --info stars helix
+    $ bin/led-cube-engine render --help
     ```
 
 ## Targets
