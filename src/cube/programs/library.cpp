@@ -52,8 +52,8 @@ void handle_info(std::vector<std::string> const & animations)
         }
 
         // Separator
-        if (std::distance(it, unique_animations.end()) != 0)
-            std::cout << '\n';
+        if (std::distance(it, unique_animations.end()) > 1)
+            std::cout << "=====\n\n";
     }
 
     std::exit(EXIT_SUCCESS);
@@ -61,7 +61,7 @@ void handle_info(std::vector<std::string> const & animations)
 
 }
 
-namespace cube::process
+namespace cube::programs
 {
 
 int main_library(int ac, char const * const av[])

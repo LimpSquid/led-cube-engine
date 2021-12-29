@@ -38,7 +38,7 @@ nlohmann::json configurable_animation::dump_properties() const
 {
     nlohmann::json json =
     {
-        make_field(read_property(animation_label, default_label), animation_label)
+        make_field(animation_label, read_property(animation_label, default_label))
     };
 
     nlohmann::json const other = properties_to_json();

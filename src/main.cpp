@@ -1,15 +1,15 @@
-#include <cube/process/entry.hpp>
+#include <cube/programs/entry.hpp>
 #include <functional>
 #include <iostream>
 #include <map>
 
-using namespace cube::process;
+using namespace cube::programs;
 
 namespace
 {
 
-char const * const default_proc = "render";
-std::map<std::string, std::function<int(int, char const * const [])>> const procs =
+char const * const default_program = "render";
+std::map<std::string, std::function<int(int, char const * const [])>> const programs =
 {
     {"render", main_render},
     {"library", main_library}
@@ -18,11 +18,11 @@ std::map<std::string, std::function<int(int, char const * const [])>> const proc
 void exit_help()
 {
     std::cout
-        << "Usage: led-cube-engine <process> [arg...]\n\n"
-        << "Available processes:\n";
+        << "Usage: led-cube-engine <program> [arg...]\n\n"
+        << "Available programs:\n";
 
-    for (auto const & proc : procs)
-        std::cout << "  - " << proc.first << '\n';
+    for (auto const & prog : programs)
+        std::cout << "  - " << prog.first << '\n';
     std::exit(EXIT_FAILURE);
 }
 
@@ -30,8 +30,8 @@ void exit_help()
 
 int main(int ac, char const * const av[])
 {
-    auto const search = ac >= 2 ? procs.find(av[1]) : procs.find(default_proc);
-    if (search == procs.cend())
+    auto const search = ac >= 2 ? programs.find(av[1]) : programs.find(default_program);
+    if (search == programs.cend())
         exit_help();
 
     try {

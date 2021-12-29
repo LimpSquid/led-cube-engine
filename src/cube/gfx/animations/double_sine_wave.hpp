@@ -12,10 +12,10 @@ class double_sine_wave :
 public:
     PROPERTY_ENUM
     (
-        wave_period,            // number of voxels along the x-axis for one wave period
-        wave_period_time_ms,    // time in milliseconds to complete one wave period
-        color_gradient_start,   // start color of gradient
-        color_gradient_end      // end color of gradient
+        wave_period,            // Number of voxels along the x-axis for one wave period
+        wave_period_time_ms,    // Time in milliseconds to complete one wave period
+        color_gradient_start,   // Start color of gradient
+        color_gradient_end      // End color of gradient
     )
 
     double_sine_wave(core::engine_context & context);

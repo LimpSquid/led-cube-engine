@@ -84,8 +84,8 @@ void stars::stop()
 nlohmann::json stars::properties_to_json() const
 {
     return {
-        make_field(read_property(fade_time_ms, default_fade_time), fade_time_ms),
-        make_field(read_property(number_of_stars, default_number_of_stars), number_of_stars),
+        make_field(fade_time_ms, read_property(fade_time_ms, default_fade_time)),
+        make_field(number_of_stars, read_property(number_of_stars, default_number_of_stars)),
     };
 }
 

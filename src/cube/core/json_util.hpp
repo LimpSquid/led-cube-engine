@@ -81,7 +81,7 @@ T parse_field(nlohmann::json const & json, Key const & key)
 }
 
 template<typename T>
-nlohmann::json make_field(T const & value, char const * const key)
+nlohmann::json make_field(char const * const key, T const & value)
 {
     using std::operator""s;
 
@@ -94,9 +94,9 @@ nlohmann::json make_field(T const & value, char const * const key)
 }
 
 template<typename T, typename Key>
-nlohmann::json make_field(T const & value, Key const & key)
+nlohmann::json make_field(Key const & key, T const & value)
 {
-    return make_field<T>(value, to_string(key));
+    return make_field<T>(to_string(key), value);
 }
 
 inline nlohmann::json to_json(color const & c)

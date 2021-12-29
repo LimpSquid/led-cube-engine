@@ -85,10 +85,10 @@ void double_sine_wave::stop()
 nlohmann::json double_sine_wave::properties_to_json() const
 {
     return {
-        make_field(read_property(wave_period, default_period), wave_period),
-        make_field(read_property(wave_period_time_ms, default_period_time), wave_period_time_ms),
-        make_field(read_property(color_gradient_start, default_color), color_gradient_start),
-        make_field(read_property(color_gradient_end, !default_color), color_gradient_end),
+        make_field(wave_period, read_property(wave_period, default_period)),
+        make_field(wave_period_time_ms, read_property(wave_period_time_ms, default_period_time)),
+        make_field(color_gradient_start, read_property(color_gradient_start, default_color)),
+        make_field(color_gradient_end, read_property(color_gradient_end, !default_color)),
     };
 }
 

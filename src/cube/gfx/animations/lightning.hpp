@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
+#include <cube/gfx/gradient.hpp>
 #include <cube/gfx/easing.hpp>
 #include <cube/core/voxel.hpp>
 
@@ -11,9 +12,12 @@ class lightning :
     public configurable_animation
 {
 public:
-    // PROPERTY_ENUM
-    // (
-    // )
+    PROPERTY_ENUM
+    (
+        number_of_clouds,   // Number of clouds in the cube
+        cloud_size,         // Scatter size of the cloud
+        cloud_color,        // Color of the cloud
+    )
 
     lightning(core::engine_context & context);
 
@@ -34,6 +38,8 @@ private:
 
     core::animation_scene scene_;
     std::vector<cloud> clouds_;
+    gradient hue_;
+    double cloud_size_;
 };
 
 } // End of namespace

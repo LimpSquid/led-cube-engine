@@ -76,7 +76,7 @@ auto const animation_definition = R"(
 
 } // End of namespace
 
-namespace cube::process
+namespace cube::programs
 {
 
 int main_render(int ac, char const * const av[])

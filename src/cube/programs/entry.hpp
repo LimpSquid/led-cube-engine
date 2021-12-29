@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cube::process
+namespace cube::programs
 {
 
 int main_library(int ac, char const * const av[]);

@@ -12,8 +12,8 @@ class stars :
 public:
     PROPERTY_ENUM
     (
-        fade_time_ms,
-        number_of_stars
+        number_of_stars,    // Number of unique stars in the cube
+        fade_time_ms        // Fade time of a single star
     )
 
     stars(core::engine_context & context);
