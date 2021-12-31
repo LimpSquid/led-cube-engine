@@ -17,10 +17,11 @@ gradient::gradient() :
     gradient({})
 { }
 
-void gradient::add(gradient_stop stop)
+gradient & gradient::add(gradient_stop stop)
 {
     stops_.erase(stop);
     stops_.insert(std::move(stop));
+    return *this;
 }
 
 void gradient::reset()

@@ -13,7 +13,6 @@ class display :
 {
 public:
     display(cube::core::engine_context & context);
-    virtual ~display() override;
 
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;

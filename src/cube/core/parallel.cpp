@@ -23,12 +23,12 @@ struct parallel_for_job
 };
 
 template<typename T>
-class job_scheduler
+class job_processor
 {
 public:
     using job_t = T;
 
-    job_scheduler(unsigned int num_of_threads = std::thread::hardware_concurrency()) :
+    job_processor(unsigned int num_of_threads = std::thread::hardware_concurrency()) :
         stopping_(false),
         in_flight_(0)
     {
@@ -47,10 +47,13 @@ public:
                     auto job = std::move(jobs_.back());
                     jobs_.pop_back();
 
-                    // Run job outside without holding the lock
-                    {
+                    // Run job without holding the lock
+                    try {
                         unlocker unlocker(lock);
                         job();
+                    } catch(...) {
+                        stop();
+                        throw;
                     }
 
                     in_flight_--;
@@ -60,21 +63,24 @@ public:
         }
     }
 
-    ~job_scheduler()
+    ~job_processor()
     {
-        stopping_ = true;
-        condition_.notify_all();
-        in_flight_condition_.notify_all();
+        stop();
         for (auto & t : threads_)
             t.join();
     }
+
+    bool exited() const
+    {
+        return stopping_;
+    };
 
     int available_threads() const
     {
         return static_cast<int>(threads_.size());
     }
 
-    void post(job_t job)
+    void schedule(job_t job)
     {
         std::unique_lock<std::mutex> lock(mutex_);
         jobs_.push_front(std::move(job));
@@ -85,20 +91,29 @@ public:
     void wait_until_processed()
     {
         std::unique_lock lock(mutex_);
-        in_flight_condition_.wait(lock, [this]() { return (jobs_.empty() && in_flight_ == 0) || stopping_; });
+        in_flight_condition_.wait(lock, [this]() { return in_flight_ == 0 || stopping_; });
     }
 
 private:
     template<typename Lock>
     struct unlocker
     {
-        unlocker(Lock & lck) :
+        using lock_t = Lock;
+
+        unlocker(lock_t & lck) :
             lock(lck)
         { lock.unlock(); }
         ~unlocker() { lock.lock(); }
 
-        Lock & lock;
+        lock_t & lock;
     };
+
+    void stop()
+    {
+        stopping_ = true;
+        condition_.notify_all();
+        in_flight_condition_.notify_all();
+    }
 
     std::atomic_bool stopping_;
     std::mutex mutex_;
@@ -111,20 +126,22 @@ private:
 
 void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_handler_t handler)
 {
-    static job_scheduler<parallel_for_job> scheduler;
+    static std::unique_ptr<job_processor<parallel_for_job>> processor;
+    if (!processor || processor->exited())
+        processor = std::make_unique<job_processor<parallel_for_job>>();
 
     int const span = std::abs(core::span(range));
-    int const jobs = std::min(span, scheduler.available_threads());
+    int const jobs = std::min(span, processor->available_threads());
     int const step = span / jobs;
     int from = range.from;
 
-    // Last job will take into account that span might not be divisible by jobs
+    // Last job will take into account that span might not be divisible by the number of jobs
     for (int i = 1; i < jobs; ++i) {
-        scheduler.post({{from, from + step}, handler});
+        processor->schedule({{from, from + step}, handler});
         from += step;
     }
-    scheduler.post({{from, range.to}, handler});
-    scheduler.wait_until_processed(); // Only safe when this function is not nested
+    processor->schedule({{from, range.to}, handler});
+    processor->wait_until_processed(); // Only safe when this function is not nested
 }
 
 } // End of namespace

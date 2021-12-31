@@ -31,7 +31,7 @@ double_sine_wave::double_sine_wave(engine_context & context) :
             w.time_count = (w.time_count + 1) % period_;
         update();
     }),
-    fader_(context, {0.1, 1.0, 10, 1000ms})
+    fader_(context, {{0.1, 1.0}, 10, 1000ms})
 { }
 
 void double_sine_wave::start()

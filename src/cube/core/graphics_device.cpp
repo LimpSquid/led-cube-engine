@@ -49,9 +49,9 @@ void graphics_device::draw_with_color(voxel_t const & voxel, color const & color
     }
 }
 
-void graphics_device::line(voxel_t const & /* start */, voxel_t const & /* end */)
+void graphics_device::draw_circle(voxel_t const & /* origin */, double /* radius */, bool /* smooth */)
 {
-    // Draw a voxel into the graphics buffer
+    // Implement: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 }
 
 void graphics_device::fill()

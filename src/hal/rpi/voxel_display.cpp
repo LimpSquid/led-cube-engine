@@ -7,12 +7,8 @@ using namespace cube::core;
 namespace hal::rpi
 {
 
-voxel_display::voxel_display()
-{
-
-}
-
-voxel_display::~voxel_display()
+voxel_display::voxel_display(engine_context & context) :
+    graphics_device(context)
 {
 
 }

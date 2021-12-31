@@ -29,15 +29,15 @@ namespace cube::gfx::animations
 helix::helix(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this]() { step_++; }),
-    fader_(context, {0.1, 1.0, 10, 1000ms})
+    fader_(context, {{0.1, 1.0}, 10, 1000ms})
 { }
 
 void helix::start()
 {
     int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval);
 
-    hue_.add({0.0, read_property(color_gradient_start, default_color)});
-    hue_.add({1.0, read_property(color_gradient_end, !default_color)});
+    hue_.add({0.0, read_property(color_gradient_start, default_color)})
+        .add({1.0, read_property(color_gradient_end, !default_color)});
     thickness_ = read_property(helix_thickness, default_thickness);
     length_ =  2.0 * M_PI * read_property(helix_length, default_length);
     omega_ = (2.0 * M_PI) / step_interval;

@@ -64,6 +64,7 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
     update_state(); // In case smooth is false
     color const original_color = state_.draw_color;
 
+    // Todo: eventually use device_.draw_circle(), appropriately we should rename scatter to sphere?
     parallel_for({x_from, x_to}, [=](parallel_exclusive_range_t range) {
         for (int x = range.from; x < range.to; x++) {
             for (int y = y_from; y < y_to; y++) {
@@ -71,11 +72,9 @@ void painter::scatter(voxel_t const & origin, double radius, bool smooth)
                     double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
                     if (less_than_or_equal(r, radius)) {
                         if (smooth) {
-                            // 1) cosine to inverse the factor (r / radius), additionally it should
-                            //    be a bit smoother than mapping the scalar linearly
-                            // 2) we use an offset to only scale the color after (r / radius) reaches
-                            //    a certain threshold
-                            double scalar = std::min(1.0, 0.4 + std::cos(0.5 * M_PI * (r / radius)));
+                            // we use an offset to only scale the color after
+                            // (r / radius) reaches a certain threshold
+                            double scalar = std::min(1.0, 0.3 + (1.0 - r / radius));
                             device_.draw_with_color({x, y, z}, original_color.vec() * scalar);
                         } else
                             device_.draw({x, y, z});

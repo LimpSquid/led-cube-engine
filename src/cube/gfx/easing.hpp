@@ -1,14 +1,16 @@
 #pragma once
 
+#include <cube/core/math.hpp>
 #include <cube/core/timers.hpp>
 
 namespace cube::gfx
 {
 
+using easing_range_t = core::range<double>;
+
 struct easing_config
 {
-    double from;
-    double to;
+    easing_range_t range;
     unsigned int resolution;
     std::chrono::milliseconds time;
 };
@@ -22,22 +24,24 @@ public:
     basic_easing_transition(core::engine_context & context, easing_config config,
         std::optional<completion_handler_t> completion_handler = {}) :
         timer_(context, [this, curve = EasingCurve{}, completion = std::move(completion_handler)](auto, auto) {
+            constexpr easing_range_t curve_range{0.0, 1.0};
+
             if (++step_ < config_.resolution) {
                 double progress;
                 if constexpr(Inverse)
-                    progress = 1.0 - std::clamp(curve(1.0 - static_cast<double>(step_) / config_.resolution), 0.0, 1.0);
+                    progress = 1.0 - core::clamp(curve(1.0 - static_cast<double>(step_) / config_.resolution), curve_range);
                 else
-                    progress = std::clamp(curve(static_cast<double>(step_) / config_.resolution), 0.0, 1.0);
-                value_ = config_.from + (config_.to - config_.from) * progress;
+                    progress = core::clamp(curve(static_cast<double>(step_) / config_.resolution), curve_range);
+                value_ = config_.range.from + (config_.range.to - config_.range.from) * progress;
             } else {
-                value_ = config_.to;
+                value_ = config_.range.to;
                 timer_.stop();
                 if (completion)
                     (*completion)();
             }
         }),
         config_(config),
-        value_(config_.from)
+        value_(config_.range.from)
     {
         if (config_.resolution == 0)
             throw std::invalid_argument("easing_config::resolution cannot be zero");
@@ -48,7 +52,7 @@ public:
     void start()
     {
         step_ = 0;
-        value_ = config_.from;
+        value_ = config_.range.from;
         timer_.start(config_.time / config_.resolution);
     }
 

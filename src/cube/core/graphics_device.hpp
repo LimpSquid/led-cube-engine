@@ -58,7 +58,7 @@ public:
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
     void draw_with_color(voxel_t const & voxel, color const & color);
-    void line(voxel_t const & start, voxel_t const & end);
+    void draw_circle(voxel_t const & origin, double radius, bool smooth = true);
     void fill();
 
     void show_animation(animation * animation);

@@ -13,8 +13,8 @@ namespace
 
 animation_publisher<animations::lightning> const publisher{"lightning"};
 
-constexpr int default_number_of_clouds{5};
-constexpr double default_size{0.625 * cube::cube_size_1d};
+constexpr int default_number_of_clouds{3};
+constexpr double default_size{0.8 * cube::cube_size_1d};
 constexpr color default_color{color_blue};
 
 } // End of namespace
@@ -30,9 +30,9 @@ lightning::lightning(engine_context & context) :
 void lightning::start()
 {
     cloud_size_ = read_property(cloud_size, default_size);
-    hue_.add({0.0, read_property(cloud_color, default_color)});
-    hue_.add({0.75, read_property(cloud_color, default_color)});
-    hue_.add({1.0, color_white});
+    hue_.add({0.0, color_transparent})
+        .add({0.3, read_property(cloud_color, default_color)})
+        .add({1.0, color_white});
 
     int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
     clouds_.resize(num_clouds);
@@ -47,20 +47,22 @@ void lightning::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (auto const & cloud : clouds_) {
-        p.set_color(hue_(cloud.fader->value()).vec() * cloud.fader->value());
-        p.scatter(cloud.voxel, cloud_size_);
-    }
+        double const fade_scalar = cloud.in_fader->value() * cloud.out_fader->value();
+        double const alpha_and_size_scalar = map(fade_scalar, 0.0, 1.0, 0.6, 1.0);
 
-    // p.set_color(color_blue);
-    // p.scatter({cube_size_1d/2,cube_size_1d/2,cube_size_1d/2}, cloud_size_);
+        p.set_color(hue_(fade_scalar).vec() * alpha_vec(alpha_and_size_scalar));
+        p.scatter(cloud.voxel, cloud_size_ * alpha_and_size_scalar);
+    }
 }
 
 void lightning::stop()
 {
     scene_.stop();
 
-    for (auto & cloud : clouds_)
-        cloud.fader.reset();
+    for (auto & cloud : clouds_) {
+        cloud.in_fader.reset();
+        cloud.out_fader.reset();
+    }
 }
 
 nlohmann::json lightning::properties_to_json() const
@@ -83,18 +85,15 @@ std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann
 
 void lightning::spawn_cloud(cloud & c)
 {
-    easing_config config =
-    {
-        0.0,
-        1.0,
-        35,
-        milliseconds(500 + std::rand() % 1500)
-    };
+    auto const fade_in_time = milliseconds(750 + std::rand() % 1250);
+    auto const fade_in_resolution = static_cast<unsigned int>(fade_in_time / animation_scene_interval);
 
     c.voxel = random_voxel();
-    c.fader = std::make_unique<ease_in_bounce>(context(), std::move(config),
+    c.in_fader = std::make_unique<ease_in_bounce>(context(), easing_config{{0.0, 1.0}, fade_in_resolution, fade_in_time},
+        [this, &c]() { c.out_fader->start(); });
+    c.out_fader = std::make_unique<ease_out_sine>(context(), easing_config{{1.0, 0.0}, fade_in_resolution / 8, fade_in_time / 8},
         [this, &c]() { spawn_cloud(c); });
-    c.fader->start();
+    c.in_fader->start();
 }
 
 } // End of namespace

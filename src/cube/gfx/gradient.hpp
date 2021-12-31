@@ -29,7 +29,7 @@ public:
     gradient(std::initializer_list<gradient_stop> initializer_list);
     gradient();
 
-    void add(gradient_stop stop);
+    gradient & add(gradient_stop stop);
     void reset();
 
     core::color operator()(double gpos) const;

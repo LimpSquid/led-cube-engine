@@ -25,7 +25,8 @@ private:
     struct cloud
     {
         core::voxel_t voxel;
-        std::unique_ptr<ease_in_bounce> fader;
+        std::unique_ptr<ease_in_bounce> in_fader;
+        std::unique_ptr<ease_out_sine> out_fader;
     };
 
     virtual void start() override;

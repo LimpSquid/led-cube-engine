@@ -9,8 +9,7 @@ class voxel_display :
     public cube::core::graphics_device
 {
 public:
-    voxel_display();
-    virtual ~voxel_display() override;
+    voxel_display(cube::core::engine_context & context);
 
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;

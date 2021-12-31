@@ -11,9 +11,9 @@ namespace cube::core
 template<typename T>
 struct range
 {
-    constexpr range(T const & f, T const & t) :
-        from(f),
-        to(t)
+    constexpr range(T f, T t) :
+        from(std::move(f)),
+        to(std::move(t))
     { }
 
     T from;
@@ -95,6 +95,12 @@ template<typename T>
 constexpr inline bool within_exclusive(T const & value, range<T> const & range)
 {
     return value >= range.from && value < range.to;
+}
+
+template<typename T>
+constexpr inline T clamp(T const & value, range<T> const & range)
+{
+    return std::clamp(value, range.from, range.to);
 }
 
 template<typename T>

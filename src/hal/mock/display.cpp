@@ -28,9 +28,6 @@ display::display(engine_context & context) :
     schedule_update();
 }
 
-display::~display()
-{ }
-
 void display::show(graphics_buffer const & buffer)
 {
     buffer_ = buffer;
