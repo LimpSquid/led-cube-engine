@@ -50,6 +50,9 @@ void lightning::paint(graphics_device & device)
         p.set_color(hue_(cloud.fader->value()).vec() * cloud.fader->value());
         p.scatter(cloud.voxel, cloud_size_);
     }
+
+    // p.set_color(color_blue);
+    // p.scatter({cube_size_1d/2,cube_size_1d/2,cube_size_1d/2}, cloud_size_);
 }
 
 void lightning::stop()
@@ -69,7 +72,7 @@ nlohmann::json lightning::properties_to_json() const
     };
 }
 
-std::vector<lightning::property_pair> lightning::properties_from_json(nlohmann::json const & json) const
+std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {number_of_clouds, parse_field(json, number_of_clouds, default_number_of_clouds)},

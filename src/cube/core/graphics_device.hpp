@@ -57,6 +57,7 @@ public:
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
+    void draw_with_color(voxel_t const & voxel, color const & color);
     void line(voxel_t const & start, voxel_t const & end);
     void fill();
 
@@ -73,8 +74,8 @@ protected:
 private:
     struct render_time
     {
-        uint64_t nanos_dt{1}; // just to avoid division by 0
-        uint64_t nanos_previous{0};
+        int64_t nanos_dt{1}; // just to avoid division by 0
+        int64_t nanos_previous{0};
 
         void update();
     };

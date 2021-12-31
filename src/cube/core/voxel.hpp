@@ -18,9 +18,9 @@ inline voxel_t random_voxel()
 inline bool visible(voxel_t const & voxel)
 {
     constexpr range range{cube_axis_min_value, cube_axis_max_value};
-    return within_range(voxel.x, range)
-        && within_range(voxel.y, range)
-        && within_range(voxel.z, range);
+    return within_inclusive(voxel.x, range)
+        && within_inclusive(voxel.y, range)
+        && within_inclusive(voxel.z, range);
 }
 
 } // End of namespace

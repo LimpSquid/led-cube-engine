@@ -38,9 +38,14 @@ void graphics_device::update_state(graphics_state const & state)
 
 void graphics_device::draw(voxel_t const & voxel)
 {
+    draw_with_color(voxel, draw_color_);
+}
+
+void graphics_device::draw_with_color(voxel_t const & voxel, color const & color)
+{
     if (visible(voxel)) {
         int const offset = map_to_offset(voxel.x, voxel.y, voxel.z);
-        blend(draw_color_, buffer_.data[offset]);
+        blend(color, buffer_.data[offset]);
     }
 }
 

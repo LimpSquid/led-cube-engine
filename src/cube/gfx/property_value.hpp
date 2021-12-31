@@ -7,7 +7,7 @@
 namespace cube::gfx
 {
 
-using property_value = std::variant<
+using property_value_t = std::variant<
     int8_t, int16_t, int32_t, int64_t,
     uint8_t, uint16_t, uint32_t, uint64_t,
     float, double, long double,

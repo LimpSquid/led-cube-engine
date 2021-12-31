@@ -34,7 +34,7 @@ public:
     { }
 
     engine_context & context();
-    void load(animation * animation);
+    void load(animation * animation); // Todo: make shared pointer, so lifetime can be managed properly
     void run();
 
 private:

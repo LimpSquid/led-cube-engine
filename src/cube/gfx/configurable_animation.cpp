@@ -17,7 +17,7 @@ std::string const default_label = "";
 namespace cube::gfx
 {
 
-void configurable_animation::write_properties(std::vector<std::pair<property_label_type, property_value>> const & properties)
+void configurable_animation::write_properties(std::vector<std::pair<property_label_t, property_value_t>> const & properties)
 {
     for (auto const & property : properties)
         write_property(property.first, property.second);

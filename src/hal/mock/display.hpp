@@ -23,7 +23,7 @@ private:
 
     window & window_;
     cube::core::graphics_buffer buffer_;
-    cube::core::parent_tracker tracker_;
+    cube::core::parent_tracker_t tracker_;
 };
 
 } // End of namespace

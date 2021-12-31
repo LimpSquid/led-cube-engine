@@ -36,6 +36,7 @@ color from_string(std::string c)
     STATEMENT_FOR(magenta)
     STATEMENT_FOR(yellow)
     STATEMENT_FOR(orange)
+    STATEMENT_FOR(pink)
 #undef STATEMENT_FOR
     return {};
 }

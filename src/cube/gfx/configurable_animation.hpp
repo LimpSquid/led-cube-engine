@@ -8,7 +8,7 @@
 
 #define PROPERTY_ENUM(...) \
     static_assert(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__) < 255); \
-    ENUM(property, property_label_type, 0, __VA_ARGS__)
+    ENUM(property, property_label_t, 0, __VA_ARGS__)
 
 namespace cube::gfx
 {
@@ -17,8 +17,8 @@ class configurable_animation :
     public core::animation
 {
 public:
-    using property_label_type = int;
-    using property_pair = std::pair<property_label_type, property_value>;
+    using property_label_t = int;
+    using property_pair_t = std::pair<property_label_t, property_value_t>;
 
     PROPERTY_ENUM
     (
@@ -26,9 +26,9 @@ public:
     )
 
     template<typename T>
-    void write_property(property_label_type label, T value)
+    void write_property(property_label_t label, T value)
     {
-        properties_[label] = property_value{std::move(value)};
+        properties_[label] = property_value_t{std::move(value)};
     }
 
     template<typename T, typename L>
@@ -49,7 +49,7 @@ public:
         }
     }
 
-    void write_properties(std::vector<property_pair> const & properties);
+    void write_properties(std::vector<property_pair_t> const & properties);
     void load_properties(nlohmann::json const & json);
     nlohmann::json dump_properties() const;
 
@@ -58,12 +58,12 @@ protected:
 
 private:
     virtual nlohmann::json properties_to_json() const = 0;
-    virtual std::vector<property_pair> properties_from_json(nlohmann::json const & json) const = 0;
+    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const = 0;
 
-    std::unordered_map<property_label_type, property_value> properties_;
+    std::unordered_map<property_label_t, property_value_t> properties_;
 };
 
 } // end of namespace
 
 #undef PROPERTY_ENUM
-#define PROPERTY_ENUM(...) ENUM(property, property_label_type, 255, __VA_ARGS__)
+#define PROPERTY_ENUM(...) ENUM(property, property_label_t, 255, __VA_ARGS__)

@@ -54,7 +54,7 @@ int main_render(int ac, char const * const av[])
     po::options_description desc("Available options");
     desc.add_options()
         ("help,h", "produce a help message")
-        ("file,f", "render animations from file")
+        ("file,f", "render animations from a file")
         ("animation,", po::value<std::vector<std::string>>()
             ->zero_tokens()
             ->multitoken()

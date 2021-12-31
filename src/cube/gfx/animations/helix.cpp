@@ -3,6 +3,7 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 #include <cube/core/json_util.hpp>
+#include <cube/core/parallel.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -85,7 +86,7 @@ nlohmann::json helix::properties_to_json() const
     };
 }
 
-std::vector<helix::property_pair> helix::properties_from_json(nlohmann::json const & json) const
+std::vector<helix::property_pair_t> helix::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {helix_rotation_time_ms, parse_field(json, helix_rotation_time_ms, default_rotation_time)},

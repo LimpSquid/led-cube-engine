@@ -86,9 +86,21 @@ constexpr inline TOut map(
 }
 
 template<typename T>
-constexpr inline bool within_range(T const & value, range<T> const & range)
+constexpr inline bool within_inclusive(T const & value, range<T> const & range)
 {
-    return (value >= range.from && value <= range.to);
+    return value >= range.from && value <= range.to;
+}
+
+template<typename T>
+constexpr inline bool within_exclusive(T const & value, range<T> const & range)
+{
+    return value >= range.from && value < range.to;
+}
+
+template<typename T>
+constexpr inline T span(range<T> const & range)
+{
+    return range.to - range.from;
 }
 
 template<typename T>

@@ -64,6 +64,7 @@ constexpr color color_cyan          {000, 255, 255};
 constexpr color color_magenta       {255, 000, 255};
 constexpr color color_yellow        {255, 255, 000};
 constexpr color color_orange        {255, 128, 000};
+constexpr color color_pink          {255,  96, 255};
 
 constexpr inline color_vec_t red_vec(double scalar) { return {scalar, 1.0, 1.0, 1.0}; }
 constexpr inline color_vec_t green_vec(double scalar) { return {1.0, scalar, 1.0, 1.0}; }

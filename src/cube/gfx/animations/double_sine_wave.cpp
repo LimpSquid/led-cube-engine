@@ -92,7 +92,7 @@ nlohmann::json double_sine_wave::properties_to_json() const
     };
 }
 
-std::vector<double_sine_wave::property_pair> double_sine_wave::properties_from_json(nlohmann::json const & json) const
+std::vector<double_sine_wave::property_pair_t> double_sine_wave::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {wave_period, parse_field(json, wave_period, default_period)},

@@ -5,19 +5,19 @@
 namespace cube::core
 {
 
-using parent_tracker = std::shared_ptr<void *>;
+using parent_tracker_t = std::shared_ptr<void *>;
 
-inline parent_tracker make_parent_tracker()
+inline parent_tracker_t make_parent_tracker()
 {
     return std::make_shared<void *>(nullptr);
 }
 
-inline parent_tracker::weak_type weak(parent_tracker tracker)
+inline parent_tracker_t::weak_type weak(parent_tracker_t tracker)
 {
     return {tracker};
 }
 
-inline bool parent_in_scope(parent_tracker::weak_type weak)
+inline bool parent_in_scope(parent_tracker_t::weak_type weak)
 {
     return weak.lock() != nullptr;
 }

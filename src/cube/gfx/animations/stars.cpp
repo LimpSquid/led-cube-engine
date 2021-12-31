@@ -89,7 +89,7 @@ nlohmann::json stars::properties_to_json() const
     };
 }
 
-std::vector<stars::property_pair> stars::properties_from_json(nlohmann::json const & json) const
+std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json const & json) const
 {
     return {
         {fade_time_ms, parse_field(json, fade_time_ms, default_fade_time)},
