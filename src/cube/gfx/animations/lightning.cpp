@@ -14,8 +14,9 @@ namespace
 animation_publisher<animations::lightning> const publisher{"lightning"};
 
 constexpr int default_number_of_clouds{3};
-constexpr double default_size{0.8 * cube::cube_size_1d};
-constexpr color default_color{color_blue};
+constexpr int default_size{4 * cube::cube_size_1d / 5};
+constexpr color default_color_start{color_blue};
+constexpr color default_color_end{color_white};
 
 } // End of namespace
 
@@ -31,8 +32,8 @@ void lightning::start()
 {
     cloud_size_ = read_property(cloud_size, default_size);
     hue_.add({0.0, color_transparent})
-        .add({0.3, read_property(cloud_color, default_color)})
-        .add({1.0, color_white});
+        .add({0.3, read_property(color_gradient_start, default_color_start)})
+        .add({1.0, read_property(color_gradient_end, default_color_end)});
 
     int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
     clouds_.resize(num_clouds);
@@ -48,10 +49,10 @@ void lightning::paint(graphics_device & device)
 
     for (auto const & cloud : clouds_) {
         double const fade_scalar = cloud.in_fader->value() * cloud.out_fader->value();
-        double const alpha_and_size_scalar = map(fade_scalar, 0.0, 1.0, 0.6, 1.0);
+        int const radius = static_cast<int>(std::round(cloud_size_ * map(fade_scalar, 0.0, 1.0, 0.5, 1.0)));
 
-        p.set_color(hue_(fade_scalar).vec() * alpha_vec(alpha_and_size_scalar));
-        p.scatter(cloud.voxel, cloud_size_ * alpha_and_size_scalar);
+        p.set_color(hue_(fade_scalar).vec() * alpha_vec(map(fade_scalar, 0.0, 1.0, 0.6, 1.0)));
+        p.sphere(cloud.voxel, radius);
     }
 }
 
@@ -70,7 +71,8 @@ nlohmann::json lightning::properties_to_json() const
     return {
         make_field(number_of_clouds, read_property(number_of_clouds, default_number_of_clouds)),
         make_field(cloud_size, read_property(cloud_size, default_size)),
-        make_field(cloud_color, read_property(cloud_color, default_color)),
+        make_field(color_gradient_start, read_property(color_gradient_start, default_color_start)),
+        make_field(color_gradient_end, read_property(color_gradient_end, default_color_end)),
     };
 }
 
@@ -79,7 +81,8 @@ std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann
     return {
         {number_of_clouds, parse_field(json, number_of_clouds, default_number_of_clouds)},
         {cloud_size, parse_field(json, cloud_size, default_size)},
-        {cloud_color, parse_field(json, cloud_color, default_color)},
+        {color_gradient_start, parse_field(json, color_gradient_start, default_color_start)},
+        {color_gradient_end, parse_field(json, color_gradient_end, default_color_end)},
     };
 }
 

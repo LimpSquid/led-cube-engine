@@ -10,16 +10,24 @@
 namespace cube::core
 {
 
+enum class graphics_fill_mode
+{
+    none,
+    solid,
+};
+
 struct graphics_state
 {
     enum dirty_flags : int
     {
         dirty_draw_color = 0x0001,
+        dirty_fill_mode = 0x0002,
     };
 
-    color draw_color;
+    color draw_color{color_transparent};
+    graphics_fill_mode fill_mode{graphics_fill_mode::solid};
 
-    int dirty_flags;
+    int dirty_flags{0};
 };
 
 struct graphics_buffer
@@ -57,8 +65,7 @@ public:
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
-    void draw_with_color(voxel_t const & voxel, color const & color);
-    void draw_circle(voxel_t const & origin, double radius, bool smooth = true);
+    void draw_sphere(voxel_t const & origin, int radius);
     void fill();
 
     void show_animation(animation * animation);
@@ -81,9 +88,11 @@ private:
     };
 
     virtual void show(graphics_buffer const & buffer) = 0;
+    void draw_with_color(voxel_t const & voxel, color const & c);
 
     io_context_t & io_context_;
     graphics_buffer buffer_;
+    graphics_fill_mode fill_mode_;
     color draw_color_;
     animation * animation_;
     render_time render_time_;

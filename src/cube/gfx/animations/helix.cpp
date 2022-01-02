@@ -17,7 +17,7 @@ animation_publisher<animations::helix> const publisher{"helix"};
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color{color_cyan};
 constexpr milliseconds default_rotation_time{1500ms};
-constexpr double default_thickness{2.5};
+constexpr int default_thickness{3};
 constexpr double default_length{0.875};
 constexpr double default_phase_shift_factor{0.0};
 
@@ -63,7 +63,7 @@ void helix::paint(graphics_device & device)
         int z = map(z1, unit_circle_range, cube_axis_range);
 
         p.set_color(hue_(abs_sin(step_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
-        p.scatter({x, y, z}, thickness_);
+        p.sphere({x, y, z}, thickness_);
     }
 }
 

@@ -12,10 +12,12 @@ public:
     ~painter();
 
     void set_color(color const & color);
+    void set_fill_mode(graphics_fill_mode const & mode);
+
     void draw(voxel_t const & voxel);
     void wipe_canvas();
     void fill_canvas();
-    void scatter(voxel_t const & origin, double radius, bool smooth = true);
+    void sphere(voxel_t const & origin, int radius);
 
 private:
     void update_state();

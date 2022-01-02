@@ -18,8 +18,8 @@ public:
         helix_phase_shift_sin_factor,   // Just play with it and you'll see :-)
         helix_thickness,                // Thickness of the helix
         helix_length,                   // Length of the helix
-        color_gradient_start,           // Start color of gradient
-        color_gradient_end              // End color of gradient
+        color_gradient_start,           // Start color of the helix gradient
+        color_gradient_end              // End color of the helix gradient
     )
 
     helix(core::engine_context & context);
@@ -35,8 +35,8 @@ private:
     gradient hue_;
     ease_in_sine fader_;
     int step_;
+    int thickness_;
     double omega_;
-    double thickness_;
     double length_;
 };
 
