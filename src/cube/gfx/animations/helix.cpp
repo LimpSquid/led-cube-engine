@@ -3,7 +3,6 @@
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 #include <cube/core/json_util.hpp>
-#include <cube/core/parallel.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;

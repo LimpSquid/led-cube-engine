@@ -1,5 +1,7 @@
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/math.hpp>
+#include <cube/core/parallel.hpp>
+#include <3rdparty/glm/geometric.hpp>
 #include <chrono>
 
 using namespace std::chrono;
@@ -45,37 +47,31 @@ void graphics_device::draw(voxel_t const & voxel)
 
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 {
-    auto const draw_shell = [this, origin](int radius, color const & c) {
-        glm::dvec3 const box{radius, radius, radius};
-        glm::dvec3 const min = glm::dvec3(origin) - box;
-        glm::dvec3 const max = glm::dvec3(origin) + box;
+    auto const draw_shell = [this, origin, radius]() {
+        glm::ivec3 const box{radius, radius, radius};
+        glm::ivec3 const min = glm::ivec3(origin) - box;
+        glm::ivec3 const max = glm::ivec3(origin) + box;
 
-        int const x_from = std::max(0, static_cast<int>(std::round(min.x)));
-        int const y_from = std::max(0, static_cast<int>(std::round(min.y)));
-        int const z_from = std::max(0, static_cast<int>(std::round(min.z)));
-        int const x_to = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.x))) + 1;
-        int const y_to = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.y))) + 1;
-        int const z_to = std::min(cube_size_1d - 1, static_cast<int>(std::round(max.z))) + 1;
+        int const x_from = std::max(0, min.x);
+        int const y_from = std::max(0, min.y);
+        int const z_from = std::max(0, min.z);
+        int const x_to = std::min(cube_size_1d - 1, max.x) + 1;
+        int const y_to = std::min(cube_size_1d - 1, max.y) + 1;
+        int const z_to = std::min(cube_size_1d - 1, max.z) + 1;
 
         int const rr = radius * radius;
         int x, y, z;
         int xr, yr, zr;
         int xx, yy, zz;
-        int cdx, cdy, cdz;
-        int fdx, fdy, fdz;
-        double dx, dy, dz;
+        int dx, dy, dz;
 
         for (x = x_from, xr = x - origin.x, xx = xr * xr; x < x_to; x++, xr++, xx = xr * xr) {
             for (y = y_from, yr = y - origin.y, yy = yr * yr; y < y_to; y++, yr++, yy = yr * yr) {
                 zz = rr - xx - yy;
                 if (zz >= 0) {
-                    dz = std::sqrt(static_cast<double>(zz));
-                    cdz = static_cast<int>(std::ceil(dz));
-                    fdz = static_cast<int>(std::floor(dz));
-                    draw_with_color({x, y, origin.z - cdz}, c);
-                    draw_with_color({x, y, origin.z + cdz}, c);
-                    draw_with_color({x, y, origin.z - fdz}, c);
-                    draw_with_color({x, y, origin.z + fdz}, c);
+                    dz = static_cast<int>(std::ceil(std::sqrt(zz)));
+                    draw({x, y, origin.z - dz});
+                    draw({x, y, origin.z + dz});
                 }
             }
         }
@@ -84,13 +80,9 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
             for (z = z_from, zr = z - origin.z, zz = zr * zr; z < z_to; z++, zr++, zz = zr * zr) {
                 yy = rr - xx - zz;
                 if (yy >= 0) {
-                    dy = std::sqrt(static_cast<double>(yy));
-                    cdy = static_cast<int>(std::ceil(dy));
-                    fdy = static_cast<int>(std::floor(dy));
-                    draw_with_color({x, origin.y - cdy, z}, c);
-                    draw_with_color({x, origin.y + cdy, z}, c);
-                    draw_with_color({x, origin.y - fdy, z}, c);
-                    draw_with_color({x, origin.y + fdy, z}, c);
+                    dy = static_cast<int>(std::ceil(std::sqrt(yy)));
+                    draw({x, origin.y - dy, z});
+                    draw({x, origin.y + dy, z});
                 }
             }
         }
@@ -99,29 +91,47 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
             for (z = z_from, zr = z - origin.z, zz = zr * zr; z < z_to; z++, zr++, zz = zr * zr) {
                 xx = rr - zz - yy;
                 if (xx >= 0) {
-                    dx = std::sqrt(static_cast<double>(xx));
-                    cdx = static_cast<int>(std::ceil(dx));
-                    fdx = static_cast<int>(std::floor(dx));
-                    draw_with_color({origin.x - cdx, y, z}, c);
-                    draw_with_color({origin.x + cdx, y, z}, c);
-                    draw_with_color({origin.x - fdx, y, z}, c);
-                    draw_with_color({origin.x + fdx, y, z}, c);
+                    dx = static_cast<int>(std::ceil(std::sqrt(xx)));
+                    draw({origin.x - dx, y, z});
+                    draw({origin.x + dx, y, z});
                 }
             }
         }
     };
 
+    auto const draw_solid = [this, origin, radius]() {
+        glm::ivec3 const box{radius, radius, radius};
+        glm::ivec3 const min = glm::ivec3(origin) - box;
+        glm::ivec3 const max = glm::ivec3(origin) + box;
+
+        int const x_from = std::max(0, min.x);
+        int const y_from = std::max(0, min.y);
+        int const z_from = std::max(0, min.z);
+        int const x_to = std::min(cube_size_1d - 1, max.x) + 1;
+        int const y_to = std::min(cube_size_1d - 1, max.y) + 1;
+        int const z_to = std::min(cube_size_1d - 1, max.z) + 1;
+
+        parallel_for({x_from, x_to}, [=](parallel_exclusive_range_t range) {
+            for (int x = range.from; x < range.to; x++) {
+                for (int y = y_from; y < y_to; y++) {
+                    for (int z = z_from; z < z_to; z++) {
+                        double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
+                        if (less_than_or_equal(r, static_cast<double>(radius))) {
+                            // we use an offset to only scale the color after
+                            // (r / radius) reaches a certain threshold
+                            double scalar = std::min(1.0, 0.3 + (1.0 - r / radius));
+                            draw_with_color({x, y, z}, draw_color_.vec() * scalar);
+                        }
+                    }
+                }
+            }
+        });
+    };
+
     switch (fill_mode_) {
         default:
-        case graphics_fill_mode::solid:
-            for(int r = 0; r <= radius; r++) {
-                double scalar = std::min(1.0, 0.3 + (1.0 - static_cast<double>(r) / radius));
-                draw_shell(r, draw_color_.vec() * scalar);
-            }
-            break;
-        case graphics_fill_mode::none:
-            draw_shell(radius, draw_color_);
-            break;
+        case graphics_fill_mode::solid: draw_solid();   break;
+        case graphics_fill_mode::none:  draw_shell();   break;
     }
 }
 
