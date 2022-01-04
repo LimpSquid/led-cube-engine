@@ -13,8 +13,8 @@ public:
     PROPERTY_ENUM
     (
         number_of_balls,    // Number of falling balls
-        max_ball_size,      // Maximum size of a ball
-        min_ball_size,      // Minimum size of a ball
+        max_ball_size,      // Maximum radius of a ball
+        min_ball_size,      // Minimum radius of a ball
     )
 
     falling_balls(core::engine_context & context);

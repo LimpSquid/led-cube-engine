@@ -15,7 +15,7 @@ public:
     PROPERTY_ENUM
     (
         number_of_clouds,       // Number of clouds in the cube
-        cloud_size,             // Scatter size of the cloud
+        cloud_size,             // Radius of the cloud
         color_gradient_start,   // Start color of the cloud gradient
         color_gradient_end      // End color of the cloud gradient
     )
