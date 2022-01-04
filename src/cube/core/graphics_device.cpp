@@ -6,15 +6,6 @@
 
 using namespace std::chrono;
 
-namespace
-{
-
-constexpr cube::core::voxel_t voxel_begin{cube::cube_axis_min_value, cube::cube_axis_min_value, cube::cube_axis_min_value};
-constexpr cube::core::voxel_t voxel_end{cube::cube_axis_max_value, cube::cube_axis_max_value, cube::cube_axis_max_value};
-constexpr cube::core::range voxel_range{voxel_begin, voxel_end};
-
-} // End of namespace
-
 namespace cube::core
 {
 
