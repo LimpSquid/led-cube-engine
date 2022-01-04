@@ -34,6 +34,9 @@ struct safe_range
 };
 
 constexpr range unit_circle_range{-1.0, 1.0};
+constexpr range rand_range{0, RAND_MAX};
+constexpr range drand_range{0.0, 1.0};
+constexpr range frand_range{0.0f, 1.0f};
 
 template<typename T>
 constexpr inline range<T> make_limit_range()
@@ -44,7 +47,7 @@ constexpr inline range<T> make_limit_range()
 template<typename TOut, typename TIn>
 constexpr inline range<TOut> range_cast(range<TIn> const & in)
 {
-    return range<TOut>(in.from, in.to);
+    return range(TOut(in.from), TOut(in.to));
 }
 
 template<typename T>
@@ -65,7 +68,7 @@ constexpr inline TOut map(
     if constexpr(std::is_floating_point_v<TIn> && std::is_integral_v<TOut>)
         return static_cast<TOut>(std::round(do_map(value, in_range, range_cast<TIn>(out_range))));
     if constexpr(std::is_integral_v<TIn> && std::is_floating_point_v<TOut>)
-        return do_map(value, range_cast<TOut>(in_range), out_range);
+        return do_map(static_cast<TOut>(value), range_cast<TOut>(in_range), out_range);
     else if constexpr(std::is_integral_v<TIn> && std::is_integral_v<TOut>)
         return do_map(boost::safe_numerics::safe<TIn>(value), safe_range(in_range), safe_range(out_range));
     // In case mapping resulted in a floating point value and the output type is integral, similar to the first if statement
@@ -157,5 +160,16 @@ constexpr inline T abs_cos(T const & value)
     static_assert(std::is_floating_point_v<T>);
     return map(std::cos(value), unit_circle_range, range(0.0, 1.0));
 }
+
+inline double drand()
+{
+    return map(std::rand(), rand_range, drand_range);
+}
+
+inline float frand()
+{
+    return map(std::rand(), rand_range, frand_range);
+}
+
 
 } // End of namespace

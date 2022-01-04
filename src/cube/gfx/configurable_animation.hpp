@@ -1,10 +1,11 @@
 #pragma once
 
-#include <cube/gfx/property_value.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
+#include <cube/core/color.hpp>
 #include <3rdparty/nlohmann/json.hpp>
 #include <unordered_map>
+#include <variant>
 
 #define PROPERTY_ENUM(...) \
     static_assert(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__) < 255); \
@@ -12,6 +13,14 @@
 
 namespace cube::gfx
 {
+
+using property_value_t = std::variant<
+    int8_t, int16_t, int32_t, int64_t,
+    uint8_t, uint16_t, uint32_t, uint64_t,
+    float, double, long double,
+    std::string,
+    std::chrono::nanoseconds, std::chrono::milliseconds, std::chrono::seconds,
+    core::color>;
 
 class configurable_animation :
     public core::animation

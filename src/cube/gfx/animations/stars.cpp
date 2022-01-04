@@ -34,10 +34,10 @@ namespace cube::gfx::animations
 
 stars::stars(engine_context & context) :
     configurable_animation(context),
-    scene_(*this, [this]() {
+    scene_(*this, [this](auto) {
         for (star & s : stars_)
             if (++s.fade_step > step_interval_)
-                s = make_unique_star();
+                s = make_star();
         hue_step_++;
     })
 { }
@@ -49,11 +49,10 @@ void stars::start()
     omega_hue_= omega_ * hue_omega_scalar;
     hue_step_ = 0;
 
-    int num_stars = read_property(number_of_stars, default_number_of_stars);
-    stars_.resize(std::min(cube_size_3d / 8, num_stars)); // Max number of stars is 1/8th of the cube's size
-    for (star & s : stars_) {
-        s = make_unique_star();
-        s.fade_step = -(std::rand() % step_interval_); // Negative so stars are initially black
+    int num_stars = std::min(cube_size_3d / 8, read_property(number_of_stars, default_number_of_stars));
+    for (int i = 0; i < num_stars; ++i) {
+        stars_.push_back(make_star());
+        stars_.back().fade_step = -(std::rand() % step_interval_); // Negative so stars are initially black
     }
 
     scene_.start();
@@ -97,7 +96,7 @@ std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json c
     };
 }
 
-stars::star stars::make_unique_star() const
+stars::star stars::make_star() const
 {
     std::vector<star>::const_iterator search;
     voxel_t voxel;

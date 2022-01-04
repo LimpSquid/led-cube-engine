@@ -115,9 +115,9 @@ inline color from_json(nlohmann::json const & json)
     if (name.length())
         return from_string(name);
 
-    auto const red = parse_field<color_t>(json, "red");
-    auto const green = parse_field<color_t>(json, "green");
-    auto const blue = parse_field<color_t>(json, "blue");
+    auto const red = parse_field<color_t>(json, "red", color_min_value);
+    auto const green = parse_field<color_t>(json, "green", color_min_value);
+    auto const blue = parse_field<color_t>(json, "blue", color_min_value);
     auto const alpha = parse_field<color_t>(json, "alpha", color_max_value);
 
     return {red, green, blue, alpha};

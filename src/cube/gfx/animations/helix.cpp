@@ -27,7 +27,7 @@ namespace cube::gfx::animations
 
 helix::helix(engine_context & context) :
     configurable_animation(context),
-    scene_(*this, [this]() { step_++; }),
+    scene_(*this, [this](auto) { step_++; }),
     fader_(context, {{0.1, 1.0}, 10, 1000ms})
 { }
 

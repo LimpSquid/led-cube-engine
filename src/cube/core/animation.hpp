@@ -34,7 +34,7 @@ private:
     bool dirty_;
 };
 
-using scene_update_handler_t = std::function<void()>;
+using scene_update_handler_t = std::function<void(std::chrono::milliseconds)>;
 
 class animation_scene
 {

@@ -44,7 +44,7 @@ public:
         value_(config_.range.from)
     {
         if (config_.resolution == 0)
-            throw std::invalid_argument("easing_config::resolution cannot be zero");
+            throw std::invalid_argument("Parameter easing_config::resolution cannot be zero");
     }
 
     double value() const { return value_; }

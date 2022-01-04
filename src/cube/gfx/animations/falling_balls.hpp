@@ -6,23 +6,28 @@
 namespace cube::gfx::animations
 {
 
-class stars :
+class falling_balls :
     public configurable_animation
 {
 public:
     PROPERTY_ENUM
     (
-        number_of_stars,    // Number of unique stars in the cube
-        fade_time_ms        // Fade time of a single star
+        number_of_balls,    // Number of falling balls
+        max_ball_size,      // Maximum size of a ball
+        min_ball_size,      // Minimum size of a ball
     )
 
-    stars(core::engine_context & context);
+    falling_balls(core::engine_context & context);
 
 private:
-    struct star
+    struct ball
     {
-        core::voxel_t voxel;
-        int fade_step;
+        int size;
+        double mass;
+        glm::dvec3 position;
+        glm::dvec3 velocity;
+
+        void move(std::chrono::milliseconds const & dt);
     };
 
     virtual void start() override;
@@ -31,14 +36,12 @@ private:
     virtual nlohmann::json properties_to_json() const override;
     virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
-    star make_star() const;
+    ball make_ball() const;
 
     core::animation_scene scene_;
-    std::vector<star> stars_;
-    int hue_step_;
-    int step_interval_;
-    double omega_;
-    double omega_hue_;
+    std::vector<ball> balls_;
+    int max_size_;
+    int min_size_;
 };
 
 } // End of namespace

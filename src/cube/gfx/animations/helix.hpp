@@ -15,7 +15,7 @@ public:
     (
         helix_rotation_time_ms,         // Time in milliseconds to complete one helix rotation
         helix_phase_shift_cos_factor,   // Just play with it and you'll see :-)
-        helix_phase_shift_sin_factor,   // Just play with it and you'll see :-)
+        helix_phase_shift_sin_factor,   // Same...
         helix_thickness,                // Thickness of the helix
         helix_length,                   // Length of the helix
         color_gradient_start,           // Start color of the helix gradient

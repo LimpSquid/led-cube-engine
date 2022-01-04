@@ -50,9 +50,9 @@ void animation::stop()
 { }
 
 animation_scene::animation_scene(animation & animation, std::optional<scene_update_handler_t> handler) :
-    timer_(animation.context(), [&animation, h = std::move(handler)](auto, auto) {
+    timer_(animation.context(), [&animation, h = std::move(handler)](auto, auto elapsed) {
         if (h)
-            (*h)();
+            (*h)(std::move(elapsed));
         animation.update();
     })
 { }
