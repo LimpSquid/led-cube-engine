@@ -1,11 +1,13 @@
 #pragma once
 
-#include <cube/gfx/configurable_animation.hpp>
 #include <cube/core/expected.hpp>
+#include <3rdparty/nlohmann/json.hpp>
 
+namespace cube::core { class engine_context; }
 namespace cube::gfx
 {
 
+class configurable_animation;
 using animation_pointer_t = std::unique_ptr<configurable_animation>;
 using animation_incubator_t = std::function<animation_pointer_t(core::engine_context &)>;
 

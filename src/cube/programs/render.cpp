@@ -1,8 +1,8 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
+#include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <hal/graphics_device.hpp>
-#include <3rdparty/nlohmann/json.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 
