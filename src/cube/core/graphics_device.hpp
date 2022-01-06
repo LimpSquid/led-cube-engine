@@ -88,7 +88,6 @@ private:
     };
 
     virtual void show(graphics_buffer const & buffer) = 0;
-    void draw_with_color(voxel_t const & voxel, color const & c);
 
     io_context_t & io_context_;
     graphics_buffer buffer_;

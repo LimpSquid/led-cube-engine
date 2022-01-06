@@ -33,23 +33,26 @@ void graphics_device::update_state(graphics_state const & state)
 
 void graphics_device::draw(voxel_t const & voxel)
 {
-    draw_with_color(voxel, draw_color_);
+    if (visible(voxel)) {
+        int const offset = map_to_offset(voxel.x, voxel.y, voxel.z);
+        blend(draw_color_, buffer_.data[offset]);
+    }
 }
 
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 {
-    auto const draw_shell = [this, origin, radius]() {
-        glm::ivec3 const box{radius, radius, radius};
-        glm::ivec3 const min = glm::ivec3(origin) - box;
-        glm::ivec3 const max = glm::ivec3(origin) + box;
+    glm::ivec3 const box{radius, radius, radius};
+    glm::ivec3 const min = glm::ivec3(origin) - box;
+    glm::ivec3 const max = glm::ivec3(origin) + box;
 
-        int const x_from = std::max(0, min.x);
-        int const y_from = std::max(0, min.y);
-        int const z_from = std::max(0, min.z);
-        int const x_to = std::min(cube_size_1d - 1, max.x) + 1;
-        int const y_to = std::min(cube_size_1d - 1, max.y) + 1;
-        int const z_to = std::min(cube_size_1d - 1, max.z) + 1;
+    int const x_from = std::max(0, min.x);
+    int const y_from = std::max(0, min.y);
+    int const z_from = std::max(0, min.z);
+    int const x_to = std::min(cube_axis_max_value, max.x) + 1;
+    int const y_to = std::min(cube_axis_max_value, max.y) + 1;
+    int const z_to = std::min(cube_axis_max_value, max.z) + 1;
 
+    auto const draw_shell = [=]() {
         int const rr = radius * radius;
         int x, y, z;
         int xr, yr, zr;
@@ -90,33 +93,24 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
         }
     };
 
-    auto const draw_solid = [this, origin, radius]() {
-        glm::ivec3 const box{radius, radius, radius};
-        glm::ivec3 const min = glm::ivec3(origin) - box;
-        glm::ivec3 const max = glm::ivec3(origin) + box;
+    auto const draw_solid = [=]() {
+        double r, scalar;
+        int x, y, z, offset;
 
-        int const x_from = std::max(0, min.x);
-        int const y_from = std::max(0, min.y);
-        int const z_from = std::max(0, min.z);
-        int const x_to = std::min(cube_size_1d - 1, max.x) + 1;
-        int const y_to = std::min(cube_size_1d - 1, max.y) + 1;
-        int const z_to = std::min(cube_size_1d - 1, max.z) + 1;
-
-        parallel_for({x_from, x_to}, [=](parallel_exclusive_range_t range) {
-            for (int x = range.from; x < range.to; x++) {
-                for (int y = y_from; y < y_to; y++) {
-                    for (int z = z_from; z < z_to; z++) {
-                        double r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
-                        if (less_than_or_equal(r, static_cast<double>(radius))) {
-                            // we use an offset to only scale the color after
-                            // (r / radius) reaches a certain threshold
-                            double scalar = std::min(1.0, 0.3 + (1.0 - r / radius));
-                            draw_with_color({x, y, z}, draw_color_.vec() * scalar);
-                        }
+        for (x = x_from; x < x_to; x++) {
+            for (y = y_from; y < y_to; y++) {
+                for (z = z_from; z < z_to; z++) {
+                    r = glm::length(glm::dvec3(x, y, z) - glm::dvec3(origin));
+                    if (less_than_or_equal(r, static_cast<double>(radius))) {
+                        // we use an offset to only scale the color after
+                        // (r / radius) reaches a certain threshold
+                        scalar = std::min(1.0, 0.3 + (1.0 - r / radius));
+                        offset = map_to_offset(x, y, z);
+                        blend(draw_color_.vec() * scalar, buffer_.data[offset]);
                     }
                 }
             }
-        });
+        }
     };
 
     switch (fill_mode_) {
@@ -172,14 +166,6 @@ io_context_t & graphics_device::io_context()
 int graphics_device::map_to_offset(int x, int y, int z) const
 {
     return x + y * cube_size_1d + z * cube_size_2d;
-}
-
-void graphics_device::draw_with_color(voxel_t const & voxel, color const & c)
-{
-    if (visible(voxel)) {
-        int const offset = map_to_offset(voxel.x, voxel.y, voxel.z);
-        blend(c, buffer_.data[offset]);
-    }
 }
 
 } // End of namespace

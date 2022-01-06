@@ -6,7 +6,10 @@
 #include <deque>
 #include <condition_variable>
 
+#include <iostream>
+
 using namespace cube;
+using namespace cube::core;
 
 namespace
 {
@@ -124,14 +127,19 @@ private:
     int in_flight_;
 };
 
-void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_handler_t handler)
+void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_handler_t handler, double nice_factor)
 {
     static std::unique_ptr<job_processor<parallel_for_job>> processor;
     if (!processor || processor->exited())
         processor = std::make_unique<job_processor<parallel_for_job>>();
 
     int const span = std::abs(core::span(range));
-    int const jobs = std::min(span, processor->available_threads());
+    int const jobs = map(nice_factor, 0.0, 1.0, std::min(span, processor->available_threads()), 1);
+
+    // If we end up with only one job, just directly execute it on this thread
+    if (jobs == 1)
+        return handler(range);
+
     int const step = span / jobs;
     int from = range.from;
 
@@ -149,7 +157,7 @@ void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_ha
 namespace cube::core
 {
 
-void parallel_for(parallel_exclusive_range_t range, parallel_handler_t handler)
+void parallel_for(parallel_exclusive_range_t range, parallel_handler_t handler, double nice_factor)
 {
     static std::atomic_bool running{false};
 
@@ -161,7 +169,7 @@ void parallel_for(parallel_exclusive_range_t range, parallel_handler_t handler)
     else {
         running = true;
         try {
-            parallel_for_impl(std::move(range), std::move(handler));
+            parallel_for_impl(std::move(range), std::move(handler), std::clamp(nice_factor, 0.0, 1.0));
             running = false;
         } catch(...) {
             running = false;
