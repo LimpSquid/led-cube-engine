@@ -55,14 +55,14 @@ bool recurring_timer::is_running() const
     return !find_ticker_or_throw(context_.tickers, id_).suspended;
 }
 
-void recurring_timer::start(milliseconds interval, bool trigger_on_start)
+void recurring_timer::start(milliseconds interval)
 {
     auto & ticker = find_ticker_or_throw(context_.tickers, id_);
     auto const now = steady_clock::now();
 
     ticker.interval = interval;
     ticker.last = now;
-    ticker.next = trigger_on_start ? now : (now + interval);
+    ticker.next = now + interval;
     ticker.suspended = false;
 }
 

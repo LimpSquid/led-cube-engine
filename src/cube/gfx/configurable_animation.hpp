@@ -26,13 +26,23 @@ class configurable_animation :
     public core::animation
 {
 public:
+    std::string get_label() const;
+    std::chrono::milliseconds get_duration() const;
+
+    void load_properties(nlohmann::json const & json);
+    nlohmann::json dump_properties() const;
+
+protected:
     using property_label_t = int;
     using property_pair_t = std::pair<property_label_t, property_value_t>;
 
     PROPERTY_ENUM
     (
-        animation_label,
+        label,
+        duration_ms,
     )
+
+    configurable_animation(core::engine_context & context);
 
     template<typename T>
     void write_property(property_label_t label, T value)
@@ -59,11 +69,6 @@ public:
     }
 
     void write_properties(std::vector<property_pair_t> const & properties);
-    void load_properties(nlohmann::json const & json);
-    nlohmann::json dump_properties() const;
-
-protected:
-    configurable_animation(core::engine_context & context);
 
 private:
     virtual nlohmann::json properties_to_json() const = 0;

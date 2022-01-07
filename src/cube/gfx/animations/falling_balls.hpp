@@ -10,6 +10,9 @@ class falling_balls :
     public configurable_animation
 {
 public:
+    falling_balls(core::engine_context & context);
+
+private:
     PROPERTY_ENUM
     (
         number_of_balls,    // Number of falling balls
@@ -17,9 +20,6 @@ public:
         min_ball_size,      // Minimum radius of a ball
     )
 
-    falling_balls(core::engine_context & context);
-
-private:
     struct ball
     {
         int size;

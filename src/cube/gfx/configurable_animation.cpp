@@ -9,7 +9,8 @@ using std::operator""s;
 namespace
 {
 
-std::string const default_label = "";
+constexpr std::string_view default_label{""};
+constexpr milliseconds default_duration{15000};
 
 } // End of namespace
 
@@ -17,10 +18,14 @@ std::string const default_label = "";
 namespace cube::gfx
 {
 
-void configurable_animation::write_properties(std::vector<std::pair<property_label_t, property_value_t>> const & properties)
+std::string configurable_animation::get_label() const
 {
-    for (auto const & property : properties)
-        write_property(property.first, property.second);
+    return read_property(label, std::string(default_label));
+}
+
+milliseconds configurable_animation::get_duration() const
+{
+    return read_property(duration_ms, default_duration);
 }
 
 void configurable_animation::load_properties(nlohmann::json const & json)
@@ -29,7 +34,8 @@ void configurable_animation::load_properties(nlohmann::json const & json)
         throw std::runtime_error("Expected JSON object got: "s + json.type_name());
 
     write_properties({
-        {animation_label, parse_field(json, animation_label, default_label)},
+        {label, parse_field(json, label, std::string(default_label))},
+        {duration_ms, parse_field(json, duration_ms, default_duration)},
     });
     write_properties(properties_from_json(json));
 }
@@ -38,7 +44,8 @@ nlohmann::json configurable_animation::dump_properties() const
 {
     nlohmann::json json =
     {
-        make_field(animation_label, read_property(animation_label, default_label))
+        make_field(label, read_property(label, std::string(default_label))),
+        make_field(duration_ms, read_property(duration_ms, default_duration)),
     };
 
     nlohmann::json const other = properties_to_json();
@@ -52,5 +59,11 @@ nlohmann::json configurable_animation::dump_properties() const
 configurable_animation::configurable_animation(engine_context & context) :
     animation(context)
 { }
+
+void configurable_animation::write_properties(std::vector<std::pair<property_label_t, property_value_t>> const & properties)
+{
+    for (auto const & property : properties)
+        write_property(property.first, property.second);
+}
 
 } // End of namespace

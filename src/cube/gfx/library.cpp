@@ -55,14 +55,13 @@ expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::js
                 continue;
 
             auto const animation = parse_field<std::string>(element, "animation");
-            auto const properties = parse_field(element, "properties", nlohmann::json(nullptr));
+            auto const properties = parse_field(element, "properties", nlohmann::json({})); // Or default properties
 
             auto incubated = lib.incubate(animation, context);
             if (!incubated)
                 return incubated.error();
 
-            if (!properties.is_null())
-                (*incubated)->load_properties(properties);
+            (*incubated)->load_properties(properties);
             result.push_back(std::move(*incubated));
         }
     } catch (std::exception const & ex) {

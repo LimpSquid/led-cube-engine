@@ -11,6 +11,9 @@ class helix :
     public configurable_animation
 {
 public:
+    helix(core::engine_context & context);
+
+private:
     PROPERTY_ENUM
     (
         helix_rotation_time_ms,         // Time in milliseconds to complete one helix rotation
@@ -22,9 +25,6 @@ public:
         color_gradient_end              // End color of the helix gradient
     )
 
-    helix(core::engine_context & context);
-
-private:
     virtual void start() override;
     virtual void paint(core::graphics_device & device) override;
     virtual void stop() override;

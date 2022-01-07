@@ -52,7 +52,7 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
     int const y_to = std::min(cube_axis_max_value, max.y) + 1;
     int const z_to = std::min(cube_axis_max_value, max.z) + 1;
 
-    auto const draw_shell = [=]() {
+    auto const draw_shell = [&]() {
         int const rr = radius * radius;
         int x, y, z;
         int xr, yr, zr;
@@ -93,7 +93,7 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
         }
     };
 
-    auto const draw_solid = [=]() {
+    auto const draw_solid = [&]() {
         double r, scalar;
         int x, y, z, offset;
 

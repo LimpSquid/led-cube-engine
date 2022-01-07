@@ -22,12 +22,13 @@ struct graphics_state
     {
         dirty_draw_color = 0x0001,
         dirty_fill_mode = 0x0002,
+        dirty_all = 0xffff,
     };
 
     color draw_color{color_transparent};
     graphics_fill_mode fill_mode{graphics_fill_mode::solid};
 
-    int dirty_flags{0};
+    int dirty_flags{dirty_all};
 };
 
 struct graphics_buffer

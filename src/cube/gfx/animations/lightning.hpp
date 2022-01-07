@@ -12,6 +12,9 @@ class lightning :
     public configurable_animation
 {
 public:
+    lightning(core::engine_context & context);
+
+private:
     PROPERTY_ENUM
     (
         number_of_clouds,       // Number of clouds in the cube
@@ -20,9 +23,6 @@ public:
         color_gradient_end      // End color of the cloud gradient
     )
 
-    lightning(core::engine_context & context);
-
-private:
     struct cloud
     {
         core::voxel_t voxel;

@@ -10,6 +10,9 @@ class double_sine_wave :
     public configurable_animation
 {
 public:
+    double_sine_wave(core::engine_context & context);
+
+private:
     PROPERTY_ENUM
     (
         wave_period,            // Number of voxels along the x-axis for one wave period
@@ -18,9 +21,6 @@ public:
         color_gradient_end      // End color of gradient
     )
 
-    double_sine_wave(core::engine_context & context);
-
-private:
     struct wave
     {
         int time_count;

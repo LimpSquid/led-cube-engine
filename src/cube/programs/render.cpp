@@ -1,15 +1,19 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
+#include <cube/core/timers.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <hal/graphics_device.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 
 using namespace cube::core;
 using namespace cube::gfx;
 using namespace std::chrono;
 namespace po = boost::program_options;
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -19,6 +23,57 @@ engine & engine_instance()
     static engine_context context;
     static engine instance(context, graphics_device_factory<hal::graphics_device_t>{});
     return instance;
+}
+
+void handle_file(std::vector<std::string> const & args)
+{
+    if (!args.empty()) {
+        auto & engine = engine_instance();
+        std::vector<animation_pointer_t> animations;
+
+        for (auto const arg : args) {
+            auto const filepath = fs::path(arg);
+            if (!fs::exists(filepath)) {
+                std::cout << "Ignoring non-existing file: " + filepath.native() << '\n';
+                continue;
+            }
+
+            try {
+                std::ifstream ifs(filepath.native());
+                auto file_animations = load_animations(nlohmann::json::parse(ifs), engine.context());
+
+                if (!file_animations)
+                    throw std::runtime_error(file_animations.error().what);
+                for (auto & animation : *file_animations)
+                    animations.push_back(std::move(animation));
+            } catch (std::exception const & ex) {
+                throw std::runtime_error("In file " + filepath.native() + ": " + ex.what());
+            }
+        }
+
+        std::cout << "Found " << animations.size() << " animations in file(s)\n";
+
+        if (!animations.empty()) {
+            size_t index = 0;
+            single_shot_timer player(engine.context(), [&](auto, auto) {
+                auto & animation = animations[index];
+                index = (index + 1) % animations.size();
+                engine.load(animation.get());
+                player.start(animation->get_duration());
+            });
+            player.start(0ms);
+            engine.run(); // Does not return
+        }
+
+        std::exit(EXIT_SUCCESS);
+    }
+
+    std::cout
+        << "Usage: led-cube-engine render --file <file> [file...]\n\n"
+        << "Examples:\n"
+        << "  led-cube-engine render --file  animations.json\n"
+        << "  led-cube-engine render --file ../relative/path/to/animations.json /absolute/path/to/animations.json\n";
+    std::exit(EXIT_FAILURE);
 }
 
 void handle_animation(std::vector<std::string> const & args)
@@ -54,7 +109,10 @@ int main_render(int ac, char const * const av[])
     po::options_description desc("Available options");
     desc.add_options()
         ("help,h", "produce a help message")
-        ("file,f", "render animations from a file")
+        ("file,f", po::value<std::vector<std::string>>()
+            ->zero_tokens()
+            ->multitoken()
+            ->notifier(handle_file), "render animations from one or multiple files")
         ("animation,", po::value<std::vector<std::string>>()
             ->zero_tokens()
             ->multitoken()

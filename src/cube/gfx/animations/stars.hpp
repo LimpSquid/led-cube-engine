@@ -10,15 +10,15 @@ class stars :
     public configurable_animation
 {
 public:
+    stars(core::engine_context & context);
+
+private:
     PROPERTY_ENUM
     (
         number_of_stars,    // Number of unique stars in the cube
         fade_time_ms        // Fade time of a single star
     )
 
-    stars(core::engine_context & context);
-
-private:
     struct star
     {
         core::voxel_t voxel;

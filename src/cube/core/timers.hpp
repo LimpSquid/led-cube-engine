@@ -21,7 +21,7 @@ public:
     ~recurring_timer();
 
     bool is_running() const;
-    void start(std::chrono::milliseconds interval, bool trigger_on_start = false);
+    void start(std::chrono::milliseconds interval);
     void stop();
 
 private:
