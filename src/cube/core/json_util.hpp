@@ -3,6 +3,7 @@
 #include <cube/core/color.hpp>
 #include <cube/core/expression.hpp>
 #include <3rdparty/nlohmann/json.hpp>
+#include <boost/type_index.hpp>
 
 namespace cube::core
 {
@@ -12,11 +13,18 @@ struct json_value_converter
 {
     T operator()(nlohmann::json const & json)
     {
+        using std::operator""s;
+
 #ifdef EVAL_EXPRESSION
         if (json.is_string()) {
-            if constexpr (std::is_integral_v<T>)
-                return static_cast<T>(std::round(evald(json)));
-            else if constexpr (std::is_floating_point_v<T>)
+            if constexpr (std::is_integral_v<T>) {
+                double const value = std::round(evald(json));
+                if (value > static_cast<double>(std::numeric_limits<T>::max()) ||
+                    value < static_cast<double>(std::numeric_limits<T>::min()))
+                    throw std::invalid_argument("Expression eval result overflowed for integral type: "s +
+                        boost::typeindex::type_id<T>().pretty_name());
+                return static_cast<T>(value);
+            } else if constexpr (std::is_floating_point_v<T>)
                 return eval<T>(json);
         }
 #endif

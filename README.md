@@ -76,7 +76,7 @@ $ ./led-cube-engine library --help
 ### Render
 The `render` program is maybe one of the most important programs of the LED cube engine. This program is used to directly render animations from the command line interface to the target graphics device; or render multiple animations from a JSON file. To list all the available options of the `render` program, execute the following command:
 ```bash
-$ ./led-cube-engine render --help`
+$ ./led-cube-engine render --help
 ```
 
 **--animation \<name> [properties]**
