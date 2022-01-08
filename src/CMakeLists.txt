@@ -20,6 +20,11 @@ string(TOUPPER "TARGET_${LCE_TARGET}" TARGET_DEFINITION)
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE ${TARGET_DEFINITION})
 
+if (LCE_EVAL_EXPRESSION)
+    target_compile_definitions(${PROJECT_NAME}
+    PRIVATE EVAL_EXPRESSION)
+endif ()
+
 set(${THREADS_PREFER_PTHREAD_FLAG} ON)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system program_options)

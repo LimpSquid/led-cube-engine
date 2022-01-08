@@ -24,7 +24,7 @@ void handle_list()
     if (animations.empty())
         std::cout << "No animations available.\n";
     else {
-        std::cout << "Available animations:\n";
+        std::cout << "Available animation(s):\n";
         for (auto const animation : animations)
             std::cout << "  - " << animation << '\n';
     }
@@ -69,7 +69,7 @@ int main_library(int ac, char const * const av[])
     desc.add_options()
         ("help,h", "produce a help message")
         ("list", po::bool_switch()
-            ->notifier(bool_switch_notifier(handle_list)), "list available animations")
+            ->notifier(bool_switch_notifier(handle_list)), "list available animation(s)")
         ("info", po::value<std::vector<std::string>>()
             ->multitoken()
             ->notifier(handle_info), "print info about one or more animations");

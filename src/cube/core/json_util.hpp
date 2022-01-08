@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/core/color.hpp>
+#include <cube/core/expression.hpp>
 #include <3rdparty/nlohmann/json.hpp>
 
 namespace cube::core
@@ -9,7 +10,18 @@ namespace cube::core
 template<typename T>
 struct json_value_converter
 {
-    T operator()(nlohmann::json const & json) { return T(json); }
+    T operator()(nlohmann::json const & json)
+    {
+#ifdef EVAL_EXPRESSION
+        if (json.is_string()) {
+            if constexpr (std::is_integral_v<T>)
+                return static_cast<T>(std::round(evald(json)));
+            else if constexpr (std::is_floating_point_v<T>)
+                return eval<T>(json);
+        }
+#endif
+        return T(json);
+    }
     nlohmann::json operator()(T const & value) { return value; }
 };
 

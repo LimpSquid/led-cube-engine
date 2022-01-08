@@ -11,7 +11,7 @@ Make sure you have the following packages installed on your system:
 
 To build and run the `mock` target follow the steps below:
 
-1. Install required packages:
+1. Install boost and the required packages for the `mock` target:
     ```bash
     $ sudo apt update
     $ sudo apt install build-essential cmake libboost-dev
@@ -43,16 +43,22 @@ To build and run the `mock` target follow the steps below:
     ```bash
     $ bin/led-cube-engine render --animation stars
     $ bin/led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 255, "green": 128, "blue": 0}}'
-    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":1.5,"helix_length":4,"color_gradient_start":{"name":"magenta"},"color_gradient_end":{"name":"cyan"}}'
+    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"color_gradient_start":{"name":"magenta"},"color_gradient_end":{"name":"cyan"}}'
     ```
-1. Finally, here are some interesting commands to check out:
-    ```bash
-    $ bin/led-cube-engine library --list
-    $ bin/led-cube-engine library --info stars helix
-    $ bin/led-cube-engine render --help
-    ```
+1. Finally, check out the [programs](#programs) section for a detailed overview of all commands that are available.
 
-## Targets
+## Build options
+Below an overview of all the available build options endpoints that can be accessed by a client that is using the system key UUID.
+
+option|type|description|default
+-|-|-|-
+`LCE_TARGET`|string|Select the LED cube engine's target graphics device, see the [target dependencies](#target-dependencies) section for more information.|`mock`
+`LCE_EVAL_EXPRESSION`|bool|Enable string expressions for JSON number fields.|`off`
+
+## Programs
+**TODO**
+
+## Target dependencies
 Below a table with the supported targets and their respective dependencies.
 target|description|package dependency
 -|-|-
