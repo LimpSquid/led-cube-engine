@@ -67,29 +67,30 @@ The `library` program is used to retrieve and list information about the LED cub
 $ ./led-cube-engine library --help
 ```
 
---list
-: List all the available animation of the library.
+**--list**
+> List all the available animation of the library.
 
---info \<name>
-: Print information about one or more animations, the `name` parameter must be one of the animations that are listed with the `--list` option. To print information about multiple animations, simply cascade multiple animations, e.g. `--info stars helix`
+**--info \<name>**
+> Print information about one or more animations, the `name` parameter must be one of the animations that are listed with the `--list` option. To print information about multiple animations, simply cascade multiple animations, e.g. `--info stars helix`
 
 ### Render
 The `render` program is maybe one of the most important programs of the LED cube engine. This program is used to directly render animations from the command line interface to the target graphics device; or render multiple animations from a JSON file. To list all the available options of the `render` program, execute the following command:
 ```bash
-$ ./led-cube-engine render --help
+$ ./led-cube-engine render --help`
 ```
---animation \<name> [properties]
-: Render an animation directly from the command line interface to the LED cube engine's graphics device. The `name` parameter must be one of the animations that are listed with the `--list` option from the `library` program. The optional `properties` parameter must be a JSON object string with valid fields unique to each animation. To list all the (default) property fields of an animation use the `--info` option from the `library` program.
 
-: A few usage examples are as follows:
-    ```bash
-    $ ./led-cube-engine render --animation helix
-    $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"name": "magenta"}}'
-    $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 100, "blue":128}}'
-    ```
+**--animation \<name> [properties]**
+> Render an animation directly from the command line interface to the LED cube engine's graphics device. The `name` parameter must be one of the animations that are listed with the `--list` option from the `library` program. The optional `properties` parameter must be a JSON object string with valid fields unique to each animation. To list all the (default) property fields of an animation use the `--info` option from the `library` program.
+>
+> A few usage examples are as follows:
+> ```bash
+> $ ./led-cube-engine render --animation helix
+> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"name": "magenta"}}'
+> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 100, "blue":128}}'
+> ```
 
--f, --file \<path_to_file>
-: **TODO**
+**-f, --file \<path_to_file>**
+> **TODO**
 
 ## Target dependencies
 Below a table with the supported targets and their respective dependencies.
