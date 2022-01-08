@@ -133,7 +133,7 @@ void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_ha
     if (!processor || processor->exited())
         processor = std::make_unique<job_processor<parallel_for_job>>();
 
-    int const span = std::abs(core::span(range));
+    int const span = std::abs(core::diff(range));
     int const jobs = map(nice_factor, 0.0, 1.0, std::min(span, processor->available_threads()), 1);
 
     // If we end up with only one job, just directly execute it on this thread
@@ -161,7 +161,7 @@ void parallel_for(parallel_exclusive_range_t range, parallel_handler_t handler, 
 {
     static std::atomic_bool running{false};
 
-    if (span(range) == 0)
+    if (diff(range) == 0)
         return;
 
     if (running)

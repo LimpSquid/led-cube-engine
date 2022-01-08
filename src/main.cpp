@@ -8,10 +8,16 @@ using namespace cube::programs;
 namespace
 {
 
-std::map<std::string, std::function<int(int, char const * const [])>> const programs =
+struct program
 {
-    {"render", main_render},
-    {"library", main_library}
+    std::function<int(int, char const * const [])> entry;
+    std::string desc;
+};
+
+std::map<std::string, program> const programs =
+{
+    {"render",  {main_render,   "render animations to the LED cube engine's graphics device"}},
+    {"library", {main_library,  "list info about the LED cube engine's animation library"}},
 };
 
 void exit_with_help()
@@ -21,7 +27,7 @@ void exit_with_help()
         << "Available programs:\n";
 
     for (auto const & prog : programs)
-        std::cout << "  - " << prog.first << '\n';
+        std::cout << "  - " << prog.first << "\t\t" << prog.second.desc << '\n';
     std::exit(EXIT_FAILURE);
 }
 
@@ -36,7 +42,7 @@ int main(int ac, char const * const av[])
         exit_with_help();
 
     try {
-        return search->second(ac - 1, &av[1]);
+        return search->second.entry(ac - 1, &av[1]);
     } catch (std::exception const & ex) {
         std::cerr << "Application exited with error: " << ex.what() << '\n';
         return EXIT_FAILURE;

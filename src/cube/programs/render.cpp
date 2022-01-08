@@ -125,7 +125,7 @@ int main_render(int ac, char const * const av[])
     // Print help if no handler exited
     std::cout
         << "Usage: led-cube-engine render <option> [arg...]\n\n"
-        << desc << '\n';
+        << desc;
     return EXIT_FAILURE;
 }
 

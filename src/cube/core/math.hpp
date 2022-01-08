@@ -62,7 +62,7 @@ constexpr inline TOut map(
     range<TOut> const & out_range)
 {
     auto do_map = [](auto const & value, auto const & in_range, auto const & out_range) {
-        return out_range.from + (out_range.to - out_range.from) * (value - in_range.from) / (in_range.to - in_range.from);
+        return out_range.from + diff(out_range) * (value - in_range.from) / diff(in_range);
     };
 
     if constexpr(std::is_floating_point_v<TIn> && std::is_integral_v<TOut>)
@@ -107,7 +107,7 @@ constexpr inline T clamp(T const & value, range<T> const & range)
 }
 
 template<typename T>
-constexpr inline T span(range<T> const & range)
+constexpr inline T diff(range<T> const & range)
 {
     return range.to - range.from;
 }

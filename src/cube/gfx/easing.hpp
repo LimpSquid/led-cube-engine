@@ -32,7 +32,7 @@ public:
                     progress = 1.0 - core::clamp(curve(1.0 - static_cast<double>(step_) / config_.resolution), curve_range);
                 else
                     progress = core::clamp(curve(static_cast<double>(step_) / config_.resolution), curve_range);
-                value_ = config_.range.from + (config_.range.to - config_.range.from) * progress;
+                value_ = config_.range.from + diff(config_.range) * progress;
             } else {
                 value_ = config_.range.to;
                 timer_.stop();
