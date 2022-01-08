@@ -21,7 +21,7 @@ struct json_value_converter
                 double const value = std::round(evald(json));
                 if (value > static_cast<double>(std::numeric_limits<T>::max()) ||
                     value < static_cast<double>(std::numeric_limits<T>::min()))
-                    throw std::invalid_argument("Expression eval result overflowed for integral type: "s +
+                    throw std::overflow_error("Expression eval result overflowed for integral type: "s +
                         boost::typeindex::type_id<T>().pretty_name());
                 return static_cast<T>(value);
             } else if constexpr (std::is_floating_point_v<T>)
