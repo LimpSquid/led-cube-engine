@@ -20,7 +20,7 @@ string(TOUPPER "TARGET_${LCE_TARGET}" TARGET_DEFINITION)
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE ${TARGET_DEFINITION})
 
-if (LCE_EVAL_EXPRESSION)
+if (LCE_EVAL_EXPRESSIONS)
     target_compile_definitions(${PROJECT_NAME}
     PRIVATE EVAL_EXPRESSION)
 endif ()
