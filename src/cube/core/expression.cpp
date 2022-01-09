@@ -1,6 +1,9 @@
 #ifdef EVAL_EXPRESSION
 #include <cube/core/expression.hpp>
 #include <cube/specs.hpp>
+#include <random>
+#include <ctime>
+#include <cstdlib>
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -20,6 +23,16 @@ namespace
 {
 
 template<typename T>
+T func_random(T min, T max)
+{
+    static_assert(std::is_floating_point_v<T>);
+    static std::default_random_engine engine(static_cast<uint64_t>(std::time(nullptr)));
+    static std::uniform_real_distribution<T> distribution(min, max);
+
+    return distribution(engine);
+}
+
+template<typename T>
 T do_eval(std::string const & str)
 {
     using symbol_table_t = exprtk::symbol_table<T>;
@@ -34,6 +47,7 @@ T do_eval(std::string const & str)
     symbol_table.add_constant("cube_size_3d", static_cast<T>(cube::cube_size_3d));
     symbol_table.add_constant("cube_axis_min_value", static_cast<T>(cube::cube_axis_min_value));
     symbol_table.add_constant("cube_axis_max_value", static_cast<T>(cube::cube_axis_max_value));
+    symbol_table.add_function("random", func_random);
     symbol_table.add_constants();
 
     expression_t expression;

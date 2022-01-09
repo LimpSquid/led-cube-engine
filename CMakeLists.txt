@@ -7,7 +7,7 @@ project(led-cube-engine VERSION 0.0.0)
 
 # Options
 set(LCE_TARGET "mock" CACHE STRING "Target LED cube engine graphics device.")
-set(LCE_EVAL_EXPRESSION OFF CACHE BOOL "Enable string expressions for JSON number fields.")
+set(LCE_EVAL_EXPRESSIONS OFF CACHE BOOL "Enable string expressions for JSON number fields.")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
