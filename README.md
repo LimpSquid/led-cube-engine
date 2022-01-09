@@ -48,7 +48,7 @@ To build and run the `mock` target follow the steps below:
 1. Finally, check out the [programs](#programs) section for a detailed overview of all commands that are available.
 
 ## Build options
-Below an overview of all the available build options endpoints that can be accessed by a client that is using the system key UUID.
+Below an overview of all the available build options:
 
 option|type|description|default
 -|-|-|-
