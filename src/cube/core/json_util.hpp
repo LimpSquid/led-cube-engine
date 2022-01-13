@@ -30,6 +30,7 @@ struct json_value_converter
 #endif
         return T(json);
     }
+
     nlohmann::json operator()(T const & value) { return value; }
 };
 
@@ -51,6 +52,33 @@ struct json_value_converter<std::chrono::duration<Rep, Period>>
     nlohmann::json operator()(std::chrono::duration<Rep, Period> const & value)
     {
         return json_value_converter<Rep>{}(value.count());
+    }
+};
+
+template<typename T> nlohmann::json to_json(T const &);
+template<typename T> T from_json(nlohmann::json const &);
+template<typename T>
+struct json_value_converter<std::vector<T>>
+{
+    std::vector<T> operator()(nlohmann::json const & json)
+    {
+        using std::operator""s;
+
+        if (!json.is_array())
+            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
+
+        std::vector<T> result;
+        for (auto const & element : json)
+            result.push_back(from_json<T>(element));
+        return result;
+    }
+
+    nlohmann::json operator()(std::vector<T> const & value)
+    {
+        auto array = nlohmann::json::array();
+        for (auto const & element : value)
+            array.insert(array.end(), to_json(element));
+        return array;
     }
 };
 
@@ -119,6 +147,7 @@ nlohmann::json make_field(Key const & key, T const & value)
     return make_field<T>(to_string(key), value);
 }
 
+template<>
 inline nlohmann::json to_json(color const & c)
 {
     return {
@@ -129,15 +158,15 @@ inline nlohmann::json to_json(color const & c)
     };
 }
 
-template<typename T>
-inline T from_json(nlohmann::json const & json);
-
 template<>
 inline color from_json(nlohmann::json const & json)
 {
     auto const name = parse_field(json, "name", std::string{});
-    if (name.length())
-        return from_string(name);
+    if (name.length()) {
+        return name == "random"
+            ? random_color()
+            : from_string(name);
+    }
 
     auto const red = parse_field<color_t>(json, "red", color_min_value);
     auto const green = parse_field<color_t>(json, "green", color_min_value);
@@ -151,33 +180,7 @@ template<>
 struct json_value_converter<color>
 {
     color operator()(nlohmann::json const & json) { return from_json<color>(json); }
-    nlohmann::json operator()(color const & value) { return to_json(value); }
+    nlohmann::json operator()(color const & value) { return to_json<color>(value); }
 };
-
-template<>
-struct json_value_converter<std::vector<color>>
-{
-    std::vector<color> operator()(nlohmann::json const & json)
-    {
-        using std::operator""s;
-
-        if (!json.is_array())
-            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
-
-        std::vector<color> result;
-        for (auto const & element : json)
-            result.push_back(from_json<color>(element));
-        return result;
-    }
-
-    nlohmann::json operator()(std::vector<color> const & value)
-    {
-        auto array = nlohmann::json::array();
-        for (auto const & color : value)
-            array.insert(array.end(), to_json(color));
-        return array;
-    }
-};
-
 
 } // End of namespace
