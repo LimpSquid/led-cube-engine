@@ -41,10 +41,13 @@ void falling_balls::start()
 {
     max_size_ = read_property(max_ball_size, default_max_size);
     min_size_ = read_property(min_ball_size, default_min_size);
+    ball_colors_ = read_property(ball_colors, std::vector<color>{});
 
     int num_balls = read_property(number_of_balls, default_number_of_balls);
-    for (int i = 0; i < num_balls; ++i)
-        balls_.push_back(make_ball());
+    balls_.resize(num_balls);
+    for (auto & ball : balls_)
+        ball = make_ball();
+
     scene_.start();
 }
 
@@ -52,11 +55,12 @@ void falling_balls::paint(graphics_device & device)
 {
     painter p(device);
     p.wipe_canvas();
-    p.set_color(color_blue);
     p.set_fill_mode(graphics_fill_mode::none);
 
-    for (auto const & ball : balls_)
+    for (auto const & ball : balls_) {
+        p.set_color(ball.color);
         p.sphere(ball.position, ball.size);
+    }
 }
 
 void falling_balls::stop()
@@ -70,6 +74,7 @@ nlohmann::json falling_balls::properties_to_json() const
         make_field(number_of_balls, read_property(number_of_balls, default_number_of_balls)),
         make_field(max_ball_size, read_property(max_ball_size, default_max_size)),
         make_field(min_ball_size, read_property(min_ball_size, default_max_size)),
+        make_field(ball_colors, read_property(ball_colors, std::vector<color>{})),
     };
 }
 
@@ -79,6 +84,7 @@ std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(
         {number_of_balls, parse_field(json, number_of_balls, default_number_of_balls)},
         {max_ball_size, parse_field(json, max_ball_size, default_max_size)},
         {min_ball_size, parse_field(json, min_ball_size, default_min_size)},
+        {ball_colors, parse_field(json, ball_colors, std::vector<color>{})},
     };
 }
 
@@ -89,7 +95,11 @@ falling_balls::ball falling_balls::make_ball() const
     glm::dvec3 position = random_voxel();
     position.z = cube_size_1d + map(drand(), drand_range, range(size, 4 * size)); // Spawn outside cube
 
-    return {size, mass, position, {}};
+    auto const color = ball_colors_.empty()
+        ? random_color()
+        : ball_colors_.at(std::rand() % ball_colors_.size());
+
+    return {size, mass, position, {}, color};
 }
 
 void falling_balls::ball::move(milliseconds const & dt)

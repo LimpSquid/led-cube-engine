@@ -20,7 +20,7 @@ using property_value_t = std::variant<
     float, double, long double,
     std::string,
     std::chrono::nanoseconds, std::chrono::milliseconds, std::chrono::seconds,
-    core::color>;
+    core::color, std::vector<core::color>>;
 
 class configurable_animation :
     public core::animation

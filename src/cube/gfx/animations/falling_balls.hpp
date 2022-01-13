@@ -18,6 +18,7 @@ private:
         number_of_balls,    // Number of falling balls
         max_ball_size,      // Maximum radius of a ball
         min_ball_size,      // Minimum radius of a ball
+        ball_colors,        // Array of ball colors to pick from
     )
 
     struct ball
@@ -26,6 +27,7 @@ private:
         double mass;
         glm::dvec3 position;
         glm::dvec3 velocity;
+        core::color color;
 
         void move(std::chrono::milliseconds const & dt);
     };
@@ -40,6 +42,7 @@ private:
 
     core::animation_scene scene_;
     std::vector<ball> balls_;
+    std::vector<core::color> ball_colors_;
     int max_size_;
     int min_size_;
 };

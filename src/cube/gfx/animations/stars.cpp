@@ -35,9 +35,9 @@ namespace cube::gfx::animations
 stars::stars(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this](auto) {
-        for (star & s : stars_)
-            if (++s.fade_step > step_interval_)
-                s = make_star();
+        for (auto & star : stars_)
+            if (++star.fade_step > step_interval_)
+                star = make_star();
         hue_step_++;
     })
 { }
@@ -50,9 +50,10 @@ void stars::start()
     hue_step_ = 0;
 
     int num_stars = std::min(cube_size_3d / 8, read_property(number_of_stars, default_number_of_stars));
-    for (int i = 0; i < num_stars; ++i) {
-        stars_.push_back(make_star());
-        stars_.back().fade_step = -(std::rand() % step_interval_); // Negative so stars are initially black
+    stars_.resize(num_stars);
+    for (auto & star : stars_) {
+        star = make_star();
+        star.fade_step = -(std::rand() % step_interval_); // Negative so stars are initially black
     }
 
     scene_.start();

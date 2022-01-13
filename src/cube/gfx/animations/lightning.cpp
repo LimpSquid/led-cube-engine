@@ -39,6 +39,7 @@ void lightning::start()
     clouds_.resize(num_clouds);
     for (auto & cloud : clouds_)
         spawn_cloud(cloud);
+
     scene_.start();
 }
 
