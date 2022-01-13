@@ -66,4 +66,14 @@ void configurable_animation::write_properties(std::vector<std::pair<property_lab
         write_property(property.first, property.second);
 }
 
+nlohmann::json configurable_animation::properties_to_json() const
+{
+    return {};
+}
+
+std::vector<configurable_animation::property_pair_t> configurable_animation::properties_from_json(nlohmann::json const &) const
+{
+    return {};
+}
+
 } // End of namespace

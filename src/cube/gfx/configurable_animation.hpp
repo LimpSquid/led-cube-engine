@@ -78,8 +78,8 @@ protected:
     property_pair_t from_json(nlohmann::json const & json, L label, T def) const { return {label, core::parse_field(json, label, def)}; }
 
 private:
-    virtual nlohmann::json properties_to_json() const = 0;
-    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const = 0;
+    virtual nlohmann::json properties_to_json() const;
+    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const;
 
     std::unordered_map<property_label_t, property_value_t> properties_;
 };
