@@ -118,12 +118,130 @@ $ ./led-cube-engine render --help
 >
 > The `properties` is optional and must be a valid JSON object string with fields unique for the animation passed to the `animation` field. Note that the example property fields `int_expression` and `double_expression` are only allowed when the build option `LCE_EVAL_EXPRESSIONS` is used. If the build option was not used and a string was given to a number field (e.g. `int`, `double`), an error will be returned. If a property field is missing, the default values will be used. It is allowed to provide additional fields with a key that is not matching any of the animation's properties, those fields will simply be ignored.
 
-## Target dependencies
-Below a table with the supported targets and their respective dependencies.
-target|description|package dependency
--|-|-
-`mock`|A mock environment to run the animations on your local machine via OpenGL| `libopengl0`, `libopengl-dev`, `libglfw3`, `libglfw3-dev`, `libglew2.1` and `libglew-dev`
-`rpi`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|**T.B.D**
+## Creating a new animation
+The provided animations are cool, but naturally you want to create your own animations. The process of adding an animation to the LED cube engine should be straightforward. Animations can be be found in the directory `<repo_root>/src/cube/gfx/animations`. To add a new animation simply create a new header and source file and use the templates that are provided down below:
+
+```c++
+#pragma once
+
+#include <cube/gfx/configurable_animation.hpp>
+
+namespace cube::gfx::animations
+{
+
+class my_animation :
+    public configurable_animation
+{
+public:
+    my_animation(core::engine_context & context);
+
+private:
+    // Optional, properties that are to be configured via JSON
+    PROPERTY_ENUM
+    (
+        my_int_property,
+        my_double_property,
+    )
+
+    virtual void start() override; // Optional, called before the animation is started
+    virtual void paint(core::graphics_device & device) override; // Required, paint a single animation frame
+    virtual void stop() override; // Optional, called after the animation is finished
+    virtual nlohmann::json properties_to_json() const override; // Optional, implement if we have atleast one property
+    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
+
+    // Optional, automatically render at the target graphics device its specified animation scene frame rate
+    core::animation_scene scene_;
+};
+
+} // End of namespace
+```
+
+```c++
+#include <cube/gfx/animations/my_animation.hpp>
+#include <cube/gfx/library.hpp>
+#include <cube/core/painter.hpp>
+
+using namespace cube::gfx;
+using namespace cube::core;
+
+namespace
+{
+
+// Adds the animation to library with name "my_animation".
+// Optionally, you can pass an alternative name to the
+// publisher's constructor.
+animation_publisher<animations::my_animation> const publisher;
+
+// Some default animation property values
+constexpr int default_int_property = 12345;
+constexpr double default_double_property = 3.14;
+
+} // End of namespace
+
+namespace cube::gfx::animations
+{
+
+my_animation::my_animation(engine_context & context) :
+    configurable_animation(context),
+    scene_(*this, [this](auto elapsed) { /* Do some additional processing each scene frame */ })
+{ }
+
+void my_animation::start()
+{
+    // Do some additional processing before the animation starts
+    // ...
+    // ...
+
+    // For example read the int property:
+    auto const int_value = read_property(my_int_property, default_int_property);
+
+    scene_.start();
+}
+
+void my_animation::paint(graphics_device & device)
+{
+    painter p(device);
+    p.wipe_canvas();
+
+    // Draw something interesting with the use of the painter
+    // ...
+    // ...
+}
+
+void my_animation::stop()
+{
+    // Do some additional processing after the animation has finished
+    // ...
+    // ...
+
+    scene_.stop();
+}
+
+nlohmann::json my_animation::properties_to_json() const
+{
+    return {
+        to_json(my_int_property, default_int_property),
+        to_json(my_double_property, default_double_property),
+    };
+}
+
+std::vector<my_animation::property_pair_t> my_animation::properties_from_json(nlohmann::json const & json) const
+{
+    return {
+        from_json(json, my_int_property, default_int_property),
+        from_json(json, my_double_property, default_double_property),
+    };
+}
+
+} // End of namespace
+```
+
+If you've succesfully provisioned your animation, you can simply re-compile the application and execute the following commands:
+```bash
+$ ./led-cube-engine library --list # To see if your animation has been added to the library
+$ ./led-cube-engine library --info my_animation # To see the exposed properties in JSON
+$ ./led-cube-engine render --animation my_animation # Finally, render it
+```
 
 ## Evaluate animation property expressions
 With the build option `LCE_EVAL_EXPRESSIONS` enabled it is possible to go even furhter to customize an animation. Usually an animation contains one or more number properties which allows for customizing the behavior of the animation. For example, the `helix` animation has a decimal property `helix_length` to change the length of the helix. By default this is a hardcoded value, which you can some different decimal, for example by providing `"helix_length": 2.0`. This will modify the `helix` animation in a way that the helix shown in the cube is of exactly two full rotations in length.
@@ -154,3 +272,10 @@ constant|value
 function|description|example usage
 -|-|-
 `random(min, max)`|pick a random number from the range `[min, max]`|`random(0.0, 1.0)`, `random(-1.0, 3.25 * pi)`
+
+## Target dependencies
+Below a table with the supported targets and their respective dependencies.
+target|description|package dependency
+-|-|-
+`mock`|A mock environment to run the animations on your local machine via OpenGL| `libopengl0`, `libopengl-dev`, `libglfw3`, `libglfw3-dev`, `libglew2.1` and `libglew-dev`
+`rpi`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|**T.B.D**
