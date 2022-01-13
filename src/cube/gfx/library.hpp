@@ -2,6 +2,7 @@
 
 #include <cube/core/expected.hpp>
 #include <3rdparty/nlohmann/json.hpp>
+#include <boost/type_index.hpp>
 
 namespace cube::core { class engine_context; }
 namespace cube::gfx
@@ -26,13 +27,28 @@ private:
     std::unordered_map<std::string, animation_incubator_t> animations_;
 };
 
-template<typename Animation>
+template<typename T>
 struct animation_publisher
 {
-    animation_publisher(char const * const animation_name)
+    animation_publisher(std::string const & name)
     {
-        library::instance().publish_animation(animation_name, [](core::engine_context & context)
-            { return std::make_unique<Animation>(context); });
+        library::instance().publish_animation(
+            name,
+            [](core::engine_context & context) { return std::make_unique<T>(context); }
+        );
+    }
+
+    animation_publisher()
+    {
+        auto const trim_namespace = [](std::string s) {
+            auto const colon = s.find_last_of(":");
+            return colon < 0 ? s : s.substr(colon + 1);
+        };
+
+        library::instance().publish_animation(
+            trim_namespace(boost::typeindex::type_id<T>().pretty_name()),
+            [](core::engine_context & context) { return std::make_unique<T>(context); }
+        );
     }
 };
 

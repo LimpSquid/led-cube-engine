@@ -11,7 +11,7 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::double_sine_wave> const publisher{"double_sine_wave"};
+animation_publisher<animations::double_sine_wave> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color{color_magenta};

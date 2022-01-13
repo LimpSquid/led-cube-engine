@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::stars> const publisher{"stars"};
+animation_publisher<animations::stars> const publisher;
 
 constexpr milliseconds default_fade_time{5000ms};
 constexpr int default_number_of_stars{cube::cube_size_3d / 15};

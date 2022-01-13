@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::falling_balls> const publisher{"falling_balls"};
+animation_publisher<animations::falling_balls> const publisher;
 
 constexpr double gravity = -0.000002 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per second
 constexpr glm::dvec3 force{0.0, 0.0, gravity};

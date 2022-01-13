@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::lightning> const publisher{"lightning"};
+animation_publisher<animations::lightning> const publisher;
 
 constexpr int default_number_of_clouds{3};
 constexpr int default_size{4 * cube::cube_size_1d / 5};

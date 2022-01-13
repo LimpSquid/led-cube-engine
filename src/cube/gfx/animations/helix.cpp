@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::helix> const publisher{"helix"};
+animation_publisher<animations::helix> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color{color_cyan};
