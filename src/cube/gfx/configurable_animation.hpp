@@ -3,7 +3,7 @@
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
 #include <cube/core/color.hpp>
-#include <3rdparty/nlohmann/json.hpp>
+#include <cube/core/json_util.hpp>
 #include <unordered_map>
 #include <variant>
 
@@ -69,6 +69,13 @@ protected:
     }
 
     void write_properties(std::vector<property_pair_t> const & properties);
+
+    template<typename T, typename L>
+    nlohmann::json to_json(L label, T def = {}) const { return core::make_field(label, read_property(label, def)); }
+    template<typename T, typename L>
+    property_pair_t from_json(nlohmann::json const & json, L label) const { return {label, core::parse_field<T>(json, label)}; }
+    template<typename T, typename L>
+    property_pair_t from_json(nlohmann::json const & json, L label, T def) const { return {label, core::parse_field(json, label, def)}; }
 
 private:
     virtual nlohmann::json properties_to_json() const = 0;

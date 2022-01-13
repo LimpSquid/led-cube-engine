@@ -2,7 +2,6 @@
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
-#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -71,20 +70,20 @@ void falling_balls::stop()
 nlohmann::json falling_balls::properties_to_json() const
 {
     return {
-        make_field(number_of_balls, read_property(number_of_balls, default_number_of_balls)),
-        make_field(max_ball_size, read_property(max_ball_size, default_max_size)),
-        make_field(min_ball_size, read_property(min_ball_size, default_max_size)),
-        make_field(ball_colors, read_property(ball_colors, std::vector<color>{})),
+        to_json(number_of_balls, default_number_of_balls),
+        to_json(max_ball_size, default_max_size),
+        to_json(min_ball_size, default_min_size),
+        to_json(ball_colors, std::vector<color>{}),
     };
 }
 
 std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        {number_of_balls, parse_field(json, number_of_balls, default_number_of_balls)},
-        {max_ball_size, parse_field(json, max_ball_size, default_max_size)},
-        {min_ball_size, parse_field(json, min_ball_size, default_min_size)},
-        {ball_colors, parse_field(json, ball_colors, std::vector<color>{})},
+        from_json(json, number_of_balls, default_number_of_balls),
+        from_json(json, max_ball_size, default_max_size),
+        from_json(json, min_ball_size, default_min_size),
+        from_json(json, ball_colors, std::vector<color>{}),
     };
 }
 

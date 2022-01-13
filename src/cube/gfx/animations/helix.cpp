@@ -2,7 +2,6 @@
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
-#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -75,26 +74,26 @@ void helix::stop()
 nlohmann::json helix::properties_to_json() const
 {
     return {
-        make_field(helix_rotation_time_ms, read_property(helix_rotation_time_ms, default_rotation_time)),
-        make_field(helix_phase_shift_cos_factor, read_property(helix_phase_shift_cos_factor, default_phase_shift_factor)),
-        make_field(helix_phase_shift_sin_factor, read_property(helix_phase_shift_sin_factor, default_phase_shift_factor)),
-        make_field(helix_thickness, read_property(helix_thickness, default_thickness)),
-        make_field(helix_length, read_property(helix_length, default_length)),
-        make_field(color_gradient_start, read_property(color_gradient_start, default_color)),
-        make_field(color_gradient_end, read_property(color_gradient_end, !default_color)),
+        to_json(helix_rotation_time_ms, default_rotation_time),
+        to_json(helix_phase_shift_cos_factor, default_phase_shift_factor),
+        to_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
+        to_json(helix_thickness, default_thickness),
+        to_json(helix_length, default_length),
+        to_json(color_gradient_start, default_color),
+        to_json(color_gradient_end, default_color),
     };
 }
 
 std::vector<helix::property_pair_t> helix::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        {helix_rotation_time_ms, parse_field(json, helix_rotation_time_ms, default_rotation_time)},
-        {helix_phase_shift_cos_factor, parse_field(json, helix_phase_shift_cos_factor, default_phase_shift_factor)},
-        {helix_phase_shift_sin_factor, parse_field(json, helix_phase_shift_sin_factor, default_phase_shift_factor)},
-        {helix_thickness, parse_field(json, helix_thickness, default_thickness)},
-        {helix_length, parse_field(json, helix_length, default_length)},
-        {color_gradient_start, parse_field(json, color_gradient_start, default_color)},
-        {color_gradient_end, parse_field(json, color_gradient_end, !default_color)},
+        from_json(json, helix_rotation_time_ms, default_rotation_time),
+        from_json(json, helix_phase_shift_cos_factor, default_phase_shift_factor),
+        from_json(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
+        from_json(json, helix_thickness, default_thickness),
+        from_json(json, helix_length, default_length),
+        from_json(json, color_gradient_start, default_color),
+        from_json(json, color_gradient_end, default_color),
     };
 }
 

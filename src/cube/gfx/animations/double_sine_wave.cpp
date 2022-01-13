@@ -3,7 +3,6 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
-#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -85,20 +84,20 @@ void double_sine_wave::stop()
 nlohmann::json double_sine_wave::properties_to_json() const
 {
     return {
-        make_field(wave_period, read_property(wave_period, default_period)),
-        make_field(wave_period_time_ms, read_property(wave_period_time_ms, default_period_time)),
-        make_field(color_gradient_start, read_property(color_gradient_start, default_color)),
-        make_field(color_gradient_end, read_property(color_gradient_end, !default_color)),
+        to_json(wave_period, default_period),
+        to_json(wave_period_time_ms, default_period_time),
+        to_json(color_gradient_start, default_color),
+        to_json(color_gradient_end, default_color),
     };
 }
 
 std::vector<double_sine_wave::property_pair_t> double_sine_wave::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        {wave_period, parse_field(json, wave_period, default_period)},
-        {wave_period_time_ms, parse_field(json, wave_period_time_ms, default_period_time)},
-        {color_gradient_start, parse_field(json, color_gradient_start, default_color)},
-        {color_gradient_end, parse_field(json, color_gradient_end, !default_color)},
+        from_json(json, wave_period, default_period),
+        from_json(json, wave_period_time_ms, default_period_time),
+        from_json(json, color_gradient_start, default_color),
+        from_json(json, color_gradient_end, default_color),
     };
 }
 

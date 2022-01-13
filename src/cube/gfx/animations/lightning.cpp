@@ -2,7 +2,6 @@
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
-#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -70,20 +69,20 @@ void lightning::stop()
 nlohmann::json lightning::properties_to_json() const
 {
     return {
-        make_field(number_of_clouds, read_property(number_of_clouds, default_number_of_clouds)),
-        make_field(cloud_size, read_property(cloud_size, default_size)),
-        make_field(color_gradient_start, read_property(color_gradient_start, default_color_start)),
-        make_field(color_gradient_end, read_property(color_gradient_end, default_color_end)),
+        to_json(number_of_clouds, default_number_of_clouds),
+        to_json(cloud_size, default_size),
+        to_json(color_gradient_start, default_color_start),
+        to_json(color_gradient_end, default_color_end),
     };
 }
 
 std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        {number_of_clouds, parse_field(json, number_of_clouds, default_number_of_clouds)},
-        {cloud_size, parse_field(json, cloud_size, default_size)},
-        {color_gradient_start, parse_field(json, color_gradient_start, default_color_start)},
-        {color_gradient_end, parse_field(json, color_gradient_end, default_color_end)},
+        from_json(json, number_of_clouds, default_number_of_clouds),
+        from_json(json, cloud_size, default_size),
+        from_json(json, color_gradient_start, default_color_start),
+        from_json(json, color_gradient_end, default_color_end),
     };
 }
 

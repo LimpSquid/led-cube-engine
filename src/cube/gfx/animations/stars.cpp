@@ -2,7 +2,6 @@
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
-#include <cube/core/json_util.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -84,16 +83,16 @@ void stars::stop()
 nlohmann::json stars::properties_to_json() const
 {
     return {
-        make_field(fade_time_ms, read_property(fade_time_ms, default_fade_time)),
-        make_field(number_of_stars, read_property(number_of_stars, default_number_of_stars)),
+        to_json(fade_time_ms, default_fade_time),
+        to_json(number_of_stars, default_number_of_stars),
     };
 }
 
 std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        {fade_time_ms, parse_field(json, fade_time_ms, default_fade_time)},
-        {number_of_stars, parse_field(json, number_of_stars, default_number_of_stars)},
+        from_json(json, fade_time_ms, default_fade_time),
+        from_json(json, number_of_stars, default_number_of_stars),
     };
 }
 

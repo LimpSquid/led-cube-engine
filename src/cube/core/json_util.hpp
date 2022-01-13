@@ -163,7 +163,7 @@ inline color from_json(nlohmann::json const & json)
 {
     auto const name = parse_field(json, "name", std::string{});
     if (name.length()) {
-        return name == "random"
+        return name == "random_color"
             ? random_color()
             : from_string(name);
     }
