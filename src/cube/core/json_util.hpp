@@ -83,20 +83,33 @@ struct json_value_converter<std::vector<T>>
 };
 
 template<typename T>
-T parse_field(nlohmann::json const & json, char const * const key, T def)
+std::optional<T> parse_optional_field(nlohmann::json const & json, char const * const key)
 {
     using std::operator""s;
 
     auto const i = json.find(key);
     if (i == json.end())
-        return def;
+        return {};
 
     try {
-        return json_value_converter<T>{}(*i);
+        return {json_value_converter<T>{}(*i)};
     } catch(std::exception const & ex) {
         throw std::invalid_argument("Unable to convert field: '"s + key
             + "' in JSON: " + json.dump() + ", error: " + ex.what());
     }
+}
+
+template<typename T, typename Key>
+std::optional<T> parse_optional_field(nlohmann::json const & json, Key const & key)
+{
+    return parse_optional_field<T>(json, to_string(key));
+}
+
+template<typename T>
+T parse_field(nlohmann::json const & json, char const * const key, T def)
+{
+    auto field = parse_optional_field<T>(json, key);
+    return field ? std::move(*field) : def;
 }
 
 template<typename T>
@@ -104,16 +117,10 @@ T parse_field(nlohmann::json const & json, char const * const key)
 {
     using std::operator""s;
 
-    auto const i = json.find(key);
-    if (i == json.end())
+    auto field = parse_optional_field<T>(json, key);
+    if (!field)
         throw std::invalid_argument("Field: '"s + key + "' not present in JSON: " + json.dump());
-
-    try {
-        return json_value_converter<T>{}(*i);
-    } catch(std::exception const & ex) {
-        throw std::invalid_argument("Unable to convert field: '"s + key
-            + "' in JSON: " + json.dump() + ", error: " + ex.what());
-    }
+    return std::move(*field);
 }
 
 template<typename T, typename Key>
