@@ -20,7 +20,7 @@ struct color
     { }
 
     constexpr color(rgba_t rgba) :
-        color(color_t(rgba), color_t(rgba >> 8), color_t(rgba >> 16), color_t(rgba >> 24))
+        color(color_t(rgba >> 24), color_t(rgba >> 16), color_t(rgba >> 8), color_t(rgba))
     { }
 
     constexpr color(color_t red, color_t green, color_t blue) :
@@ -35,7 +35,7 @@ struct color
 
     constexpr operator color_vec_t() const { return {r, g, b, a}; }
     constexpr color_vec_t vec() const { return *this; }
-    constexpr rgba_t rgba() const { return rgba_t(r | (g << 8) | (b << 16) | (a << 24)); }
+    constexpr rgba_t rgba() const { return rgba_t(r << 24 | (g << 16) | (b << 8) | a); }
     constexpr bool transparent() const { return a == color_min_value; }
     constexpr bool opaque() const { return a == color_max_value; }
 

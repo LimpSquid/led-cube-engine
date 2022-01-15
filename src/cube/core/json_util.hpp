@@ -196,11 +196,11 @@ inline void from_json(nlohmann::json const & json, color & out)
     if (!json.is_object())
         throw std::invalid_argument("Expected JSON object for color, got: "s + json.type_name());
 
-    auto const name = parse_field(json, "name", std::string{});
-    if (name.length()) {
-        out = (name == "random_color")
+    auto const color = parse_field(json, "color", std::string{});
+    if (color.length()) {
+        out = (color == "random")
             ? random_color()
-            : from_string(name);
+            : from_string(color);
         return;
     }
 

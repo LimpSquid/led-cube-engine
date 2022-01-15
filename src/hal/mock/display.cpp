@@ -56,6 +56,7 @@ void display::update()
     double pos[3];
     double pos_step = 1.0 / (cube_size_1d - 1);
     int x, y, z;
+    rgba_t rgba;
     for (x = 0, pos[0] = -0.5; x < cube_size_1d; x++, pos[0] += pos_step) {
         for (y = 0, pos[1] = -0.5; y < cube_size_1d; y++, pos[1] += pos_step) {
             for (z = 0, pos[2] = -0.5; z < cube_size_1d; z++, pos[2] += pos_step) {
@@ -64,8 +65,11 @@ void display::update()
                 glVertex3dv(pos);
 
                 // Blend in colors
-                int offset = map_to_offset(x, y, z);
-                glColor3ubv(reinterpret_cast<GLubyte const *>(&buffer_.data[offset]));
+                rgba = buffer_.data[map_to_offset(x, y, z)];
+                glColor3ub(
+                    static_cast<GLubyte>(rgba >> 24),
+                    static_cast<GLubyte>(rgba >> 16),
+                    static_cast<GLubyte>(rgba >> 8)); // Fixme: not as performant as it could be, but its endianness safe
                 glVertex3dv(pos);
             }
         }

@@ -22,7 +22,15 @@ color::color(color_vec_t const & vec)
 
 color from_string(std::string c)
 {
+    if (c.empty())
+        return {};
+
     boost::algorithm::to_lower(c);
+    if (c.at(0) == '#' && c.size() == 9) { // rgba hex code, e.g. #ff0000ff (red)
+        c.erase(0, 1); // Remove '#'
+        rgba_t val = static_cast<rgba_t>(std::stoull(c, nullptr, 16));
+        return {val};
+    }
 
 #define STATEMENT_FOR(name) \
     if (c == #name) return color_##name;
@@ -55,6 +63,12 @@ void alpha_blend(color const & c, color & bucket)
 
 void alpha_blend(rgba_t const & c, rgba_t & bucket)
 {
+    // This method differs ever so slightly from the one above because we have to deal
+    // with endianness here. Depending on the endianness the color channels may've been
+    // swapped, thus we can't say for sure which index to use for the a specific color channel.
+    // For now we just blend all the channels, also the alpha channel, opposed to the function above
+    // which sets it to color_max_value. Strictly speaking it doesn't really matter what value
+    // the alpha channel will become, so for now blending it is fine.
     constexpr int shift{sizeof(color_t) * 8};
 
     color_t const * const c_ptr = reinterpret_cast<color_t const *>(&c);
@@ -65,7 +79,7 @@ void alpha_blend(rgba_t const & c, rgba_t & bucket)
     bucket_ptr[0] = static_cast<color_t>((alpha * c_ptr[0] + inv_alpha * bucket_ptr[0]) >> shift);
     bucket_ptr[1] = static_cast<color_t>((alpha * c_ptr[1] + inv_alpha * bucket_ptr[1]) >> shift);
     bucket_ptr[2] = static_cast<color_t>((alpha * c_ptr[2] + inv_alpha * bucket_ptr[2]) >> shift);
-    bucket_ptr[3] = color_max_value;
+    bucket_ptr[3] = static_cast<color_t>((alpha * c_ptr[3] + inv_alpha * bucket_ptr[3]) >> shift);
 }
 
 void blend(color const & c, color & bucket)
