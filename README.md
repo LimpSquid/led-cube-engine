@@ -42,8 +42,8 @@ To build and run the `mock` target follow the steps below:
 1. Render an animation:
     ```bash
     $ bin/led-cube-engine render --animation stars
-    $ bin/led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 255, "green": 128}}'
-    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"color_gradient_start":{"name":"magenta"},"color_gradient_end":{"name":"cyan"}}'
+    $ bin/led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 255, "green": 128}, "color_gradient_end": {"color": "random"}}'
+    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"color_gradient_start":{"color":"magenta"},"color_gradient_end":{"color":"#24e6ebff"}}'
     ```
 1. Finally, see the [programs](#programs) section for a detailed overview of all commands that are available.
 
@@ -88,8 +88,8 @@ $ ./led-cube-engine render --help
 > A few usage examples are as follows:
 > ```bash
 > $ ./led-cube-engine render --animation helix
-> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"name": "magenta"}}'
-> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 100, "blue":128}}'
+> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"color": "magenta"}, "color_gradient_end": {"color": "#24e6ebff"}}'
+> $ ./led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 100, "blue":128}, "color_gradient_end": {"color": "random"}}'
 > ```
 
 **-f, --file \<path_to_file>**

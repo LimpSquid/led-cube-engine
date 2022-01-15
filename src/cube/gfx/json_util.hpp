@@ -8,8 +8,8 @@ namespace cube::gfx
 
 inline void to_json(gradient_stop const & stop, nlohmann::json & out)
 {
-    out["position"] = stop.gpos;
-    core::to_json(stop.gcolor, out["color"]);
+    out["stop_position"] = stop.gpos;
+    core::to_json(stop.gcolor, out["stop_color"]);
 }
 
 inline void from_json(nlohmann::json const & json, gradient_stop & out)
@@ -19,8 +19,8 @@ inline void from_json(nlohmann::json const & json, gradient_stop & out)
     if (!json.is_object())
         throw std::invalid_argument("Expected JSON object for gradient_stop, got: "s + json.type_name());
 
-    out.gpos = core::parse_field<double>(json, "position");
-    core::from_json(json["color"], out.gcolor);
+    out.gpos = core::parse_field<double>(json, "stop_position");
+    core::from_json(json["stop_color"], out.gcolor);
 }
 
 inline void to_json(gradient const & g, nlohmann::json & out)

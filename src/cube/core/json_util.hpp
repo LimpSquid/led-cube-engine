@@ -183,10 +183,12 @@ nlohmann::json make_field(Key const & key, T const & value)
 
 inline void to_json(color const & c, nlohmann::json & out)
 {
-    out["red"] = c.r;
-    out["green"] = c.g;
-    out["blue"] = c.b;
-    out["alpha"] = c.a;
+    std::stringstream stream;
+    stream
+        << "#"
+        << std::setfill('0') << std::setw(sizeof(rgba_t) * 2)
+        << std::hex << c.rgba();
+    out["color"] = stream.str();
 }
 
 inline void from_json(nlohmann::json const & json, color & out)
