@@ -26,7 +26,7 @@ constexpr bool is_json_iterable_v = is_json_iterable<T>::value;
 template<typename T>
 void to_json(T const & value, nlohmann::json & out)
 {
-    if constexpr (is_json_iterable_v<T>) {
+    if constexpr (is_json_iterable_v<T> && !std::is_same_v<T, std::string>) {
         nlohmann::json element_out;
         out = nlohmann::json::array();
         for (auto const & element : value) {
@@ -40,7 +40,7 @@ void to_json(T const & value, nlohmann::json & out)
 template<typename T>
 void from_json(nlohmann::json const & json, T & out)
 {
-    if constexpr (is_json_iterable_v<T>) {
+    if constexpr (is_json_iterable_v<T> && !std::is_same_v<T, std::string>) {
         using std::operator""s;
 
         if (!json.is_array())
