@@ -8,14 +8,61 @@
 namespace cube::core
 {
 
+template<typename T, typename = void>
+struct is_json_iterable : std::false_type {};
+template<typename T>
+struct is_json_iterable<T,
+    std::void_t<
+        // Iterators must be present
+        decltype(std::begin(std::declval<T>())),
+        decltype(std::end(std::declval<T>())),
+        // The object type of the container must be convertable to/from JSON
+        decltype(to_json(std::declval<typename T::value_type>(), std::declval<nlohmann::json&>())),
+        decltype(from_json(std::declval<nlohmann::json>(), std::declval<typename T::value_type&>()))>
+    > : std::true_type {};
+template<typename T>
+constexpr bool is_json_iterable_v = is_json_iterable<T>::value;
+
+template<typename T>
+void to_json(T const & value, nlohmann::json & out)
+{
+    if constexpr (is_json_iterable_v<T>) {
+        nlohmann::json element_out;
+        out = nlohmann::json::array();
+        for (auto const & element : value) {
+            to_json(element, element_out);
+            out.insert(out.end(), std::move(element_out));
+        }
+    } else
+        out = value;
+}
+
+template<typename T>
+void from_json(nlohmann::json const & json, T & out)
+{
+    if constexpr (is_json_iterable_v<T>) {
+        using std::operator""s;
+
+        if (!json.is_array())
+            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
+
+        typename T::value_type element_out;
+        for (auto const & element : json) {
+            from_json(element, element_out);
+            out.push_back(std::move(element_out));
+        }
+    } else
+        out = T(json);
+}
+
 template<typename T>
 struct json_value_converter
 {
     T operator()(nlohmann::json const & json)
     {
+#ifdef EVAL_EXPRESSION
         using std::operator""s;
 
-#ifdef EVAL_EXPRESSION
         if (json.is_string()) {
             if constexpr (std::is_integral_v<T>) {
                 double const value = std::round(evald(json));
@@ -28,10 +75,17 @@ struct json_value_converter
                 return eval<T>(json);
         }
 #endif
-        return T(json);
+        T out;
+        from_json(json, out);
+        return out;
     }
 
-    nlohmann::json operator()(T const & value) { return value; }
+    nlohmann::json operator()(T const & value)
+    {
+        nlohmann::json out;
+        to_json(value, out);
+        return out;
+    }
 };
 
 template<>
@@ -52,33 +106,6 @@ struct json_value_converter<std::chrono::duration<Rep, Period>>
     nlohmann::json operator()(std::chrono::duration<Rep, Period> const & value)
     {
         return json_value_converter<Rep>{}(value.count());
-    }
-};
-
-template<typename T> nlohmann::json to_json(T const &);
-template<typename T> T from_json(nlohmann::json const &);
-template<typename T>
-struct json_value_converter<std::vector<T>>
-{
-    std::vector<T> operator()(nlohmann::json const & json)
-    {
-        using std::operator""s;
-
-        if (!json.is_array())
-            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
-
-        std::vector<T> result;
-        for (auto const & element : json)
-            result.push_back(from_json<T>(element));
-        return result;
-    }
-
-    nlohmann::json operator()(std::vector<T> const & value)
-    {
-        auto array = nlohmann::json::array();
-        for (auto const & element : value)
-            array.insert(array.end(), to_json(element));
-        return array;
     }
 };
 
@@ -154,40 +181,33 @@ nlohmann::json make_field(Key const & key, T const & value)
     return make_field<T>(to_string(key), value);
 }
 
-template<>
-inline nlohmann::json to_json(color const & c)
+inline void to_json(color const & c, nlohmann::json & out)
 {
-    return {
-        {"red", c.r},
-        {"green", c.g},
-        {"blue", c.b},
-        {"alpha", c.a},
-    };
+    out["red"] = c.r;
+    out["green"] = c.g;
+    out["blue"] = c.b;
+    out["alpha"] = c.a;
 }
 
-template<>
-inline color from_json(nlohmann::json const & json)
+inline void from_json(nlohmann::json const & json, color & out)
 {
+    using std::operator""s;
+
+    if (!json.is_object())
+        throw std::invalid_argument("Expected JSON object for color, got: "s + json.type_name());
+
     auto const name = parse_field(json, "name", std::string{});
     if (name.length()) {
-        return name == "random_color"
+        out = (name == "random_color")
             ? random_color()
             : from_string(name);
+        return;
     }
 
-    auto const red = parse_field<color_t>(json, "red", color_min_value);
-    auto const green = parse_field<color_t>(json, "green", color_min_value);
-    auto const blue = parse_field<color_t>(json, "blue", color_min_value);
-    auto const alpha = parse_field<color_t>(json, "alpha", color_max_value);
-
-    return {red, green, blue, alpha};
+    out.r = parse_field(json, "red", color_min_value);
+    out.g = parse_field(json, "green", color_min_value);
+    out.b = parse_field(json, "blue", color_min_value);
+    out.a = parse_field(json, "alpha", color_max_value);
 }
-
-template<>
-struct json_value_converter<color>
-{
-    color operator()(nlohmann::json const & json) { return from_json<color>(json); }
-    nlohmann::json operator()(color const & value) { return to_json<color>(value); }
-};
 
 } // End of namespace

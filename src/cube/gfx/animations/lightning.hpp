@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/gfx/gradient.hpp>
 #include <cube/gfx/easing.hpp>
 #include <cube/core/voxel.hpp>
 

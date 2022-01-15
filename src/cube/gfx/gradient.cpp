@@ -24,6 +24,11 @@ gradient & gradient::add(gradient_stop stop)
     return *this;
 }
 
+boost::container::flat_set<gradient_stop> const & gradient::stops() const
+{
+    return stops_;
+}
+
 void gradient::reset()
 {
     stops_.clear();

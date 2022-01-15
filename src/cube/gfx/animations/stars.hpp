@@ -16,7 +16,8 @@ private:
     PROPERTY_ENUM
     (
         number_of_stars,    // Number of unique stars in the cube
-        fade_time_ms        // Fade time of a single star
+        fade_time_ms,       // Fade time of a single star
+        galaxy_hue,         // The hue of the galaxies
     )
 
     struct star
@@ -35,6 +36,7 @@ private:
 
     core::animation_scene scene_;
     std::vector<star> stars_;
+    gradient galaxy_hue_;
     int hue_step_;
     int step_interval_;
     double omega_;

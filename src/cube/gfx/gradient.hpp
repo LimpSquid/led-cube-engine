@@ -9,6 +9,10 @@ namespace cube::gfx
 
 struct gradient_stop
 {
+    gradient_stop() :
+        gradient_stop(0.0, core::color_transparent)
+    { }
+
     gradient_stop(double p, core::color c) :
         gpos(std::clamp(p, 0.0, 1.0)),
         gcolor(std::move(c))
@@ -30,6 +34,7 @@ public:
     gradient();
 
     gradient & add(gradient_stop stop);
+    boost::container::flat_set<gradient_stop> const & stops() const;
     void reset();
 
     core::color operator()(double gpos) const;

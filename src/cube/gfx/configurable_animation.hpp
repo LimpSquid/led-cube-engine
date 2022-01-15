@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cube/gfx/json_util.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
 #include <cube/core/color.hpp>
-#include <cube/core/json_util.hpp>
 #include <unordered_map>
 #include <variant>
 
@@ -20,7 +20,8 @@ using property_value_t = std::variant<
     float, double, long double,
     std::string,
     std::chrono::nanoseconds, std::chrono::milliseconds, std::chrono::seconds,
-    core::color, std::vector<core::color>>;
+    core::color, std::vector<core::color>,
+    gradient, gradient_stop>;
 
 class configurable_animation :
     public core::animation
