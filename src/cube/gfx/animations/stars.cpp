@@ -12,11 +12,11 @@ namespace
 
 animation_publisher<animations::stars> const publisher;
 
-constexpr double hue_omega_scalar{0.5};
-constexpr double hue_phase_shift_scalar{0.25};
+constexpr double gradient_omega_scalar{0.5};
+constexpr double gradient_phase_shift_scalar{0.25};
 constexpr milliseconds default_fade_time{5000ms};
 constexpr int default_number_of_stars{cube::cube_size_3d / 15};
-gradient const default_galaxy_hue
+gradient const default_galaxy_gradient
 {
     {0.00, color_red},
     {0.25, color_cyan},
@@ -36,17 +36,17 @@ stars::stars(engine_context & context) :
         for (auto & star : stars_)
             if (++star.fade_step > step_interval_)
                 star = make_star();
-        hue_step_++;
+        gradient_step_++;
     })
 { }
 
 void stars::start()
 {
-    galaxy_hue_ = read_property(galaxy_hue, default_galaxy_hue);
+    galaxy_gradient_ = read_property(galaxy_gradient, default_galaxy_gradient);
     step_interval_ = static_cast<int>(read_property(fade_time_ms, default_fade_time) / animation_scene_interval);
     omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
-    omega_hue_= omega_ * hue_omega_scalar;
-    hue_step_ = 0;
+    omega_gradient_ = omega_ * gradient_omega_scalar;
+    gradient_step_ = 0;
 
     int num_stars = std::min(cube_size_3d / 8, read_property(number_of_stars, default_number_of_stars));
     stars_.resize(num_stars);
@@ -64,10 +64,10 @@ void stars::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (star const & s : stars_) {
-        double phase_shift = hue_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube_size_1d);
+        double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube_size_1d);
         gradient fade({
             {0.0, color_black},
-            {1.0, galaxy_hue_(abs_cos(hue_step_ * omega_hue_ - phase_shift))},
+            {1.0, galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift))},
         });
 
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
@@ -85,7 +85,7 @@ nlohmann::json stars::properties_to_json() const
     return {
         to_json(fade_time_ms, default_fade_time),
         to_json(number_of_stars, default_number_of_stars),
-        to_json(galaxy_hue, default_galaxy_hue),
+        to_json(galaxy_gradient, default_galaxy_gradient),
     };
 }
 
@@ -94,7 +94,7 @@ std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json c
     return {
         from_json(json, fade_time_ms, default_fade_time),
         from_json(json, number_of_stars, default_number_of_stars),
-        from_json(json, galaxy_hue, default_galaxy_hue),
+        from_json(json, galaxy_gradient, default_galaxy_gradient),
     };
 }
 

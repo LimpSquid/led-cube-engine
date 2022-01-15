@@ -28,7 +28,7 @@ inline void to_json(gradient const & g, nlohmann::json & out)
     core::to_json(g.stops(), out["gradient_stops"]);
 }
 
-inline void from_json(nlohmann::json const & json, gradient & g)
+inline void from_json(nlohmann::json const & json, gradient & out)
 {
     using std::operator""s;
 
@@ -39,7 +39,7 @@ inline void from_json(nlohmann::json const & json, gradient & g)
     core::from_json(json["gradient_stops"], stops);
 
     for (auto const & stop : stops)
-        g.add(stop);
+        out.add(stop);
 }
 
 }

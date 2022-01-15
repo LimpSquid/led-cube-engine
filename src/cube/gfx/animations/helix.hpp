@@ -20,8 +20,7 @@ private:
         helix_phase_shift_sin_factor,   // Same...
         helix_thickness,                // Cross-section radius of the helix
         helix_length,                   // Length of the helix
-        color_gradient_start,           // Start color of the helix gradient
-        color_gradient_end              // End color of the helix gradient
+        helix_gradient,                 // Helix gradient
     )
 
     virtual void start() override;
@@ -31,7 +30,7 @@ private:
     virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
     core::animation_scene scene_;
-    gradient hue_;
+    gradient gradient_;
     ease_in_sine fader_;
     int step_;
     int thickness_;

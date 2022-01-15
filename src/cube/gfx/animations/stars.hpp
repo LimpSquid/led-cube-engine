@@ -17,7 +17,7 @@ private:
     (
         number_of_stars,    // Number of unique stars in the cube
         fade_time_ms,       // Fade time of a single star
-        galaxy_hue,         // The hue of the galaxies
+        galaxy_gradient,    // The gradient of the galaxiy
     )
 
     struct star
@@ -36,11 +36,11 @@ private:
 
     core::animation_scene scene_;
     std::vector<star> stars_;
-    gradient galaxy_hue_;
-    int hue_step_;
+    gradient galaxy_gradient_;
+    int gradient_step_;
     int step_interval_;
     double omega_;
-    double omega_hue_;
+    double omega_gradient_;
 };
 
 } // End of namespace

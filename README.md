@@ -43,7 +43,7 @@ To build and run the `mock` target follow the steps below:
     ```bash
     $ bin/led-cube-engine render --animation stars
     $ bin/led-cube-engine render --animation lightning '{"color_gradient_start": {"red": 255, "green": 128}, "color_gradient_end": {"color": "random"}}'
-    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"color_gradient_start":{"color":"magenta"},"color_gradient_end":{"color":"#24e6ebff"}}'
+    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"helix_gradient":{"gradient_stops":[{"stop_color":{"color":"yellow"},"stop_position":0.0},{"stop_color":{"color":"#24e6ebff"},"stop_position":1.0}]}}'
     ```
 1. Finally, see the [programs](#programs) section for a detailed overview of all commands that are available.
 

@@ -13,11 +13,16 @@ namespace
 animation_publisher<animations::helix> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr color default_color{color_cyan};
 constexpr milliseconds default_rotation_time{1500ms};
 constexpr int default_thickness{3};
 constexpr double default_length{0.875};
 constexpr double default_phase_shift_factor{0.0};
+gradient const default_gradient
+{
+    {0.00, color_cyan},
+    {0.50, color_yellow},
+    {1.00, color_magenta},
+};
 
 } // End of namespace
 
@@ -34,8 +39,7 @@ void helix::start()
 {
     int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval);
 
-    hue_.add({0.0, read_property(color_gradient_start, default_color)})
-        .add({1.0, read_property(color_gradient_end, !default_color)});
+    gradient_ = read_property(helix_gradient, default_gradient);
     thickness_ = read_property(helix_thickness, default_thickness);
     length_ =  2.0 * M_PI * read_property(helix_length, default_length);
     omega_ = (2.0 * M_PI) / step_interval;
@@ -60,7 +64,7 @@ void helix::paint(graphics_device & device)
         int x = map(x1, unit_circle_range, cube_axis_range);
         int z = map(z1, unit_circle_range, cube_axis_range);
 
-        p.set_color(hue_(abs_sin(step_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
+        p.set_color(gradient_(abs_sin(step_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
         p.sphere({x, y, z}, thickness_);
     }
 }
@@ -79,8 +83,7 @@ nlohmann::json helix::properties_to_json() const
         to_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
         to_json(helix_thickness, default_thickness),
         to_json(helix_length, default_length),
-        to_json(color_gradient_start, default_color),
-        to_json(color_gradient_end, default_color),
+        to_json(helix_gradient, default_gradient),
     };
 }
 
@@ -92,8 +95,7 @@ std::vector<helix::property_pair_t> helix::properties_from_json(nlohmann::json c
         from_json(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
         from_json(json, helix_thickness, default_thickness),
         from_json(json, helix_length, default_length),
-        from_json(json, color_gradient_start, default_color),
-        from_json(json, color_gradient_end, default_color),
+        from_json(json, helix_gradient, default_gradient),
     };
 }
 
