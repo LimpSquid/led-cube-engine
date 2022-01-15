@@ -188,28 +188,20 @@ inline void to_json(color const & c, nlohmann::json & out)
         << "#"
         << std::setfill('0') << std::setw(sizeof(rgba_t) * 2)
         << std::hex << c.rgba();
-    out["color"] = stream.str();
+    out = stream.str();
 }
 
 inline void from_json(nlohmann::json const & json, color & out)
 {
     using std::operator""s;
 
-    if (!json.is_object())
-        throw std::invalid_argument("Expected JSON object for color, got: "s + json.type_name());
+    if (!json.is_string())
+        throw std::invalid_argument("Expected JSON string for color got: "s + json.type_name());
 
-    auto const color = parse_field(json, "color", std::string{});
-    if (color.length()) {
-        out = (color == "random")
-            ? random_color()
-            : from_string(color);
-        return;
-    }
-
-    out.r = parse_field(json, "red", color_min_value);
-    out.g = parse_field(json, "green", color_min_value);
-    out.b = parse_field(json, "blue", color_min_value);
-    out.a = parse_field(json, "alpha", color_max_value);
+    std::string color = json;
+    out = color == "random"
+        ? random_color()
+        : from_string(color);
 }
 
 } // End of namespace

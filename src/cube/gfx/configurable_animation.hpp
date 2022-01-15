@@ -55,6 +55,7 @@ protected:
     T read_property(L label, T def = {}) const
     {
         using std::operator""s;
+
         auto const search = properties_.find(label);
         if (search == properties_.end())
             return def;

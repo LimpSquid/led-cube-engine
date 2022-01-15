@@ -17,7 +17,7 @@ inline void from_json(nlohmann::json const & json, gradient_stop & out)
     using std::operator""s;
 
     if (!json.is_object())
-        throw std::invalid_argument("Expected JSON object for gradient_stop, got: "s + json.type_name());
+        throw std::invalid_argument("Expected JSON object for gradient_stop got: "s + json.type_name());
 
     out.gpos = core::parse_field<double>(json, "stop_position");
     core::from_json(json["stop_color"], out.gcolor);
@@ -33,7 +33,7 @@ inline void from_json(nlohmann::json const & json, gradient & out)
     using std::operator""s;
 
     if (!json.is_object())
-        throw std::invalid_argument("Expected JSON object for gradient, got: "s + json.type_name());
+        throw std::invalid_argument("Expected JSON object for gradient got: "s + json.type_name());
 
     std::vector<gradient_stop> stops;
     core::from_json(json["gradient_stops"], stops);
