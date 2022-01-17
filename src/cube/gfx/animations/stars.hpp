@@ -17,7 +17,7 @@ private:
     (
         number_of_stars,    // Number of unique stars in the cube
         fade_time_ms,       // Fade time of a single star
-        galaxy_gradient,    // The gradient of the galaxiy
+        galaxy_gradient,    // Gradient of the galaxiy
     )
 
     struct star

@@ -18,8 +18,7 @@ private:
     (
         number_of_clouds,       // Number of clouds in the cube
         cloud_size,             // Radius of the cloud
-        color_gradient_start,   // Start color of the cloud gradient
-        color_gradient_end      // End color of the cloud gradient
+        cloud_gradient,         // Gradient of the clouds
     )
 
     struct cloud
@@ -39,7 +38,7 @@ private:
 
     core::animation_scene scene_;
     std::vector<cloud> clouds_;
-    gradient hue_;
+    gradient cloud_gradient_;
     int cloud_size_;
 };
 
