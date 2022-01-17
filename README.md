@@ -141,6 +141,8 @@ private:
     (
         my_int_property,
         my_double_property,
+        my_gradient_property,
+        my_color_vector_property,
     )
 
     virtual void start() override; // Optional, called before the animation is started
@@ -160,6 +162,7 @@ private:
 #include <cube/gfx/animations/my_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/gfx/gradient.hpp> // Optional, only used if you use a gradient
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -175,6 +178,13 @@ animation_publisher<animations::my_animation> const publisher;
 // Some default animation property values
 constexpr int default_int_property = 12345;
 constexpr double default_double_property = 3.14;
+gradient const default_gradient_property =
+{
+    {0.00, color_blue},
+    {0.25, color_white},
+    {0.75, color_white},
+    {1.0, color_magenta},
+};
 
 } // End of namespace
 
@@ -192,8 +202,15 @@ void my_animation::start()
     // ...
     // ...
 
-    // For example read the int property:
-    auto const int_value = read_property(my_int_property, default_int_property);
+    // For example read the int & double property:
+    auto const my_int = read_property(my_int_property, default_int_property);
+    auto const my_double = read_property(my_double_property, default_double_property);
+
+    // Or a gradient:
+    auto const my_gradient = read_property(my_gradient_property, default_gradient_property);
+
+    // Or a vector of colors:
+    auto const my_colors = read_property(my_color_vector_property, std::vector<color>{});
 
     scene_.start();
 }
@@ -222,6 +239,8 @@ nlohmann::json my_animation::properties_to_json() const
     return {
         to_json(my_int_property, default_int_property),
         to_json(my_double_property, default_double_property),
+        to_json(my_gradient_property, default_gradient_property),
+        to_json(my_color_vector_property, std::vector<color>{}),
     };
 }
 
@@ -230,6 +249,8 @@ std::vector<my_animation::property_pair_t> my_animation::properties_from_json(nl
     return {
         from_json(json, my_int_property, default_int_property),
         from_json(json, my_double_property, default_double_property),
+        from_json(json, my_gradient_property, default_gradient_property),
+        from_json(json, my_color_vector_property, std::vector<color>{}),
     };
 }
 
