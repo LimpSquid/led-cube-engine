@@ -34,6 +34,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${CMAKE_THREAD_LIBS_INIT}
-    PRIVATE ${Boost_LIBRARIES})
+    PRIVATE ${Boost_LIBRARIES}
+    PRIVATE stdc++fs) # Apparently need for some systems
 target_compile_options(${PROJECT_NAME}
     PRIVATE -Wall -Wextra -Wconversion -pedantic -O2)
