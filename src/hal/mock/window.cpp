@@ -18,8 +18,6 @@ constexpr double x_axis_max{-20};
 constexpr double z_axis_min{-360};
 constexpr double z_axis_max{360};
 constexpr glm::dvec3 x_axis_view{-90, 0, 0};
-constexpr glm::dvec3 y_axis_view{-90, 0, 90};
-constexpr glm::dvec3 z_axis_view{0, 0, 0};
 constexpr glm::dvec3 default_view{x_axis_view + glm::dvec3(25, 0, -35)};
 
 void glfw_error_callback(int, const char * const desc)

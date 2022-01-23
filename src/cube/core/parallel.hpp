@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/core/math.hpp>
+#include <functional>
 
 namespace cube::core
 {

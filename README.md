@@ -14,7 +14,7 @@ To build and run the `mock` target follow the steps below:
 1. Install GCC, cmake, boost and the required packages for the `mock` target:
     ```bash
     $ sudo apt update
-    $ sudo apt install build-essential cmake libboost-dev
+    $ sudo apt install build-essential cmake libboost-all-dev # For simplicity, install everything from libboost
     $ sudo apt install libopengl0 libopengl-dev libglfw3 libglfw3-dev libglew2.1 libglew-dev # Dependencies only for mock target
     ```
 1. Clone this repository:
@@ -37,7 +37,7 @@ To build and run the `mock` target follow the steps below:
     ```
 1. Build the source:
     ```bash
-    $ cmake --build .
+    $ cmake --build . -j4
     ```
 1. Render an animation:
     ```bash

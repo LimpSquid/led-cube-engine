@@ -11,8 +11,8 @@ namespace cube::core
 
 void graphics_device::render_time::update()
 {
-    uint64_t now = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-    uint64_t elapsed = now - nanos_previous;
+    auto const now = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+    auto const elapsed = now - nanos_previous;
 
     nanos_dt = nanos_dt - (nanos_dt >> 2) + (elapsed >> 2);
     nanos_previous = now;

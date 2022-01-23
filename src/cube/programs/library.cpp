@@ -25,7 +25,7 @@ void handle_list()
         std::cout << "No animations available.\n";
     else {
         std::cout << "Available animation(s):\n";
-        for (auto const animation : animations)
+        for (auto const & animation : animations)
             std::cout << "  - " << animation << '\n';
     }
 

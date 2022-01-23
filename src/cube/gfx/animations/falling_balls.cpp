@@ -14,7 +14,7 @@ animation_publisher<animations::falling_balls> const publisher;
 
 constexpr double gravity = -0.000002 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per second
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
-constexpr int default_number_of_balls{3};
+constexpr unsigned int default_number_of_balls{3};
 constexpr int default_max_size{cube::cube_size_1d / 4};
 constexpr int default_min_size{cube::cube_size_1d / 8};
 
@@ -42,7 +42,7 @@ void falling_balls::start()
     min_size_ = read_property(min_ball_size, default_min_size);
     ball_colors_ = read_property(ball_colors, std::vector<color>{});
 
-    int num_balls = read_property(number_of_balls, default_number_of_balls);
+    unsigned int num_balls = read_property(number_of_balls, default_number_of_balls);
     balls_.resize(num_balls);
     for (auto & ball : balls_)
         ball = make_ball();
@@ -96,7 +96,7 @@ falling_balls::ball falling_balls::make_ball() const
 
     auto const color = ball_colors_.empty()
         ? random_color()
-        : ball_colors_.at(std::rand() % ball_colors_.size());
+        : ball_colors_.at(urand() % ball_colors_.size());
 
     return {size, mass, position, {}, color};
 }

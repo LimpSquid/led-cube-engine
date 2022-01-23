@@ -68,7 +68,7 @@ expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::js
         return unexpected_error{ex.what()};
     }
 
-    return result;
+    return {std::move(result)};
 }
 
 }

@@ -15,7 +15,7 @@ animation_publisher<animations::stars> const publisher;
 constexpr double gradient_omega_scalar{0.5};
 constexpr double gradient_phase_shift_scalar{0.25};
 constexpr milliseconds default_fade_time{5000ms};
-constexpr int default_number_of_stars{cube::cube_size_3d / 15};
+constexpr unsigned int default_number_of_stars{static_cast<unsigned int>(cube::cube_size_3d) / 15};
 gradient const default_galaxy_gradient
 {
     {0.00, color_red},
@@ -48,7 +48,7 @@ void stars::start()
     omega_gradient_ = omega_ * gradient_omega_scalar;
     gradient_step_ = 0;
 
-    int num_stars = std::min(cube_size_3d / 8, read_property(number_of_stars, default_number_of_stars));
+    unsigned int num_stars = read_property(number_of_stars, default_number_of_stars);
     stars_.resize(num_stars);
     for (auto & star : stars_) {
         star = make_star();
@@ -102,12 +102,13 @@ stars::star stars::make_star() const
 {
     std::vector<star>::const_iterator search;
     voxel_t voxel;
+    unsigned tries = 10;
 
     do {
         voxel = random_voxel();
         search = std::find_if(stars_.begin(), stars_.end(),
             [&](star const & s) { return s.voxel == voxel; });
-    } while(search != stars_.end()); // Safe as we never have more stars than 1/8th of the cube's size
+    } while(search != stars_.end() && --tries != 0);
 
     return {voxel, 0};
 }

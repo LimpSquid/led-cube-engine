@@ -167,5 +167,10 @@ inline float frand()
     return map(std::rand(), rand_range, frand_range);
 }
 
+inline unsigned int urand()
+{
+    return static_cast<unsigned int>(std::rand());
+}
+
 
 } // End of namespace

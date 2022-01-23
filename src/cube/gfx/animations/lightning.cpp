@@ -12,7 +12,7 @@ namespace
 
 animation_publisher<animations::lightning> const publisher;
 
-constexpr int default_number_of_clouds{3};
+constexpr unsigned int default_number_of_clouds{3};
 constexpr int default_size{4 * cube::cube_size_1d / 5};
 gradient const default_gradient
 {
@@ -37,7 +37,7 @@ void lightning::start()
     cloud_gradient_ = read_property(cloud_gradient, default_gradient);
     cloud_size_ = read_property(cloud_size, default_size);
 
-    int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
+    unsigned int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
     clouds_.resize(num_clouds);
     for (auto & cloud : clouds_)
         spawn_cloud(cloud);
@@ -94,7 +94,7 @@ void lightning::spawn_cloud(cloud & c)
 
     c.voxel = random_voxel();
     c.in_fader = std::make_unique<ease_in_bounce>(context(), easing_config{{0.0, 1.0}, fade_in_resolution, fade_in_time},
-        [this, &c]() { c.out_fader->start(); });
+        [&c]() { c.out_fader->start(); });
     c.out_fader = std::make_unique<ease_out_sine>(context(), easing_config{{1.0, 0.0}, fade_in_resolution / 8, fade_in_time / 8},
         [this, &c]() { spawn_cloud(c); });
     c.in_fader->start();

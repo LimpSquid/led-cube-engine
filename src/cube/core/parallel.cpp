@@ -98,17 +98,14 @@ public:
     }
 
 private:
-    template<typename Lock>
     struct unlocker
     {
-        using lock_t = Lock;
-
-        unlocker(lock_t & lck) :
+        unlocker(std::unique_lock<std::mutex> & lck) :
             lock(lck)
         { lock.unlock(); }
         ~unlocker() { lock.lock(); }
 
-        lock_t & lock;
+        std::unique_lock<std::mutex> & lock;
     };
 
     void stop()

@@ -31,7 +31,7 @@ void handle_file(std::vector<std::string> const & args)
         auto & engine = engine_instance();
         std::vector<animation_pointer_t> animations;
 
-        for (auto const arg : args) {
+        for (auto const & arg : args) {
             auto const filepath = fs::path(arg);
             if (!fs::exists(filepath)) {
                 std::cout << "Ignoring non-existing file: " + filepath.native() << '\n';

@@ -4,6 +4,7 @@
 #include <cube/core/expression.hpp>
 #include <3rdparty/nlohmann/json.hpp>
 #include <boost/type_index.hpp>
+#include <iomanip>
 
 namespace cube::core
 {
