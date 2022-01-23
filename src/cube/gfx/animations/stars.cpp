@@ -108,7 +108,7 @@ stars::star stars::make_star() const
         voxel = random_voxel();
         search = std::find_if(stars_.begin(), stars_.end(),
             [&](star const & s) { return s.voxel == voxel; });
-    } while(search != stars_.end() && --tries != 0);
+    } while (--tries != 0 && search != stars_.end());
 
     return {voxel, 0};
 }
