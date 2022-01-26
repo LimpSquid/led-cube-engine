@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "name": "release-mock",
+      "generator": "Unix Makefiles",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}/build/${name}",
+      "buildCommandArgs": "-j4",
+      "variables": [
+        {
+          "name": "LCE_TARGET",
+          "value": "mock"
+        }
+      ]
+    },
+    {
+      "name": "release-rpi",
+      "generator": "Unix Makefiles",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}/build/${name}",
+      "buildCommandArgs": "-j4",
+      "variables": [
+        {
+          "name": "LCE_TARGET",
+          "value": "rpi"
+        }
+      ]
+    }
+  ]
+}
