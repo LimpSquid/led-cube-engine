@@ -45,7 +45,7 @@ void from_json(nlohmann::json const & json, T & out)
         using std::operator""s;
 
         if (!json.is_array())
-            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
+            throw std::invalid_argument("Expected JSON array for got: "s + json.type_name());
 
         typename T::value_type element_out;
         for (auto const & element : json) {

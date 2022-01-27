@@ -90,7 +90,7 @@ std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(
 falling_balls::ball falling_balls::make_ball() const
 {
     auto const size = map(drand(), drand_range, range(min_size_, max_size_));
-    auto const mass = map(size, range(min_size_, max_size_), range(0.1, 0.3));
+    auto const mass = map(size, range(min_size_, max_size_), range(2.0, 8.0));
     glm::dvec3 position = random_voxel();
     position.z = cube_size_1d + map(drand(), drand_range, range(size, 4 * size)); // Spawn outside cube
 
@@ -103,7 +103,7 @@ falling_balls::ball falling_balls::make_ball() const
 
 void falling_balls::ball::move(milliseconds const & dt)
 {
-    velocity += force * mass * static_cast<double>(dt.count());
+    velocity += (force / mass) * static_cast<double>(dt.count());
     position += velocity * static_cast<double>(dt.count());
 }
 
