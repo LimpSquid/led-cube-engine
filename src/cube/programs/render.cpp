@@ -95,7 +95,7 @@ void handle_animation(std::vector<std::string> const & args)
         << "Usage: led-cube-engine render --animation <name> [properties]\n\n"
         << "Examples:\n"
         << "  led-cube-engine render --animation helix\n"
-        << "  led-cube-engine render --animation lightning '{\"color_gradient_start\": {\"name\": \"orange\"}}'\n";
+        << "  led-cube-engine render --animation lightning '{\"cloud_gradient\":{\"gradient_stops\":[{\"stop_color\":\"orange\",\"stop_position\":0.5},{\"stop_color\":\"white\",\"stop_position\":1}]}}'\n";
     std::exit(EXIT_FAILURE);
 }
 
