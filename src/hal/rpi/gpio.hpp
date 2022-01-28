@@ -16,8 +16,17 @@ public:
         output,
     };
 
+    enum level
+    {
+        lo = 0,
+        hi = 1,
+    };
+
     gpio(unsigned int pin, direction dir);
     ~gpio();
+
+    level read() const;
+    void write(level lvl);
 
 private:
     unsigned int pin_;
