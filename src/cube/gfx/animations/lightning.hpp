@@ -17,7 +17,7 @@ private:
     PROPERTY_ENUM
     (
         number_of_clouds,       // Number of clouds in the cube
-        cloud_size,             // Radius of the cloud
+        cloud_radius,           // Radius of the cloud
         cloud_gradient,         // Gradient of the clouds
     )
 
@@ -39,7 +39,7 @@ private:
     core::animation_scene scene_;
     std::vector<cloud> clouds_;
     gradient cloud_gradient_;
-    int cloud_size_;
+    int cloud_radius_;
 };
 
 } // End of namespace

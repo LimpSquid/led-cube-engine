@@ -13,7 +13,7 @@ namespace
 animation_publisher<animations::lightning> const publisher;
 
 constexpr unsigned int default_number_of_clouds{3};
-constexpr int default_size{4 * cube::cube_size_1d / 5};
+constexpr int default_radius{4 * cube::cube_size_1d / 5};
 gradient const default_gradient
 {
     {0.00, color_transparent},
@@ -35,7 +35,7 @@ lightning::lightning(engine_context & context) :
 void lightning::start()
 {
     cloud_gradient_ = read_property(cloud_gradient, default_gradient);
-    cloud_size_ = read_property(cloud_size, default_size);
+    cloud_radius_ = read_property(cloud_radius, default_radius);
 
     unsigned int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
     clouds_.resize(num_clouds);
@@ -52,7 +52,7 @@ void lightning::paint(graphics_device & device)
 
     for (auto const & cloud : clouds_) {
         double const fade_scalar = cloud.in_fader->value() * cloud.out_fader->value();
-        int const radius = static_cast<int>(std::round(cloud_size_ * map(fade_scalar, 0.0, 1.0, 0.5, 1.0)));
+        int const radius = static_cast<int>(std::round(cloud_radius_ * map(fade_scalar, 0.0, 1.0, 0.5, 1.0)));
 
         p.set_color(cloud_gradient_(fade_scalar).vec() * alpha_vec(map(fade_scalar, 0.0, 1.0, 0.6, 1.0)));
         p.sphere(cloud.voxel, radius);
@@ -73,7 +73,7 @@ nlohmann::json lightning::properties_to_json() const
 {
     return {
         to_json(number_of_clouds, default_number_of_clouds),
-        to_json(cloud_size, default_size),
+        to_json(cloud_radius, default_radius),
         to_json(cloud_gradient, default_gradient),
     };
 }
@@ -82,7 +82,7 @@ std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann
 {
     return {
         from_json(json, number_of_clouds, default_number_of_clouds),
-        from_json(json, cloud_size, default_size),
+        from_json(json, cloud_radius, default_radius),
         from_json(json, cloud_gradient, default_gradient),
     };
 }

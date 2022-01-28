@@ -16,14 +16,14 @@ private:
     PROPERTY_ENUM
     (
         number_of_balls,    // Number of falling balls
-        max_ball_size,      // Maximum radius of a ball
-        min_ball_size,      // Minimum radius of a ball
+        max_ball_radius,    // Maximum radius of a ball
+        min_ball_radius,    // Minimum radius of a ball
         ball_colors,        // Array of ball colors to pick from
     )
 
     struct ball
     {
-        int size;
+        int radius;
         double mass;
         glm::dvec3 position;
         glm::dvec3 velocity;
@@ -43,8 +43,8 @@ private:
     core::animation_scene scene_;
     std::vector<ball> balls_;
     std::vector<core::color> ball_colors_;
-    int max_size_;
-    int min_size_;
+    int max_radius_;
+    int min_radius_;
 };
 
 } // End of namespace

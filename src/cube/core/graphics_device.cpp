@@ -41,6 +41,7 @@ void graphics_device::draw(voxel_t const & voxel)
 
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 {
+    radius = std::clamp(radius, 0, cube_size_1d); // clamp to some reasonable values
     glm::ivec3 const box{radius, radius, radius};
     glm::ivec3 const min = glm::ivec3(origin) - box;
     glm::ivec3 const max = glm::ivec3(origin) + box;

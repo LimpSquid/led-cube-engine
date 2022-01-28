@@ -47,7 +47,7 @@ void painter::fill_canvas()
 
 void painter::sphere(voxel_t const & origin, int radius)
 {
-    if (radius == 0)
+    if (radius <= 0)
         return draw(origin);
 
     update_state();

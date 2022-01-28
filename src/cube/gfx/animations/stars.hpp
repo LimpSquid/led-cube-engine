@@ -16,8 +16,9 @@ private:
     PROPERTY_ENUM
     (
         number_of_stars,    // Number of unique stars in the cube
-        fade_time_ms,       // Fade time of a single star
+        fade_time_ms,       // Fade time of star
         galaxy_gradient,    // Gradient of the galaxiy
+        star_radius,        // Radius of a star
     )
 
     struct star
@@ -39,6 +40,7 @@ private:
     gradient galaxy_gradient_;
     int gradient_step_;
     int step_interval_;
+    int star_radius_;
     double omega_;
     double omega_gradient_;
 };

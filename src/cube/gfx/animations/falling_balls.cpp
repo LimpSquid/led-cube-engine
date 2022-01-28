@@ -15,8 +15,8 @@ animation_publisher<animations::falling_balls> const publisher;
 constexpr double gravity = -0.000002 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per second
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_balls{3};
-constexpr int default_max_size{cube::cube_size_1d / 4};
-constexpr int default_min_size{cube::cube_size_1d / 8};
+constexpr int default_max_radius{cube::cube_size_1d / 4};
+constexpr int default_min_radius{cube::cube_size_1d / 8};
 
 } // End of namespace
 
@@ -27,7 +27,7 @@ falling_balls::falling_balls(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this](auto elapsed) {
         for (auto & ball : balls_) {
-            int const top = static_cast<int>(ball.position.z) + ball.size;
+            int const top = static_cast<int>(ball.position.z) + ball.radius;
             if (top >= 0)
                 ball.move(elapsed);
             else
@@ -38,8 +38,8 @@ falling_balls::falling_balls(engine_context & context) :
 
 void falling_balls::start()
 {
-    max_size_ = read_property(max_ball_size, default_max_size);
-    min_size_ = read_property(min_ball_size, default_min_size);
+    max_radius_ = read_property(max_ball_radius, default_max_radius);
+    min_radius_ = read_property(min_ball_radius, default_min_radius);
     ball_colors_ = read_property(ball_colors, std::vector<color>{});
 
     unsigned int num_balls = read_property(number_of_balls, default_number_of_balls);
@@ -58,7 +58,7 @@ void falling_balls::paint(graphics_device & device)
 
     for (auto const & ball : balls_) {
         p.set_color(ball.color);
-        p.sphere(ball.position, ball.size);
+        p.sphere(ball.position, ball.radius);
     }
 }
 
@@ -71,8 +71,8 @@ nlohmann::json falling_balls::properties_to_json() const
 {
     return {
         to_json(number_of_balls, default_number_of_balls),
-        to_json(max_ball_size, default_max_size),
-        to_json(min_ball_size, default_min_size),
+        to_json(max_ball_radius, default_max_radius),
+        to_json(min_ball_radius, default_min_radius),
         to_json(ball_colors, std::vector<color>{}),
     };
 }
@@ -81,24 +81,24 @@ std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(
 {
     return {
         from_json(json, number_of_balls, default_number_of_balls),
-        from_json(json, max_ball_size, default_max_size),
-        from_json(json, min_ball_size, default_min_size),
+        from_json(json, max_ball_radius, default_max_radius),
+        from_json(json, min_ball_radius, default_min_radius),
         from_json(json, ball_colors, std::vector<color>{}),
     };
 }
 
 falling_balls::ball falling_balls::make_ball() const
 {
-    auto const size = map(drand(), drand_range, range(min_size_, max_size_));
-    auto const mass = map(size, range(min_size_, max_size_), range(2.0, 8.0));
+    auto const radius = map(drand(), drand_range, range(min_radius_, max_radius_));
+    auto const mass = map(radius, range(min_radius_, max_radius_), range(2.0, 8.0));
     glm::dvec3 position = random_voxel();
-    position.z = cube_size_1d + map(drand(), drand_range, range(size, 4 * size)); // Spawn outside cube
+    position.z = cube_size_1d + map(drand(), drand_range, range(radius, 4 * radius)); // Spawn outside cube
 
     auto const color = ball_colors_.empty()
         ? random_color()
         : ball_colors_.at(urand() % ball_colors_.size());
 
-    return {size, mass, position, {}, color};
+    return {radius, mass, position, {}, color};
 }
 
 void falling_balls::ball::move(milliseconds const & dt)
