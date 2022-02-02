@@ -26,9 +26,11 @@ public:
     ~gpio();
 
     level read() const;
-    void write(level lvl);
+    void write(level lvl) const;
 
 private:
+    void unexport() const;
+
     unsigned int pin_;
     bool exported_;
 };
