@@ -1,7 +1,6 @@
 #pragma once
 
 
-#include <boost/noncopyable.hpp>
 #include <memory>
 
 namespace cube::core
@@ -22,8 +21,7 @@ struct graphics_device_factory
     }
 };
 
-class engine :
-    boost::noncopyable
+class engine
 {
 public:
     template<typename T>
@@ -38,6 +36,9 @@ public:
     void run();
 
 private:
+    engine(engine & other) = delete;
+    engine(engine && other) = delete;
+
     engine_context & context_;
     animation * animation_;
     std::unique_ptr<graphics_device> device_;

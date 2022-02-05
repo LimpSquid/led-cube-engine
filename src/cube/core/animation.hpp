@@ -1,14 +1,12 @@
 #pragma once
 
 #include <cube/core/timers.hpp>
-#include <boost/noncopyable.hpp>
 
 namespace cube::core
 {
 
 class graphics_device;
-class animation :
-    boost::noncopyable
+class animation
 {
 public:
     virtual ~animation() = default;
@@ -26,6 +24,9 @@ protected:
     animation(engine_context & context);
 
 private:
+    animation(animation & other) = delete;
+    animation(animation && other) = delete;
+
     virtual void start();
     virtual void paint(graphics_device & device) = 0;
     virtual void stop();

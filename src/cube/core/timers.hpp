@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/noncopyable.hpp>
 #include <functional>
 #include <chrono>
 #include <memory>
@@ -13,8 +12,7 @@ using timer_handler_t = std::function<void(
     std::chrono::milliseconds /* elapsed */)>;
 
 class engine_context;
-class recurring_timer :
-    boost::noncopyable
+class recurring_timer
 {
 public:
     recurring_timer(engine_context & context, timer_handler_t handler);
@@ -25,6 +23,9 @@ public:
     void stop();
 
 private:
+    recurring_timer(recurring_timer & other) = delete;
+    recurring_timer(recurring_timer && other) = delete;
+
     engine_context & context_;
     uint64_t const id_;
 };

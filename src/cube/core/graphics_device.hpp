@@ -57,8 +57,7 @@ inline void blend(graphics_buffer const & lhs, graphics_buffer & rhs)
 }
 
 class engine_context;
-class graphics_device :
-    boost::noncopyable
+class graphics_device
 {
 public:
     virtual ~graphics_device() = default;
@@ -88,6 +87,9 @@ private:
 
         void update();
     };
+
+    graphics_device(graphics_device & other) = delete;
+    graphics_device(graphics_device && other) = delete;
 
     virtual void show(graphics_buffer const & buffer) = 0;
 

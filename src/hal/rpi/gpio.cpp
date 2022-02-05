@@ -75,6 +75,13 @@ gpio::gpio(unsigned int pin, direction dir) :
     }
 }
 
+gpio::gpio(gpio && other) :
+    pin_(other.pin_),
+    exported_(other.exported_)
+{
+    other.exported_ = false;
+}
+
 gpio::~gpio()
 {
     unexport();
