@@ -8,12 +8,22 @@
 namespace hal::rpi_cube
 {
 
+// Wrap all resources in order to provide a defined state on acquisition (and release).
 struct resources
 {
     resources(cube::core::engine_context & /* context */)
-    { }
+    {
+        for (gpio const & ss : spi_ss_gpios)
+            ss.write(gpio::hi);
+    }
 
-    std::array<gpio, cube_size> spi_ss_gpios
+    ~resources()
+    {
+        for (gpio const & ss : spi_ss_gpios)
+            ss.write(gpio::hi);
+    }
+
+    std::array<gpio, cube_size> const spi_ss_gpios
     {
         make_output(05), make_output(22), make_output(17), make_output(04),
         make_output(18), make_output(23), make_output(24), make_output(25),
