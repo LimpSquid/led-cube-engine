@@ -32,7 +32,7 @@ public:
     { }
 
     engine_context & context();
-    void load(animation * animation); // Todo: make shared pointer, so lifetime can be managed properly
+    void load(std::shared_ptr<animation> animation);
     void run();
 
 private:
@@ -40,7 +40,7 @@ private:
     engine(engine && other) = delete;
 
     engine_context & context_;
-    animation * animation_;
+    std::shared_ptr<animation> animation_;
     std::unique_ptr<graphics_device> device_;
 };
 

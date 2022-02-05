@@ -9,7 +9,7 @@ namespace cube::gfx
 {
 
 class configurable_animation;
-using animation_pointer_t = std::unique_ptr<configurable_animation>;
+using animation_pointer_t = std::shared_ptr<configurable_animation>;
 using animation_incubator_t = std::function<animation_pointer_t(core::engine_context &)>;
 
 class library
@@ -36,7 +36,7 @@ struct animation_publisher
     {
         library::instance().publish_animation(
             name,
-            [](core::engine_context & context) { return std::make_unique<T>(context); }
+            [](core::engine_context & context) { return std::make_shared<T>(context); }
         );
     }
 

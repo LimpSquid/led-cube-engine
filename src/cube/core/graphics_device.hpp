@@ -69,7 +69,7 @@ public:
     void draw_sphere(voxel_t const & origin, int radius);
     void fill();
 
-    void show_animation(animation * animation);
+    void show_animation(std::shared_ptr<animation> animation);
     void render_animation(); // Render drawn voxels to the actual display
 
 protected:
@@ -97,7 +97,7 @@ private:
     graphics_buffer buffer_;
     graphics_fill_mode fill_mode_;
     color draw_color_;
-    animation * animation_;
+    std::shared_ptr<animation> animation_;
     render_time render_time_;
 };
 

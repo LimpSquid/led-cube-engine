@@ -58,7 +58,7 @@ void handle_file(std::vector<std::string> const & args)
             single_shot_timer player(engine.context(), [&](auto, auto) {
                 auto & animation = animations[index];
                 index = (index + 1) % animations.size();
-                engine.load(animation.get());
+                engine.load(std::static_pointer_cast<cube::core::animation>(animation));
                 player.start(animation->get_duration());
             });
             player.start(0ms);
@@ -87,7 +87,7 @@ void handle_animation(std::vector<std::string> const & args)
         if (args.size() == 2)
             (*animation)->load_properties(nlohmann::json::parse(args[1]));
 
-        engine.load(animation->get());
+        engine.load(std::static_pointer_cast<cube::core::animation>(*animation));
         engine.run(); // Does not return
     }
 

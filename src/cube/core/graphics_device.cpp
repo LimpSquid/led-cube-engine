@@ -128,7 +128,7 @@ void graphics_device::fill()
         blend(draw_color_, *data++);
 }
 
-void graphics_device::show_animation(animation * animation)
+void graphics_device::show_animation(std::shared_ptr<animation> animation)
 {
     // Finish old animation
     if (animation_)

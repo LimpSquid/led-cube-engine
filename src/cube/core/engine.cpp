@@ -37,14 +37,14 @@ engine_context & engine::context()
     return context_;
 }
 
-void engine::load(animation * animation)
+void engine::load(std::shared_ptr<animation> animation)
 {
     animation_ = animation;
 }
 
 void engine::run()
 {
-    animation * animation = nullptr;
+    std::shared_ptr<animation> animation;
     bool new_animation = false;
 
     for (;;) {
