@@ -1,15 +1,15 @@
-#include <hal/rpi/display.hpp>
+#include <hal/rpi_cube/display.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 using namespace cube::core;
 
-namespace hal::rpi
+namespace hal::rpi_cube
 {
 
 display::display(engine_context & context) :
     graphics_device(context),
-    peripherals_(context)
+    resources_(context)
 {
 
 }

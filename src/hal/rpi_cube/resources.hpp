@@ -1,16 +1,16 @@
 #pragma once
 
-#include <hal/rpi/gpio.hpp>
-#include <hal/rpi/specs_fwd.hpp>
+#include <hal/rpi_cube/gpio.hpp>
+#include <hal/rpi_cube/specs_fwd.hpp>
 #include <cube/core/engine_context.hpp>
 #include <array>
 
-namespace hal::rpi
+namespace hal::rpi_cube
 {
 
-struct peripherals
+struct resources
 {
-    peripherals(cube::core::engine_context & /* context */)
+    resources(cube::core::engine_context & /* context */)
     { }
 
     std::array<gpio, cube_size> spi_ss_gpios

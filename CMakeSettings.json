@@ -14,7 +14,7 @@
       ]
     },
     {
-      "name": "release-rpi",
+      "name": "release-raspberry-pi-cube",
       "generator": "Unix Makefiles",
       "configurationType": "Release",
       "buildRoot": "${projectDir}/build/${name}",
@@ -22,7 +22,7 @@
       "variables": [
         {
           "name": "LCE_TARGET",
-          "value": "rpi"
+          "value": "rpi_cube"
         }
       ]
     }

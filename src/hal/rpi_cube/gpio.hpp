@@ -2,7 +2,7 @@
 
 #include <optional>
 
-namespace hal::rpi
+namespace hal::rpi_cube
 {
 
 class gpio

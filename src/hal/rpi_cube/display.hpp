@@ -1,9 +1,9 @@
 #pragma once
 
-#include <hal/rpi/peripherals.hpp>
+#include <hal/rpi_cube/resources.hpp>
 #include <cube/core/graphics_device.hpp>
 
-namespace hal::rpi
+namespace hal::rpi_cube
 {
 
 class display :
@@ -15,9 +15,9 @@ public:
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;
 
-    peripherals peripherals_;
+    resources resources_;
 };
 
 } // End of namespace
 
-namespace hal { using graphics_device_t = rpi::display; }
+namespace hal { using graphics_device_t = rpi_cube::display; }

@@ -296,7 +296,8 @@ function|description|example usage
 
 ## Target dependencies
 Below a table with the supported targets and their respective dependencies.
+
 target|description|package dependency
 -|-|-
 `mock`|A mock environment to run the animations on your local machine via OpenGL| `libopengl0`, `libopengl-dev`, `libglfw3`, `libglfw3-dev`, `libglew2.1` and `libglew-dev`
-`rpi`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|**T.B.D**
+`rpi_cube`|A Raspberry PI hooked up to 16 [LED controller](https://github.com/LimpSquid/led-controller) boards|

@@ -25,6 +25,8 @@ std::vector<std::string> library::available_animations() const
 
 void library::publish_animation(std::string const & name, animation_incubator_t incubator)
 {
+    if (animations_.find(name) != animations_.cend())
+        throw std::runtime_error("Failed to publish animation '" + name + "', name already exists");
     animations_[name] = std::move(incubator);
 }
 
