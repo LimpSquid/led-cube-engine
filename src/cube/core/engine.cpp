@@ -69,7 +69,7 @@ void engine::run()
             auto [size, events] = context_.event_poller.poll_events(poll_timeout);
             for (int i = 0; i < size; ++i)
                 if (auto user_data = events.get().at(i).data.ptr)
-                    (*reinterpret_cast<event_handler_t *>(user_data))();
+                    (*reinterpret_cast<event_handler_t *>(user_data))(events.get().at(i).events);
 
             context_.io_context.poll(); // Run all asio ready handlers
         } else

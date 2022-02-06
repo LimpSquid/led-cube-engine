@@ -23,11 +23,7 @@ namespace hal::mock
 display::display(engine_context & context) :
     graphics_device(context),
     window_(window::instance(window_resolution)),
-    tracker_(make_parent_tracker()),
-    invoker_(context.event_poller, [this, t = weak(tracker_)]() {
-        if (parent_in_scope(t))
-            update(); // Run our update method in the event loop
-    })
+    invoker_(context.event_poller, [this]() { update(); })
 {
     invoker_.schedule();
 }

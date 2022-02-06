@@ -2,7 +2,6 @@
 
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/events.hpp>
-#include <cube/core/utils.hpp>
 
 namespace hal::mock
 {
@@ -22,7 +21,6 @@ private:
 
     window & window_;
     cube::core::graphics_buffer buffer_;
-    cube::core::parent_tracker_t tracker_;
     cube::core::invoker invoker_;
 };
 

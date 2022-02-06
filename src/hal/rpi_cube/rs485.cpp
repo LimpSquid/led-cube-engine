@@ -46,10 +46,29 @@ hal::rpi_cube::safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
 namespace hal::rpi_cube
 {
 
-rs485::rs485(rs485_config config, cube::core::engine_context & context) :
+rs485::rs485(rs485_config config, engine_context & context) :
     fd_(open_or_throw(config)),
-    event_notifier_(context.event_poller, fd_, fd_event_notifier::read),
+    event_notifier_(context.event_poller, fd_, fd_event_notifier::read, [this](auto evs) { on_event(evs); }),
     dir_gpio_(config.dir_pin, gpio::output)
 { }
+
+void rs485::on_event(fd_event_notifier::event_flags evs)
+{
+    if (evs & fd_event_notifier::read)
+        read_into_buffer();
+    if (evs & fd_event_notifier::write)
+        write_from_buffer();
+}
+
+void rs485::read_into_buffer()
+{
+
+}
+
+void rs485::write_from_buffer()
+{
+    // if buffer empty
+    // event_notifier_.set_events(fd_event_notifier::read);
+}
 
 } // End of namespace

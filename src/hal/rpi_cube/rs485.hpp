@@ -20,11 +20,15 @@ struct rs485_config
 class rs485
 {
 public:
-    rs485(rs485_config config, cube::core::engine_context & io_context);
+    rs485(rs485_config config, cube::core::engine_context & context);
 
 private:
     rs485(rs485 & other) = delete;
     rs485(rs485 && other) = delete;
+
+    void on_event(cube::core::fd_event_notifier::event_flags evs);
+    void read_into_buffer();
+    void write_from_buffer();
 
     safe_fd fd_;
     cube::core::fd_event_notifier event_notifier_;

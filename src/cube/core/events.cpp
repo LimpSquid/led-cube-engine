@@ -48,7 +48,6 @@ void event_poller::subscribe(int fd, events_t events, event_handler_t * handler)
 
 void event_poller::unsubscribe(int fd)
 {
-
     epoll_event ev{};
 
     int r = ::epoll_ctl(fd_, EPOLL_CTL_DEL, fd, &ev); // older kernels require a non nullptr parameter
@@ -93,16 +92,16 @@ void invoker::schedule()
     event_poller_.modify(fds_[1], EPOLLOUT, &handler_);
 }
 
-fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flag evs) :
+fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flags evs) :
     event_poller_(event_poller),
     fd_(fd)
 {
     event_poller_.subscribe(fd_, evs);
 }
 
-fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_handler_t handler, event_flag evs) :
+fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flags evs, handler_t handler) :
     event_poller_(event_poller),
-    event_handler_(std::move(handler)),
+    event_handler_(handler_relay{std::move(handler)}),
     fd_(fd)
 {
     event_poller_.subscribe(fd_, evs, &event_handler_.value());
@@ -113,7 +112,7 @@ fd_event_notifier::~fd_event_notifier()
     event_poller_.unsubscribe(fd_);
 }
 
-void fd_event_notifier::set_events(event_flag evs)
+void fd_event_notifier::set_events(event_flags evs)
 {
     event_poller_.modify(fd_, evs, event_handler_ ? &event_handler_.value() : nullptr);
 }

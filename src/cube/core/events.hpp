@@ -13,7 +13,7 @@ namespace cube::core
 {
 
 using events_t = uint32_t;
-using event_handler_t = std::function<void()>;
+using event_handler_t = std::function<void(events_t)>;
 
 class event_poller
 {
@@ -42,7 +42,7 @@ public:
     template<typename T>
     invoker(event_poller & event_poller, T handler) :
         event_poller_(event_poller),
-        handler_([this, h = std::move(handler)]() {
+        handler_([this, h = std::move(handler)](events_t) {
             event_poller_.modify(fds_[1]);
             h();
         })
@@ -71,7 +71,7 @@ private:
 class fd_event_notifier
 {
 public:
-    enum event_flag : events_t
+    enum event_flags : events_t
     {
         none    = 0,
         read    = EPOLLIN,
@@ -79,15 +79,32 @@ public:
         err     = EPOLLERR,
     };
 
-    friend event_flag operator|(event_flag lhs, event_flag rhs) { return static_cast<event_flag>(lhs | rhs); }
+    friend event_flags operator|(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs | rhs); }
+    friend event_flags operator&(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs & rhs); }
 
-    fd_event_notifier(event_poller & event_poller, int fd, event_flag evs = none);
-    fd_event_notifier(event_poller & event_poller, int fd, event_handler_t handler, event_flag evs = none);
+    using handler_t = std::function<void(event_flags)>;
+
+    fd_event_notifier(event_poller & event_poller, int fd, event_flags evs = none);
+    fd_event_notifier(event_poller & event_poller, int fd, event_flags evs, handler_t handler);
     ~fd_event_notifier();
 
-    void set_events(event_flag evs);
+    void set_events(event_flags evs);
 
 private:
+    struct handler_relay
+    {
+        handler_relay(handler_t h) :
+            handler(std::move(h))
+        { }
+
+        void operator()(events_t evs)
+        {
+            handler(static_cast<event_flags>(evs));
+        }
+
+        handler_t handler;
+    };
+
     fd_event_notifier(fd_event_notifier & other) = delete;
     fd_event_notifier(fd_event_notifier && other) = delete;
 
