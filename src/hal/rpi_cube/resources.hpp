@@ -8,6 +8,13 @@
 namespace hal::rpi_cube
 {
 
+constexpr rs485_config bus_comm_config
+{
+    "/dev/serial0", // device
+    B115200,        // baudrate
+    2,              // gpio dir pin
+};
+
 // Wrap all resources in order to provide a defined state on acquisition (and release).
 struct resources
 {
@@ -31,14 +38,6 @@ struct resources
         make_output(18), make_output(23), make_output(24), make_output(25),
         make_output(12), make_output(16), make_output(20), make_output(21),
         make_output(26), make_output(19), make_output(13), make_output(06),
-    };
-
-private:
-    rs485_config const bus_comm_config
-    {
-        "/dev/serial0", // device
-        B115200,        // baudrate
-        2,              // gpio dir pin
     };
 };
 

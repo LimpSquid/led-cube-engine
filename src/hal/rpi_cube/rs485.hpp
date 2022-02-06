@@ -1,6 +1,8 @@
 #pragma once
 
 #include <hal/rpi_cube/gpio.hpp>
+#include <hal/rpi_cube/safe_fd.hpp>
+#include <cube/core/events.hpp>
 #include <termios.h>
 
 namespace cube::core { class engine_context; }
@@ -24,7 +26,9 @@ private:
     rs485(rs485 & other) = delete;
     rs485(rs485 && other) = delete;
 
-    gpio const dir_gpio;
+    safe_fd fd_;
+    cube::core::fd_event_notifier event_notifier_;
+    gpio const dir_gpio_;
 };
 
 } // End of namespace
