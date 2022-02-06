@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cube/core/graphics_device.hpp>
-#include <cube/core/asio_util.hpp>
+#include <cube/core/events.hpp>
+#include <cube/core/utils.hpp>
 
 namespace hal::mock
 {
@@ -17,12 +18,12 @@ public:
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;
 
-    void schedule_update();
     void update();
 
     window & window_;
     cube::core::graphics_buffer buffer_;
     cube::core::parent_tracker_t tracker_;
+    cube::core::invoker invoker_;
 };
 
 } // End of namespace

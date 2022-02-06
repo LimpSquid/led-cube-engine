@@ -33,10 +33,8 @@ void graphics_device::update_state(graphics_state const & state)
 
 void graphics_device::draw(voxel_t const & voxel)
 {
-    if (visible(voxel)) {
-        int const offset = map_to_offset(voxel.x, voxel.y, voxel.z);
-        blend(draw_color_, buffer_.data[offset]);
-    }
+    if (visible(voxel))
+        blend(draw_color_, buffer_.data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
 }
 
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)

@@ -23,22 +23,18 @@ namespace hal::mock
 display::display(engine_context & context) :
     graphics_device(context),
     window_(window::instance(window_resolution)),
-    tracker_(make_parent_tracker())
+    tracker_(make_parent_tracker()),
+    invoker_(context.event_poller, [this, t = weak(tracker_)]() {
+        if (parent_in_scope(t))
+            update(); // Run our update method in the event loop
+    })
 {
-    schedule_update();
+    invoker_.schedule();
 }
 
 void display::show(graphics_buffer const & buffer)
 {
     buffer_ = buffer;
-}
-
-void display::schedule_update()
-{
-    asio::post(io_context().get_executor(), [this, t = weak(tracker_)]() {
-        if (parent_in_scope(t)) // In case display gets destroyed and the handler has yet to be executed
-            update();
-    });
 }
 
 void display::update()
@@ -79,7 +75,7 @@ void display::update()
     glDisable(GL_BLEND);
 
     window_.update();
-    schedule_update();
+    invoker_.schedule(); // Safe as window_.update() is blocking (bound to display's refresh rate)
 }
 
 } // End of namespace

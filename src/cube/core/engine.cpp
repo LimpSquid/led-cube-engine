@@ -11,6 +11,8 @@ using namespace std::chrono;
 namespace
 {
 
+constexpr milliseconds poll_timeout{10};
+
 template<typename Container>
 void poll(Container & tickers)
 {
@@ -62,8 +64,16 @@ void engine::run()
                 device_->render_animation();
         }
 
-        // Poll asio
-        context_.io_context.run_one_for(10ms);
+        assert(!context_.io_context.stopped());
+        if (context_.event_poller.has_subscribers()) {
+            auto [size, events] = context_.event_poller.poll_events(poll_timeout);
+            for (int i = 0; i < size; ++i)
+                if (auto user_data = events.get().at(i).data.ptr)
+                    (*reinterpret_cast<event_handler_t *>(user_data))();
+
+            context_.io_context.poll(); // Run all asio ready handlers
+        } else
+            context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
     }
 }
 

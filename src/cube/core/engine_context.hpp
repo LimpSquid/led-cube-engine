@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cube/core/events.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <functional>
@@ -8,14 +9,23 @@
 namespace cube::core
 {
 
+using event_poller_t = event_poller;
 using io_context_t = boost::asio::io_context;
 using executor_work_guard_t = boost::asio::executor_work_guard<io_context_t::executor_type>;
 
 class engine_context
 {
+public:
+    io_context_t io_context;
+    event_poller_t event_poller;
+
+private:
+    // Following classes may access the internals of the engine's context
     friend class recurring_timer;
     friend class engine;
     friend class graphics_device;
+
+    executor_work_guard_t work_guard{io_context.get_executor()};
 
     struct ticker
     {
@@ -30,10 +40,6 @@ class engine_context
     };
 
     std::vector<ticker> tickers;
-
-    // asio
-    io_context_t io_context;
-    executor_work_guard_t work_guard{io_context.get_executor()};
 };
 
 } // End of namespace
