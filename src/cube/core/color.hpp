@@ -98,6 +98,9 @@ constexpr inline bool opaque(rgba_t const & rgba)
     return color(rgba).opaque();
 }
 
+color lighter(color const & c, double factor = 0.1);
+color darker(color const & c, double factor = 0.1);
+color adjust_brightness(color const & c, double factor);
 color from_string(std::string c);
 void alpha_blend(color const & c, color & bucket);
 void alpha_blend(rgba_t const & c, rgba_t & bucket);

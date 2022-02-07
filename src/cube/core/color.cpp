@@ -20,6 +20,27 @@ color::color(color_vec_t const & vec)
     a = clamp(vec.a);
 }
 
+color lighter(color const & c, double factor)
+{
+    factor = std::clamp(factor, 0.0, 1.0);
+    return map(factor, 0.0, 1.0, c.vec(), color_white.vec());
+}
+
+color darker(color const & c, double factor)
+{
+    factor = std::clamp(factor, 0.0, 1.0);
+    return map(factor, 0.0, 1.0, c.vec(), color_black.vec());
+}
+
+color adjust_brightness(color const & c, double factor)
+{
+    if (less_than(factor, 0.5))
+        return darker(c, map(factor, 0.0, 0.5, 0.0, 1.0));
+    if (greater_than(factor, 0.5))
+        return lighter(c, map(factor, 0.5, 1.0, 0.0, 1.0));
+    return c;
+}
+
 color from_string(std::string c)
 {
     if (c.empty())

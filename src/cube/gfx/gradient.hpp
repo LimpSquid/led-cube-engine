@@ -7,6 +7,8 @@
 namespace cube::gfx
 {
 
+constexpr core::range gradient_pos_range{0.0, 1.0};
+
 struct gradient_stop
 {
     gradient_stop() :
