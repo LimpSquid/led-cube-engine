@@ -8,19 +8,25 @@ namespace cube::core { class painter; }
 namespace cube::gfx::animations
 {
 
-class exploding_missile :
+class fireworks :
     public configurable_animation
 {
 public:
-    exploding_missile(core::engine_context & context);
+    fireworks(core::engine_context & context);
 
 private:
-    // PROPERTY_ENUM
-    // (
-    // )
+    PROPERTY_ENUM
+    (
+        number_of_rockets,      // Number of rockets
+        number_of_fragments,    // Number of fragments when exploded
+        explosion_force,        // Factor to limit or increase the explosion force
+        rocket_trail_radius,    // Radius of the rocket trail
+        rocket_colors,          // Array of rocket colors to pick from
+    )
 
     struct particle
     {
+        int radius;
         glm::dvec3 position;
         glm::dvec3 velocity;
         gradient hue;
@@ -29,7 +35,7 @@ private:
         void paint(cube::core::painter & p) const;
     };
 
-    struct missile
+    struct rocket
     {
         enum state
         {
@@ -40,6 +46,7 @@ private:
 
         particle trail;
         std::vector<particle> fragments;
+        double explosion_force;
         state state{flying};
 
         void update(std::chrono::milliseconds const & dt);
@@ -53,10 +60,14 @@ private:
     virtual nlohmann::json properties_to_json() const override;
     virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
-    missile make_missile() const;
+    rocket make_rocket() const;
 
     core::animation_scene scene_;
-    std::vector<missile> missiles_;
+    std::vector<rocket> rockets_;
+    std::vector<core::color> rocket_colors_;
+    double explosion_force_;
+    unsigned int num_fragments_;
+    int trail_radius_;
 };
 
 } // End of namespace
