@@ -17,11 +17,11 @@ public:
 private:
     PROPERTY_ENUM
     (
-        number_of_rockets,      // Number of rockets
+        number_of_shells,       // Number of shells
         number_of_fragments,    // Number of fragments when exploded
         explosion_force,        // Factor to limit or increase the explosion force
-        rocket_trail_radius,    // Radius of the rocket trail
-        rocket_colors,          // Array of rocket colors to pick from
+        shell_radius,           // Radius of the shell
+        shell_colors,           // Array of shell colors to pick from
     )
 
     struct particle
@@ -35,7 +35,7 @@ private:
         void paint(cube::core::painter & p) const;
     };
 
-    struct rocket
+    struct shell
     {
         enum state
         {
@@ -44,7 +44,7 @@ private:
             completed,
         };
 
-        particle trail;
+        particle shell;
         std::vector<particle> fragments;
         double explosion_force;
         state state{flying};
@@ -60,14 +60,14 @@ private:
     virtual nlohmann::json properties_to_json() const override;
     virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
-    rocket make_rocket() const;
+    shell make_shell() const;
 
     core::animation_scene scene_;
-    std::vector<rocket> rockets_;
-    std::vector<core::color> rocket_colors_;
+    std::vector<shell> shells_;
+    std::vector<core::color> shell_colors_;
     double explosion_force_;
     unsigned int num_fragments_;
-    int trail_radius_;
+    int shell_radius_;
 };
 
 } // End of namespace

@@ -89,8 +89,8 @@ inline void scale(rgba_t & rgba, double scalar)
 
 inline color random_color(bool opaque = true)
 {
-    auto const crand = []() { return static_cast<color_t>(std::rand() % color_max_value); };
-    return {crand(), crand(), crand(), opaque ? color_max_value : crand()};
+    auto const randc = []() { return static_cast<color_t>(rand() % color_max_value); };
+    return {randc(), randc(), randc(), opaque ? color_max_value : randc()};
 }
 
 constexpr inline bool opaque(rgba_t const & rgba)

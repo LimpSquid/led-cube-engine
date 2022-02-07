@@ -33,10 +33,10 @@ struct safe_range
     boost::safe_numerics::safe<T> to;
 };
 
-constexpr range unit_circle_range{-1.0, 1.0};
 constexpr range rand_range{0, RAND_MAX};
-constexpr range drand_range{0.0, 1.0};
-constexpr range frand_range{0.0f, 1.0f};
+constexpr range unit_circle_range{-1.0, 1.0};
+constexpr range randd_range{0.0, 1.0};
+constexpr range randf_range{0.0f, 1.0f};
 
 template<typename T>
 constexpr range<T> make_limit_range()
@@ -109,6 +109,12 @@ constexpr T diff(range<T> const & range)
 }
 
 template<typename T>
+constexpr T diff(safe_range<T> const & range)
+{
+    return range.to - range.from;
+}
+
+template<typename T>
 constexpr bool equal(T lhs, T rhs)
 {
     static_assert(std::is_floating_point_v<T>);
@@ -157,20 +163,21 @@ constexpr T abs_cos(T const & value)
     return map(std::cos(value), unit_circle_range, range(0.0, 1.0));
 }
 
-inline double drand()
+inline double randd()
 {
-    return map(std::rand(), rand_range, drand_range);
+    return map(rand(), rand_range, randd_range);
 }
 
-inline float frand()
+inline float randf()
 {
-    return map(std::rand(), rand_range, frand_range);
+    return map(rand(), rand_range, randf_range);
 }
 
-inline unsigned int urand()
+template<typename T = int>
+T rand()
 {
-    return static_cast<unsigned int>(std::rand());
+    static_assert(std::numeric_limits<T>::max() >= RAND_MAX);
+    return static_cast<T>(std::rand());
 }
-
 
 } // End of namespace

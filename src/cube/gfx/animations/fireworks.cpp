@@ -16,9 +16,9 @@ constexpr cube::core::range cube_axis_range{cube::cube_axis_min_value, cube::cub
 constexpr double default_explosion_force = 1.0;
 constexpr double gravity = -0.000001 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
-constexpr unsigned int default_number_of_rockets{3};
+constexpr unsigned int default_number_of_shells{3};
 constexpr unsigned int default_number_of_fragments{cube::cube_size_1d * 15};
-constexpr int default_trail_radius{cube::cube_size_1d / 8};
+constexpr int default_shell_radius{cube::cube_size_1d / 8};
 
 } // End of namespace
 
@@ -28,10 +28,10 @@ namespace cube::gfx::animations
 fireworks::fireworks(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this](auto elapsed) {
-        for (auto & rocket : rockets_) {
-            rocket.update(elapsed);
-            if (rocket.state == rocket::completed)
-                rocket = make_rocket();
+        for (auto & shell : shells_) {
+            shell.update(elapsed);
+            if (shell.state == shell::completed)
+                shell = make_shell();
         }
     })
 { }
@@ -39,14 +39,14 @@ fireworks::fireworks(engine_context & context) :
 void fireworks::start()
 {
     explosion_force_ = read_property(explosion_force, default_explosion_force);
-    rocket_colors_ = read_property(rocket_colors, std::vector<color>{});
+    shell_colors_ = read_property(shell_colors, std::vector<color>{});
     num_fragments_ = read_property(number_of_fragments, default_number_of_fragments);
-    trail_radius_ = read_property(rocket_trail_radius, default_trail_radius);
+    shell_radius_ = read_property(shell_radius, default_shell_radius);
 
-    unsigned int num_rockets = read_property(number_of_rockets, default_number_of_rockets);
-    rockets_.resize(num_rockets);
-    for (auto & rocket : rockets_)
-        rocket = make_rocket();
+    unsigned int num_shells = read_property(number_of_shells, default_number_of_shells);
+    shells_.resize(num_shells);
+    for (auto & shell : shells_)
+        shell = make_shell();
 
     scene_.start();
 }
@@ -56,8 +56,8 @@ void fireworks::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    for (auto const & rocket : rockets_)
-        rocket.paint(p);
+    for (auto const & shell : shells_)
+        shell.paint(p);
 }
 
 void fireworks::stop()
@@ -68,48 +68,48 @@ void fireworks::stop()
 nlohmann::json fireworks::properties_to_json() const
 {
     return {
-        to_json(number_of_rockets, default_number_of_rockets),
+        to_json(number_of_shells, default_number_of_shells),
         to_json(number_of_fragments, default_number_of_fragments),
-        to_json(rocket_trail_radius, default_trail_radius),
+        to_json(shell_radius, default_shell_radius),
         to_json(explosion_force, default_explosion_force),
-        to_json(rocket_colors, std::vector<color>{}),
+        to_json(shell_colors, std::vector<color>{}),
     };
 }
 
 std::vector<fireworks::property_pair_t> fireworks::properties_from_json(nlohmann::json const & json) const
 {
     return {
-        from_json(json, number_of_rockets, default_number_of_rockets),
+        from_json(json, number_of_shells, default_number_of_shells),
         from_json(json, number_of_fragments, default_number_of_fragments),
-        from_json(json, rocket_trail_radius, default_trail_radius),
+        from_json(json, shell_radius, default_shell_radius),
         from_json(json, explosion_force, default_explosion_force),
-        from_json(json, rocket_colors, std::vector<color>{}),
+        from_json(json, shell_colors, std::vector<color>{}),
     };
 }
 
-fireworks::rocket fireworks::make_rocket() const
+fireworks::shell fireworks::make_shell() const
 {
     auto const pick_color = [this]() {
-        return rocket_colors_.empty()
+        return shell_colors_.empty()
             ? random_color()
-            : rocket_colors_.at(urand() % rocket_colors_.size());
+            : shell_colors_.at(rand<unsigned>() % shell_colors_.size());
     };
 
-    particle trail;
+    particle shell;
     glm::dvec3 target = random_voxel();
     target.z = cube_axis_max_value; // Must end on top
 
-    trail.radius = trail_radius_;
-    trail.position = random_voxel();
-    trail.position.z = cube_axis_min_value; // Must start on bottom
-    trail.velocity = (target - trail.position) * map(std::rand(), rand_range, range{0.001, 0.002});
-    trail.hue =
+    shell.radius = shell_radius_;
+    shell.position = random_voxel();
+    shell.position.z = cube_axis_min_value; // Must start on bottom
+    shell.velocity = (target - shell.position) * map(rand(), rand_range, range{0.001, 0.002});
+    shell.hue =
     {
         {0.0, pick_color()},
         {1.0, pick_color()},
     };
 
-    return {std::move(trail), std::vector<particle>(num_fragments_), explosion_force_};
+    return {std::move(shell), std::vector<particle>(num_fragments_), explosion_force_};
 }
 
 void fireworks::particle::move(milliseconds const & dt)
@@ -124,12 +124,12 @@ void fireworks::particle::paint(painter & p) const
     p.sphere(position, radius);
 }
 
-void fireworks::rocket::update(std::chrono::milliseconds const & dt)
+void fireworks::shell::update(std::chrono::milliseconds const & dt)
 {
     switch (state) {
         case flying:
-            trail.move(dt);
-            if (less_than(trail.velocity.z, 0.0) || !visible(trail.position))
+            shell.move(dt);
+            if (less_than(shell.velocity.z, 0.0) || !visible(shell.position))
                 explode();
             break;
         case exploded: {
@@ -146,11 +146,11 @@ void fireworks::rocket::update(std::chrono::milliseconds const & dt)
     }
 }
 
-void fireworks::rocket::paint(painter & p) const
+void fireworks::shell::paint(painter & p) const
 {
     switch (state) {
         case flying:
-            trail.paint(p);
+            shell.paint(p);
             break;
         case exploded:
             for (auto const & fragment : fragments)
@@ -160,19 +160,21 @@ void fireworks::rocket::paint(painter & p) const
     }
 }
 
-void fireworks::rocket::explode()
+void fireworks::shell::explode()
 {
-    color const explosion_color = trail.hue(map(static_cast<int>(trail.position.z), cube_axis_range, gradient_pos_range)); // Get current color of trail
-    double const explosion_factor = map(std::rand(), rand_range, range{0.05, 0.02}) * explosion_force;
+    range const fragment_box{-shell.radius / 2.0, shell.radius / 2.0};
+    color const explosion_color = shell.hue(map(static_cast<int>(shell.position.z), cube_axis_range, gradient_pos_range)); // Get current color of shell
 
     for (auto & fragment : fragments) {
-        color const c = adjust_brightness(explosion_color, drand());
+        color const c = adjust_brightness(explosion_color, randd());
 
         fragment.radius = 0;
-        fragment.position = trail.position;
-        fragment.velocity.x = map(std::rand(), rand_range, unit_circle_range) * explosion_factor;
-        fragment.velocity.y = map(std::rand(), rand_range, unit_circle_range) * explosion_factor;
-        fragment.velocity.z = map(std::rand(), rand_range,  range{-1.0, 0.4}) * explosion_factor; // Limit upward velocity
+        fragment.position.x = shell.position.x + map(rand(), rand_range, fragment_box);
+        fragment.position.y = shell.position.y + map(rand(), rand_range, fragment_box);
+        fragment.position.z = shell.position.z + map(rand(), rand_range, fragment_box);
+        fragment.velocity.x = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+        fragment.velocity.y = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+        fragment.velocity.z = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
         fragment.hue =
         {
             {0.00, color_transparent},

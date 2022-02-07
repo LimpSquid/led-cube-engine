@@ -43,7 +43,7 @@ void helix::start()
     thickness_ = read_property(helix_thickness, default_thickness);
     length_ =  2.0 * M_PI * read_property(helix_length, default_length);
     omega_ = (2.0 * M_PI) / step_interval;
-    step_ = std::rand() % UINT16_MAX;
+    step_ = rand() % UINT16_MAX;
 
     scene_.start();
     fader_.start();

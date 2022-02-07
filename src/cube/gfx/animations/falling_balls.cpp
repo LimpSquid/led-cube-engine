@@ -89,14 +89,14 @@ std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(
 
 falling_balls::ball falling_balls::make_ball() const
 {
-    auto const radius = map(drand(), drand_range, range(min_radius_, max_radius_));
+    auto const radius = map(randd(), randd_range, range(min_radius_, max_radius_));
     auto const mass = map(radius, range(min_radius_, max_radius_), range(2.0, 8.0));
     glm::dvec3 position = random_voxel();
-    position.z = cube_size_1d + map(drand(), drand_range, range(radius, 4 * radius)); // Spawn outside cube
+    position.z = cube_size_1d + map(randd(), randd_range, range(radius, 4 * radius)); // Spawn outside cube
 
     auto const color = ball_colors_.empty()
         ? random_color()
-        : ball_colors_.at(urand() % ball_colors_.size());
+        : ball_colors_.at(rand<unsigned>() % ball_colors_.size());
 
     return {radius, mass, position, {}, color};
 }

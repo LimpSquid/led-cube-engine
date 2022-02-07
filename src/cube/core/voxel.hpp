@@ -12,7 +12,7 @@ using voxel_t = glm::ivec3;
 inline voxel_t random_voxel()
 {
     constexpr int mod{cube_size_1d};
-    return {std::rand() % mod, std::rand() % mod,  std::rand() % mod};
+    return {rand() % mod, rand() % mod, rand() % mod};
 }
 
 inline bool visible(voxel_t const & voxel)
