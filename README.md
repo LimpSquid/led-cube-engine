@@ -1,7 +1,9 @@
 # LED Cube Engine
-<p align="center">
-    <img src="resources/demo.gif" alt="OpenGL Mock Demo"/>
+<p align="left">
+    <img src="resources/demo.gif" alt="OpenGL Mock Demo" width="500" height="auto"/>
 </p>
+
+*Note: quality and frame rate are downsampled to reduce GIF size.*
 
 ## Getting started
 Make sure you have the following packages installed on your system:
