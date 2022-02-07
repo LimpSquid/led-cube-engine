@@ -45,7 +45,7 @@ void from_json(nlohmann::json const & json, T & out)
         using std::operator""s;
 
         if (!json.is_array())
-            throw std::invalid_argument("Expected JSON array for got: "s + json.type_name());
+            throw std::invalid_argument("Expected JSON array got: "s + json.type_name());
 
         typename T::value_type element_out;
         for (auto const & element : json) {
@@ -122,7 +122,7 @@ std::optional<T> parse_optional_field(nlohmann::json const & json, char const * 
     try {
         return {json_value_converter<T>{}(*i)};
     } catch(std::exception const & ex) {
-        throw std::invalid_argument("Unable to convert field: '"s + key
+        throw std::invalid_argument("Unable to parse field: '"s + key
             + "' in JSON: " + json.dump() + ", error: " + ex.what());
     }
 }
@@ -171,7 +171,7 @@ nlohmann::json make_field(char const * const key, T const & value)
     try {
         return {key, json_value_converter<T>{}(value)};
     } catch(std::exception const & ex) {
-        throw std::invalid_argument("Unable to dump field: '"s + key
+        throw std::invalid_argument("Unable to make field: '"s + key
             + "', error: " + ex.what());
     }
 }
@@ -197,7 +197,7 @@ inline void from_json(nlohmann::json const & json, color & out)
     using std::operator""s;
 
     if (!json.is_string())
-        throw std::invalid_argument("Expected JSON string for color got: "s + json.type_name());
+        throw std::invalid_argument("Expected JSON string got: "s + json.type_name());
 
     std::string color = json;
     out = color == "random"
