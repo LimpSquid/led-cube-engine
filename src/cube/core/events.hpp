@@ -36,15 +36,15 @@ private:
     int fd_;
 };
 
-class invoker
+class function_invoker
 {
 public:
-    template<typename T>
-    invoker(event_poller & event_poller, T handler) :
+    template<typename F>
+    function_invoker(event_poller & event_poller, F function) :
         event_poller_(event_poller),
-        handler_([this, h = std::move(handler)](events_t) {
+        handler_([this, f = std::move(function)](events_t) {
             event_poller_.modify(fds_[1]);
-            h();
+            f();
         })
     {
         using std::operator""s;
@@ -55,13 +55,13 @@ public:
         event_poller_.subscribe(fds_[1]);
     }
 
-    ~invoker();
+    ~function_invoker();
 
     void schedule();
 
 private:
-    invoker(invoker & other) = delete;
-    invoker(invoker && other) = delete;
+    function_invoker(function_invoker & other) = delete;
+    function_invoker(function_invoker && other) = delete;
 
     event_poller & event_poller_;
     event_handler_t handler_;

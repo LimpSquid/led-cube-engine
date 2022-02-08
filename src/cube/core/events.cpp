@@ -79,14 +79,14 @@ std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> event_pol
     return {r, std::cref(events_)};
 }
 
-invoker::~invoker()
+function_invoker::~function_invoker()
 {
     event_poller_.unsubscribe(fds_[1]);
     ::close(fds_[0]);
     ::close(fds_[1]);
 }
 
-void invoker::schedule()
+void function_invoker::schedule()
 {
      // Pipe is always writeable so the handler gets serviced as soon as the event_poller is being polled
     event_poller_.modify(fds_[1], EPOLLOUT, &handler_);

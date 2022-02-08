@@ -21,7 +21,7 @@ private:
 
     window & window_;
     cube::core::graphics_buffer buffer_;
-    cube::core::invoker invoker_;
+    cube::core::function_invoker invoker_;
 };
 
 } // End of namespace
