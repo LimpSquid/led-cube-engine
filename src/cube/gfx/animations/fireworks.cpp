@@ -174,7 +174,8 @@ void fireworks::shell::explode()
         fragment.position.z = shell.position.z + map(rand(), rand_range, fragment_box);
         fragment.velocity.x = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
         fragment.velocity.y = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
-        fragment.velocity.z = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+        // Limit max upwards velocity, otherwise it can take a long time until all particles fall back to earth
+        fragment.velocity.z = std::min(0.08, map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force);
         fragment.hue =
         {
             {0.00, color_transparent},
