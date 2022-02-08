@@ -94,20 +94,6 @@ public:
     void set_events(event_flags evs);
 
 private:
-    struct handler_relay
-    {
-        handler_relay(handler_t h) :
-            handler(std::move(h))
-        { }
-
-        void operator()(events_t evs)
-        {
-            handler(static_cast<event_flags>(evs));
-        }
-
-        handler_t handler;
-    };
-
     fd_event_notifier(fd_event_notifier & other) = delete;
     fd_event_notifier(fd_event_notifier && other) = delete;
 

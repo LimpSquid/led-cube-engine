@@ -94,7 +94,7 @@ fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_
 
 fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flags evs, handler_t handler) :
     event_poller_(event_poller),
-    event_handler_(handler_relay{std::move(handler)}),
+    event_handler_([h = std::move(handler)](events_t evs){ h(static_cast<event_flags>(evs)); }),
     fd_(fd)
 {
     event_poller_.subscribe(fd_, evs, &event_handler_.value());
