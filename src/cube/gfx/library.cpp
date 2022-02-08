@@ -1,6 +1,6 @@
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/core/json_util.hpp>
+#include <cube/core/json_utils.hpp>
 #include <algorithm>
 
 using namespace cube::core;

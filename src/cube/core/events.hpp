@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cube/core/utils.hpp>
 #include <sys/epoll.h>
-#include <unistd.h>
 #include <functional>
 #include <optional>
 #include <cstring>
@@ -19,7 +19,6 @@ class event_poller
 {
 public:
     event_poller();
-    ~event_poller();
 
     bool has_subscribers() const;
     void subscribe(int fd, events_t events = 0, event_handler_t * handler = nullptr);
@@ -33,7 +32,7 @@ private:
     event_poller(event_poller && other) = delete;
 
     std::vector<epoll_event> events_;
-    int fd_;
+    safe_fd fd_;
 };
 
 class function_invoker
@@ -49,9 +48,13 @@ public:
     {
         using std::operator""s;
 
-        int r = ::pipe(fds_);
+        int fds[2];
+        int r = ::pipe(fds);
         if (r < 0)
             throw std::runtime_error("Failed to create pipe: "s + std::strerror(errno));
+
+        fds_[0] = fds[0];
+        fds_[1] = fds[1];
         event_poller_.subscribe(fds_[1]);
     }
 
@@ -65,7 +68,7 @@ private:
 
     event_poller & event_poller_;
     event_handler_t handler_;
-    int fds_[2];
+    safe_fd fds_[2];
 };
 
 class fd_event_notifier

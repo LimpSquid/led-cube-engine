@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cube/gfx/gradient.hpp>
-#include <cube/core/json_util.hpp>
+#include <cube/core/json_utils.hpp>
 
 namespace cube::gfx
 {

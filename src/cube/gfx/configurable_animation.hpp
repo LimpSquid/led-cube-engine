@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cube/gfx/json_util.hpp>
+#include <cube/gfx/json_utils.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
 #include <cube/core/color.hpp>

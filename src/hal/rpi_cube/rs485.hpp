@@ -1,7 +1,6 @@
 #pragma once
 
 #include <hal/rpi_cube/gpio.hpp>
-#include <hal/rpi_cube/safe_fd.hpp>
 #include <cube/core/events.hpp>
 #include <termios.h>
 

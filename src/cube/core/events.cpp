@@ -22,11 +22,6 @@ event_poller::event_poller() :
         throw std::runtime_error("Unable to create event_poller"s + std::strerror(errno));
 }
 
-event_poller::~event_poller()
-{
-    ::close(fd_);
-}
-
 bool event_poller::has_subscribers() const
 {
     return !events_.empty();
@@ -82,8 +77,6 @@ std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> event_pol
 function_invoker::~function_invoker()
 {
     event_poller_.unsubscribe(fds_[1]);
-    ::close(fds_[0]);
-    ::close(fds_[1]);
 }
 
 void function_invoker::schedule()
