@@ -129,7 +129,7 @@ void fireworks::shell::update(std::chrono::milliseconds const & dt)
     switch (state) {
         case flying:
             shell.move(dt);
-            if (less_than(shell.velocity.z, 0.0) || !visible(shell.position))
+            if (less_than(shell.velocity.z, 0.01) || !visible(shell.position))
                 explode();
             break;
         case exploded: {
@@ -172,10 +172,16 @@ void fireworks::shell::explode()
         fragment.position.x = shell.position.x + map(rand(), rand_range, fragment_box);
         fragment.position.y = shell.position.y + map(rand(), rand_range, fragment_box);
         fragment.position.z = shell.position.z + map(rand(), rand_range, fragment_box);
-        fragment.velocity.x = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
-        fragment.velocity.y = map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+
+        // If the shell is exploding because of gravity pulling it down, then use velocity of the
+        // shell for all fragments so that they are moving in the same X/Y direction the shell was.
+        // If the shell hits a wall, then we start with no initial velocity so that most particles
+        // will not move outside the cube.
+        fragment.velocity = visible(shell.position) ? shell.velocity : glm::dvec3{};
+        fragment.velocity.x += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+        fragment.velocity.y += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
         // Limit max upwards velocity, otherwise it can take a long time until all particles fall back to earth
-        fragment.velocity.z = std::min(0.08, map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force);
+        fragment.velocity.z += std::min(0.06, map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force);
         fragment.hue =
         {
             {0.00, color_transparent},
