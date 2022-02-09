@@ -29,7 +29,7 @@ private:
     void read_into_buffer();
     void write_from_buffer();
 
-    safe_fd fd_;
+    cube::core::safe_fd fd_;
     cube::core::fd_event_notifier event_notifier_;
     gpio const dir_gpio_;
 };

@@ -8,9 +8,9 @@ using std::operator""s;
 namespace
 {
 
-hal::rpi_cube::safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
+safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
 {
-    hal::rpi_cube::safe_fd fd = ::open(config.device , O_RDWR);
+    safe_fd fd = ::open(config.device , O_RDWR);
     if (fd < 0)
         throw std::runtime_error("Unable to open device: "s + config.device);
 

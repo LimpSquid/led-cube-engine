@@ -6,8 +6,7 @@
 #include <optional>
 #include <cstring>
 #include <chrono>
-
-// @Todo: maybe move some of this to a source file
+#include <stdexcept>
 
 namespace cube::core
 {

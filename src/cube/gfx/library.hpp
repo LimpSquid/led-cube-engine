@@ -44,7 +44,7 @@ struct animation_publisher
     {
         auto const trim_namespace = [](std::string s) {
             auto const colon = s.find_last_of(":");
-            return colon < 0 ? s : s.substr(colon + 1);
+            return colon == std::string::npos ? s : s.substr(colon + 1);
         };
 
         library::instance().publish_animation(
