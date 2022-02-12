@@ -24,6 +24,9 @@ struct is_json_iterable<T,
 template<typename T>
 constexpr bool is_json_iterable_v = is_json_iterable<T>::value;
 
+inline void to_json(nlohmann::json const & json, nlohmann::json & out) { out = json; }
+inline void from_json(nlohmann::json const & json, nlohmann::json & out) { out = json; }
+
 template<typename T>
 void to_json(T const & value, nlohmann::json & out)
 {
@@ -52,63 +55,43 @@ void from_json(nlohmann::json const & json, T & out)
             from_json(element, element_out);
             out.push_back(std::move(element_out));
         }
-    } else
-        out = T(json);
-}
-
-template<typename T>
-struct json_value_converter
-{
-    T operator()(nlohmann::json const & json)
-    {
+    } else {
 #ifdef EVAL_EXPRESSION
-        using std::operator""s;
-
-        if (json.is_string()) {
-            if constexpr (std::is_integral_v<T>) {
-                double const value = std::round(evald(json));
-                if (value > static_cast<double>(std::numeric_limits<T>::max()) ||
-                    value < static_cast<double>(std::numeric_limits<T>::min()))
-                    throw std::overflow_error("Expression eval result overflowed for integral type: "s +
-                        boost::typeindex::type_id<T>().pretty_name());
-                return static_cast<T>(value);
-            } else if constexpr (std::is_floating_point_v<T>)
-                return eval<T>(json);
+        if constexpr (std::is_arithmetic_v<T>) {
+            if (json.is_string()) {
+                if constexpr (std::is_integral_v<T>) {
+                    using std::operator""s;
+                    double const value = std::round(evald(json));
+                    if (value > static_cast<double>(std::numeric_limits<T>::max()) ||
+                        value < static_cast<double>(std::numeric_limits<T>::min()))
+                        throw std::overflow_error("Expression eval result overflowed for integral type: "s +
+                            boost::typeindex::type_id<T>().pretty_name());
+                    out = static_cast<T>(value);
+                    return;
+                } else if constexpr (std::is_floating_point_v<T>) {
+                    out = eval<T>(json);
+                    return;
+                }
+            }
         }
 #endif
-        T out;
-        from_json(json, out);
-        return out;
+        out = T(json);
     }
-
-    nlohmann::json operator()(T const & value)
-    {
-        nlohmann::json out;
-        to_json(value, out);
-        return out;
-    }
-};
-
-template<>
-struct json_value_converter<nlohmann::json>
-{
-    nlohmann::json operator()(nlohmann::json const & json) { return json; }
-};
+}
 
 template<class Rep, class Period>
-struct json_value_converter<std::chrono::duration<Rep, Period>>
+void to_json(std::chrono::duration<Rep, Period> const & duration, nlohmann::json & out)
 {
-    std::chrono::duration<Rep, Period> operator()(nlohmann::json const & json)
-    {
-        auto const count = json_value_converter<Rep>{}(json);
-        return std::chrono::duration<Rep, Period>(count);
-    }
+    to_json(duration.count(), out);
+}
 
-    nlohmann::json operator()(std::chrono::duration<Rep, Period> const & value)
-    {
-        return json_value_converter<Rep>{}(value.count());
-    }
-};
+template<class Rep, class Period>
+void from_json(nlohmann::json const & json, std::chrono::duration<Rep, Period> & out)
+{
+    Rep ticks;
+    from_json(json, ticks);
+    out = std::chrono::duration<Rep, Period>{ticks};
+}
 
 template<typename T>
 std::optional<T> parse_optional_field(nlohmann::json const & json, char const * const key)
@@ -120,7 +103,9 @@ std::optional<T> parse_optional_field(nlohmann::json const & json, char const * 
         return {};
 
     try {
-        return {json_value_converter<T>{}(*i)};
+        T out;
+        from_json(*i, out);
+        return {std::move(out)};
     } catch(std::exception const & ex) {
         throw std::invalid_argument("Unable to parse field: '"s + key
             + "' in JSON: " + json.dump() + ", error: " + ex.what());
@@ -169,7 +154,9 @@ nlohmann::json make_field(char const * const key, T const & value)
     using std::operator""s;
 
     try {
-        return {key, json_value_converter<T>{}(value)};
+        nlohmann::json out;
+        to_json(value, out);
+        return {key, std::move(out)};
     } catch(std::exception const & ex) {
         throw std::invalid_argument("Unable to make field: '"s + key
             + "', error: " + ex.what());
