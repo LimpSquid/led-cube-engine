@@ -89,7 +89,7 @@ std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann
 
 void lightning::spawn_cloud(cloud & c)
 {
-    auto const fade_in_time = milliseconds(750 + rand() % 1250);
+    auto const fade_in_time = milliseconds(rand(range{750, 2000}));
     auto const fade_in_resolution = static_cast<unsigned int>(fade_in_time / animation_scene_interval);
 
     c.voxel = random_voxel();

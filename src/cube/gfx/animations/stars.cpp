@@ -54,7 +54,7 @@ void stars::start()
     stars_.resize(num_stars);
     for (auto & star : stars_) {
         star = make_star();
-        star.fade_step = -(rand() % step_interval_); // Negative so stars are initially black
+        star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
     }
 
     scene_.start();

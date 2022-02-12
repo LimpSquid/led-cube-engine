@@ -92,17 +92,17 @@ fireworks::shell fireworks::make_shell() const
     auto const pick_color = [this]() {
         return shell_colors_.empty()
             ? random_color()
-            : shell_colors_.at(rand<unsigned>() % shell_colors_.size());
+            : shell_colors_.at(rand(range{size_t(0), shell_colors_.size() - 1}));
     };
 
-    particle shell;
     glm::dvec3 target = random_voxel();
     target.z = cube_axis_max_value; // Must end on top
 
+    particle shell;
     shell.radius = shell_radius_;
     shell.position = random_voxel();
     shell.position.z = cube_axis_min_value; // Must start on bottom
-    shell.velocity = (target - shell.position) * map(rand(), rand_range, range{0.001, 0.002});
+    shell.velocity = (target - shell.position) * randd({0.001, 0.002});
     shell.hue =
     {
         {0.0, pick_color()},
@@ -169,7 +169,7 @@ void fireworks::shell::explode()
 
         // Use polar coordinate system for picking random points inside a sphere
         // https://datagenetics.com/blog/january32020/index.html
-        double const theta = map(rand(), rand_range, range{0.0, 2 * M_PI});
+        double const theta = randd({0.0, 2 * M_PI});
         double const phi = std::acos(2.0 * randd() - 1.0);
         double const radius = shell.radius * std::pow(randd(), 1.0 / 3.0);
         glm::dvec3 const fragment_offset =
@@ -187,10 +187,11 @@ void fireworks::shell::explode()
         // shell hits a wall, then we start with no initial velocity so that the particles will
         // not be moving to the outside of the cube where they are not visible.
         fragment.velocity = visible(shell.position) ? shell.velocity : glm::dvec3{};
-        fragment.velocity.x += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
-        fragment.velocity.y += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
+        fragment.velocity.x += randd({-0.02, 0.02}) * explosion_force;
+        fragment.velocity.y += randd({-0.02, 0.02}) * explosion_force;
         // Limit max upwards velocity, otherwise it can take a long time until all particles fall back to earth
-        fragment.velocity.z += std::min(0.06, map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force);
+        double const vz = randd({-0.02, 0.02}) * explosion_force;
+        fragment.velocity.z += less_than_or_equal(vz, 0.06) ? vz : randd({0.02, 0.06});
         fragment.hue =
         {
             {0.00, color_transparent},

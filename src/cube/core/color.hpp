@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cube/core/math.hpp>
 #include <3rdparty/glm/vec4.hpp>
-#include <limits>
 #include <string>
 
 namespace cube::core
@@ -89,7 +89,7 @@ inline void scale(rgba_t & rgba, double scalar)
 
 inline color random_color(bool opaque = true)
 {
-    auto const randc = []() { return static_cast<color_t>(rand() % color_max_value); };
+    auto const randc = []() { return rand(range{color_min_value, color_max_value}); };
     return {randc(), randc(), randc(), opaque ? color_max_value : randc()};
 }
 

@@ -87,13 +87,19 @@ constexpr TOut map(
 template<typename T>
 constexpr bool within_inclusive(T const & value, range<T> const & range)
 {
-    return value >= range.from && value <= range.to;
+    if constexpr (std::is_floating_point_v<T>)
+        return greater_than_or_equal(value, range.from) && less_than_or_equal(value, range.to);
+    else
+        return value >= range.from && value <= range.to;
 }
 
 template<typename T>
 constexpr bool within_exclusive(T const & value, range<T> const & range)
 {
-    return value >= range.from && value < range.to;
+    if constexpr (std::is_floating_point_v<T>)
+        return greater_than_or_equal(value, range.from) && less_than(value, range.to);
+    else
+        return value >= range.from && value < range.to;
 }
 
 template<typename T>
@@ -163,14 +169,14 @@ constexpr T abs_cos(T const & value)
     return map(std::cos(value), unit_circle_range, range(0.0, 1.0));
 }
 
-inline double randd()
+inline double randd(range<double> range = randd_range) // Inclusive
 {
-    return map(rand(), rand_range, randd_range);
+    return map(rand(), rand_range, range);
 }
 
-inline float randf()
+inline float randf(range<float> range = randf_range) // Inclusive
 {
-    return map(rand(), rand_range, randf_range);
+    return map(rand(), rand_range, range);
 }
 
 template<typename T = int>
@@ -178,6 +184,17 @@ T rand()
 {
     static_assert(std::numeric_limits<T>::max() >= RAND_MAX);
     return static_cast<T>(std::rand());
+}
+
+template<typename T>
+T rand(range<T> range) // Inclusive
+{
+    static_assert(std::is_integral_v<T>);
+    // Cast to largest type to avoid overflows
+    if constexpr (std::is_signed_v<T>)
+        return map(rand<int64_t>(), range_cast<int64_t>(rand_range), range);
+    else
+        return map(rand<uint64_t>(), range_cast<uint64_t>(rand_range), range);
 }
 
 } // End of namespace
