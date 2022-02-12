@@ -62,8 +62,6 @@ class graphics_device
 public:
     virtual ~graphics_device() = default;
 
-    std::chrono::nanoseconds avg_render_interval() const;
-
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
     void draw_sphere(voxel_t const & origin, int radius);
@@ -80,13 +78,6 @@ protected:
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
-    struct render_time
-    {
-        int64_t nanos_dt{1}; // just to avoid division by 0
-        int64_t nanos_previous{0};
-
-        void update();
-    };
 
     graphics_device(graphics_device & other) = delete;
     graphics_device(graphics_device && other) = delete;
@@ -98,7 +89,6 @@ private:
     graphics_fill_mode fill_mode_;
     color draw_color_;
     std::shared_ptr<animation> animation_;
-    render_time render_time_;
 };
 
 } // End of namespace

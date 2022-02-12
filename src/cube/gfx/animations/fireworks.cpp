@@ -182,10 +182,10 @@ void fireworks::shell::explode()
         fragment.radius = 0;
         fragment.position = shell.position + fragment_offset;
 
-        // If the shell is exploding because of gravity pulling it down, then use velocity of the
-        // shell for all fragments so that they are moving in the same X/Y direction the shell was.
-        // If the shell hits a wall, then we start with no initial velocity so that most particles
-        // will not move outside the cube.
+        // If it's exploding because of gravity pulling it down use the shell's velocity for all
+        // the fragments so that they're moving in the same direction as the shell was. If the
+        // shell hits a wall, then we start with no initial velocity so that the particles will
+        // not be moving to the outside of the cube where they are not visible.
         fragment.velocity = visible(shell.position) ? shell.velocity : glm::dvec3{};
         fragment.velocity.x += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;
         fragment.velocity.y += map(rand(), rand_range, range{-0.02, 0.02}) * explosion_force;

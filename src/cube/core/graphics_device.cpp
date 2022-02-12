@@ -9,20 +9,6 @@ using namespace std::chrono;
 namespace cube::core
 {
 
-void graphics_device::render_time::update()
-{
-    auto const now = duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-    auto const elapsed = now - nanos_previous;
-
-    nanos_dt = nanos_dt - (nanos_dt >> 2) + (elapsed >> 2);
-    nanos_previous = now;
-}
-
-nanoseconds graphics_device::avg_render_interval() const
-{
-    return nanoseconds(render_time_.nanos_dt);
-}
-
 void graphics_device::update_state(graphics_state const & state)
 {
     if (state.dirty_flags & graphics_state::dirty_draw_color)
@@ -147,8 +133,6 @@ void graphics_device::render_animation()
         animation_->paint_event(*this);
         show(buffer_);
     }
-
-    render_time_.update();
 }
 
 graphics_device::graphics_device(engine_context & context) :
