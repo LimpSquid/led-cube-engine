@@ -162,16 +162,25 @@ void fireworks::shell::paint(painter & p) const
 
 void fireworks::shell::explode()
 {
-    range const fragment_box{-shell.radius / 2.0, shell.radius / 2.0};
     color const explosion_color = shell.hue(map(static_cast<int>(shell.position.z), cube_axis_range, gradient_pos_range)); // Get current color of shell
 
     for (auto & fragment : fragments) {
         color const c = adjust_brightness(explosion_color, randd());
 
+        // Use polar coordinate system for picking random points inside a sphere
+        // https://datagenetics.com/blog/january32020/index.html
+        double const theta = map(rand(), rand_range, range{0.0, 2 * M_PI});
+        double const phi = std::acos(2.0 * randd() - 1.0);
+        double const radius = shell.radius * std::pow(randd(), 1.0 / 3.0);
+        glm::dvec3 const fragment_offset =
+        {
+            radius * std::sin(phi) * std::cos(theta),
+            radius * std::sin(phi) * std::sin(theta),
+            radius * std::cos(phi)
+        };
+
         fragment.radius = 0;
-        fragment.position.x = shell.position.x + map(rand(), rand_range, fragment_box);
-        fragment.position.y = shell.position.y + map(rand(), rand_range, fragment_box);
-        fragment.position.z = shell.position.z + map(rand(), rand_range, fragment_box);
+        fragment.position = shell.position + fragment_offset;
 
         // If the shell is exploding because of gravity pulling it down, then use velocity of the
         // shell for all fragments so that they are moving in the same X/Y direction the shell was.

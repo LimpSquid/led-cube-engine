@@ -49,7 +49,7 @@ struct animation_publisher
 
         library::instance().publish_animation(
             trim_namespace(boost::typeindex::type_id<T>().pretty_name()),
-            [](core::engine_context & context) { return std::make_unique<T>(context); }
+            [](core::engine_context & context) { return std::make_shared<T>(context); }
         );
     }
 };

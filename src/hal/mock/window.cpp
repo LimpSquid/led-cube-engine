@@ -27,7 +27,6 @@ void glfw_error_callback(int, const char * const desc)
 
 } // End of namespace
 
-
 namespace hal::mock
 {
 
