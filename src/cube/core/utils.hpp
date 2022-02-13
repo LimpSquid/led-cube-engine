@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <cstring>
 #include <unistd.h>
 
 namespace cube::core
@@ -72,6 +73,16 @@ inline parent_tracker_t::weak_type weak(parent_tracker_t tracker)
 inline bool parent_in_scope(parent_tracker_t::weak_type weak)
 {
     return weak.lock() != nullptr;
+}
+
+inline void throw_errno(char const * const op = nullptr)
+{
+    using std::operator""s;
+
+    if (op)
+        throw std::runtime_error("Failed operation '"s + op + "': " + std::strerror(errno));
+    else
+        throw std::runtime_error("Error: "s + std::strerror(errno));
 }
 
 } // End of namespace

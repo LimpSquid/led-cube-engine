@@ -1,5 +1,6 @@
 #include <hal/rpi_cube/rs485.hpp>
 #include <cube/core/engine_context.hpp>
+#include <cube/core/utils.hpp>
 #include <sys/file.h>
 
 using namespace cube::core;
@@ -7,6 +8,8 @@ using std::operator""s;
 
 namespace
 {
+
+constexpr std::size_t buffer_size{4096};
 
 safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
 {
@@ -48,12 +51,23 @@ namespace hal::rpi_cube
 
 rs485::rs485(rs485_config config, engine_context & context) :
     fd_(open_or_throw(config)),
-    event_notifier_(context.event_poller, fd_, fd_event_notifier::read, [this](auto evs) { on_event(evs); }),
+    event_notifier_(context.event_poller, fd_, fd_event_notifier::read | fd_event_notifier::error, [this](auto evs) { on_event(evs); }),
+    tx_buffer_(buffer_size),
+    rx_buffer_(buffer_size),
     dir_gpio_(config.dir_pin, gpio::output)
-{ }
+{
+    dir_gpio_.write(gpio::lo);
+}
+
+rs485::~rs485()
+{
+    dir_gpio_.write(gpio::lo);
+}
 
 void rs485::on_event(fd_event_notifier::event_flags evs)
 {
+    if (evs & fd_event_notifier::error)
+        throw_errno();
     if (evs & fd_event_notifier::read)
         read_into_buffer();
     if (evs & fd_event_notifier::write)
@@ -62,13 +76,23 @@ void rs485::on_event(fd_event_notifier::event_flags evs)
 
 void rs485::read_into_buffer()
 {
+    std::size_t const capacity = rx_buffer_.capacity() - rx_buffer_.size();
+    if (!capacity)
+        return event_notifier_.clr_events(fd_event_notifier::read); // User must read from the buffer first
 
+    auto size = ::read(fd_, &chunk_buffer_, std::min(sizeof(chunk_buffer_), capacity));
+    if (size < 0)
+        throw_errno("rs485 read");
+
+    char const * data = chunk_buffer_;
+    while (size--)
+        rx_buffer_.push_front(*data++);
 }
 
 void rs485::write_from_buffer()
 {
-    // if buffer empty
-    // event_notifier_.set_events(fd_event_notifier::read);
+    if (tx_buffer_.empty())
+        return event_notifier_.clr_events(fd_event_notifier::write); // User must write data to the buffer first
 }
 
 } // End of namespace

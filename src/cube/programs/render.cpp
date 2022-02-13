@@ -54,7 +54,7 @@ void handle_file(std::vector<std::string> const & args)
         std::cout << "Found " << animations.size() << " animations in file(s)\n";
 
         if (!animations.empty()) {
-            size_t index = 0;
+            std::size_t index = 0;
             single_shot_timer player(engine.context(), [&](auto, auto) {
                 auto & animation = animations[index];
                 index = (index + 1) % animations.size();

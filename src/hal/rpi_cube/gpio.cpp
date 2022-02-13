@@ -15,7 +15,7 @@ std::string const pin_dir = base_dir + "/gpio";
 std::string const export_filepath = base_dir + "/export";
 std::string const unexport_filepath = base_dir + "/unexport";
 
-std::FILE * fopen_or_throw(std::string const & filepath, char const * mode)
+std::FILE * fopen_or_throw(std::string const & filepath, char const * const mode)
 {
     auto f = std::fopen(filepath.c_str(), mode);
     auto const deadline = system_clock::now() + 100ms; // Because it takes a while for the `direction` and `value` files to be openable after a pin is exported

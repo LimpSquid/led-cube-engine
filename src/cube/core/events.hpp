@@ -4,7 +4,6 @@
 #include <sys/epoll.h>
 #include <functional>
 #include <optional>
-#include <cstring>
 #include <chrono>
 #include <stdexcept>
 
@@ -50,7 +49,7 @@ public:
         int fds[2];
         int r = ::pipe(fds);
         if (r < 0)
-            throw std::runtime_error("Failed to create pipe: "s + std::strerror(errno));
+            throw_errno("create pipe");
 
         fds_[0] = fds[0];
         fds_[1] = fds[1];
@@ -78,11 +77,15 @@ public:
         none    = 0,
         read    = EPOLLIN,
         write   = EPOLLOUT,
-        err     = EPOLLERR,
+        error   = EPOLLERR,
+        all     = read | write | error
     };
 
+    friend event_flags operator~(event_flags evs) { return static_cast<event_flags>(~evs); }
     friend event_flags operator|(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs | rhs); }
     friend event_flags operator&(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs & rhs); }
+    friend event_flags operator|=(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs | rhs); }
+    friend event_flags operator&=(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs & rhs); }
 
     using handler_t = std::function<void(event_flags)>;
 
@@ -91,6 +94,7 @@ public:
     ~fd_event_notifier();
 
     void set_events(event_flags evs);
+    void clr_events(event_flags evs);
 
 private:
     fd_event_notifier(fd_event_notifier & other) = delete;
@@ -98,6 +102,7 @@ private:
 
     event_poller & event_poller_;
     std::optional<event_handler_t> event_handler_;
+    event_flags evs_;
     int fd_;
 };
 

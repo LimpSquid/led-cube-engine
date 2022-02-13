@@ -92,7 +92,7 @@ fireworks::shell fireworks::make_shell() const
     auto const pick_color = [this]() {
         return shell_colors_.empty()
             ? random_color()
-            : shell_colors_.at(rand(range{size_t(0), shell_colors_.size() - 1}));
+            : shell_colors_.at(rand(range{std::size_t(0), shell_colors_.size() - 1}));
     };
 
     glm::dvec3 target = random_voxel();

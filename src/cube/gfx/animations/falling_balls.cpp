@@ -96,7 +96,7 @@ falling_balls::ball falling_balls::make_ball() const
 
     auto const color = ball_colors_.empty()
         ? random_color()
-        : ball_colors_.at(rand(range{size_t(0), ball_colors_.size() - 1}));
+        : ball_colors_.at(rand(range{std::size_t(0), ball_colors_.size() - 1}));
 
     return {radius, mass, position, {}, color};
 }

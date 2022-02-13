@@ -19,7 +19,7 @@ event_poller::event_poller() :
     using std::operator""s;
 
     if (fd_ < 0)
-        throw std::runtime_error("Unable to create event_poller"s + std::strerror(errno));
+        throw_errno("create event_poller");
 }
 
 bool event_poller::has_subscribers() const
@@ -37,7 +37,7 @@ void event_poller::subscribe(int fd, events_t events, event_handler_t * handler)
 
     int r = ::epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &ev);
     if (r < 0)
-        throw std::runtime_error("Failed epoll_ctl add: "s + std::strerror(errno));
+        throw_errno("epoll_ctl add");
     events_.push_back({});
 }
 
@@ -47,7 +47,7 @@ void event_poller::unsubscribe(int fd)
 
     int r = ::epoll_ctl(fd_, EPOLL_CTL_DEL, fd, &ev); // older kernels require a non nullptr parameter
     if (r < 0)
-        throw std::runtime_error("Failed epoll_ctl delete: "s + std::strerror(errno));
+        throw_errno("epoll_ctl delete");
     events_.pop_back();
 }
 
@@ -61,7 +61,7 @@ void event_poller::modify(int fd, events_t events, event_handler_t * handler)
 
     int r = ::epoll_ctl(fd_, EPOLL_CTL_MOD, fd, &ev);
     if (r < 0)
-        throw std::runtime_error("Failed epoll_ctl modify: "s + std::strerror(errno));
+        throw_errno("epoll_ctl modify");
 }
 
 std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> event_poller::poll_events(std::optional<milliseconds> timeout)
@@ -70,7 +70,7 @@ std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> event_pol
 
     int r = ::epoll_wait(fd_, events_.data(), static_cast<int>(events_.size()), timeout ? static_cast<int>(timeout->count()) : -1);
     if (r < 0)
-        throw std::runtime_error("Failed epoll_wait: "s + std::strerror(errno));
+        throw_errno("epoll_wait");
     return {r, std::cref(events_)};
 }
 
@@ -87,17 +87,19 @@ void function_invoker::schedule()
 
 fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flags evs) :
     event_poller_(event_poller),
+    evs_(evs),
     fd_(fd)
 {
-    event_poller_.subscribe(fd_, evs);
+    event_poller_.subscribe(fd_, evs_);
 }
 
 fd_event_notifier::fd_event_notifier(event_poller & event_poller, int fd, event_flags evs, handler_t handler) :
     event_poller_(event_poller),
     event_handler_([h = std::move(handler)](events_t evs){ h(static_cast<event_flags>(evs)); }),
+    evs_(evs),
     fd_(fd)
 {
-    event_poller_.subscribe(fd_, evs, &event_handler_.value());
+    event_poller_.subscribe(fd_, evs_, &event_handler_.value());
 }
 
 fd_event_notifier::~fd_event_notifier()
@@ -107,7 +109,14 @@ fd_event_notifier::~fd_event_notifier()
 
 void fd_event_notifier::set_events(event_flags evs)
 {
-    event_poller_.modify(fd_, evs, event_handler_ ? &event_handler_.value() : nullptr);
+    evs_ |= evs;
+    event_poller_.modify(fd_, evs_, event_handler_ ? &event_handler_.value() : nullptr);
+}
+
+void fd_event_notifier::clr_events(event_flags evs)
+{
+    evs_ &= ~evs;
+    event_poller_.modify(fd_, evs_, event_handler_ ? &event_handler_.value() : nullptr);
 }
 
 } // End of namespace
