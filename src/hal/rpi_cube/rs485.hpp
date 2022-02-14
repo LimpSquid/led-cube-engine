@@ -9,7 +9,6 @@ namespace cube::core { class engine_context; }
 namespace hal::rpi_cube
 {
 
-class gpio;
 struct rs485_config
 {
     char const * const device;
@@ -22,6 +21,27 @@ class rs485
 public:
     rs485(rs485_config config, cube::core::engine_context & context);
     ~rs485();
+
+    template<typename T>
+    void read_into(T & out)
+    {
+        static_assert(std::is_trivially_copyable_v<T>); // Because we're memcpying buffer into out
+        std::size_t size = read(&out, sizeof(T));
+        if (size != sizeof(T))
+            throw std::runtime_error("Read only " + std::to_string(size) + " bytes, expected " + std::to_string(sizeof(T)));
+    }
+
+    template<typename T>
+    bool is_readable() const
+    {
+        // Makes no sense to check if you can read a certain type, without actually
+        // going to read it, so do the same check here.
+        static_assert(std::is_trivially_copyable_v<T>);
+        return bytes_available() >= sizeof(T);
+    }
+
+    std::size_t bytes_available() const;
+    std::size_t read(void * dst, std::size_t count);
 
 private:
     rs485(rs485 & other) = delete;

@@ -64,6 +64,28 @@ rs485::~rs485()
     dir_gpio_.write(gpio::lo);
 }
 
+std::size_t rs485::bytes_available() const
+{
+    return rx_buffer_.size();
+}
+
+std::size_t rs485::read(void * dst, std::size_t count)
+{
+    bool const was_full = rx_buffer_.full();
+    std::size_t size = 0;
+    char * out = reinterpret_cast<char *>(dst);
+
+    while (!rx_buffer_.empty() && size != count) {
+        *out++ = rx_buffer_.back();
+        size++;
+        rx_buffer_.pop_back();
+    }
+
+    if (was_full && size)
+        event_notifier_.set_events(fd_event_notifier::read); // Now we can read data into the buffer again
+    return size;
+}
+
 void rs485::on_event(fd_event_notifier::event_flags evs)
 {
     if (evs & fd_event_notifier::error)
