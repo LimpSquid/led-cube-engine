@@ -21,6 +21,9 @@ public:
     bool has_subscribers() const;
     void subscribe(int fd, events_t events = 0, event_handler_t * handler = nullptr);
     void unsubscribe(int fd);
+
+    // Thread-safe, e.g. modify can be called from a different thread
+    // than where the event_poller is being polled for events
     void modify(int fd, events_t events = 0, event_handler_t * handler = nullptr);
 
     std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> poll_events(std::optional<std::chrono::milliseconds> timeout = {});
