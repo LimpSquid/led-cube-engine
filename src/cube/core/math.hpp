@@ -190,11 +190,7 @@ template<typename T>
 T rand(range<T> range) // Inclusive
 {
     static_assert(std::is_integral_v<T>);
-    // Cast to largest type to avoid overflows
-    if constexpr (std::is_signed_v<T>)
-        return map(rand<int64_t>(), range_cast<int64_t>(rand_range), range);
-    else
-        return map(rand<uint64_t>(), range_cast<uint64_t>(rand_range), range);
+    return map(rand<double>(), range_cast<double>(rand_range), range); // Use double so output is rounded and we avoid integer overflows
 }
 
 } // End of namespace
