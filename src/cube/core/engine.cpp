@@ -11,7 +11,7 @@ using namespace std::chrono;
 namespace
 {
 
-constexpr milliseconds poll_timeout{10};
+constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
 
 template<typename Container>
 void poll(Container & tickers)
@@ -50,7 +50,8 @@ void engine::run()
     bool new_animation = false;
 
     for (;;) {
-        // Poll tickers
+        // Poll tickers before the animation is rendered as it is common practice
+        // that an animation is marked dirty from within a ticker handler
         poll(context_.tickers);
 
         // Service animation on graphics device
