@@ -19,7 +19,7 @@ constexpr rs485_config bus_comm_config
 struct resources
 {
     resources(cube::core::engine_context & context) :
-        bus_comm(bus_comm_config, context)
+        bus_comm_device(bus_comm_config, context)
     {
         for (gpio const & ss : pixel_comm_ss)
             ss.write(gpio::hi);
@@ -31,7 +31,7 @@ struct resources
             ss.write(gpio::hi);
     }
 
-    rs485 bus_comm;
+    rs485 bus_comm_device;
     std::array<gpio, cube_size> const pixel_comm_ss
     {
         make_output(05), make_output(22), make_output(17), make_output(04),

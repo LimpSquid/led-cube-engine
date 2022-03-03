@@ -86,9 +86,15 @@ rs485::~rs485()
     safe_join(drain_thread_);
 }
 
-std::size_t rs485::bytes_available(channel ch) const
+
+std::size_t rs485::bytes_avail_for_reading() const
 {
-    return ch == rx ? rx_buffer_.size() : (tx_buffer_.capacity() - tx_buffer_.size());
+    return rx_buffer_.size();
+}
+
+std::size_t rs485::bytes_avail_for_writing() const
+{
+    return tx_buffer_.capacity() - tx_buffer_.size();
 }
 
 std::size_t rs485::read(void * dst, std::size_t count)
@@ -145,10 +151,13 @@ void rs485::read_into_buffer()
     auto size = ::read(fd_, &chunk_buffer_, std::min(sizeof(chunk_buffer_), capacity));
     if (size < 0)
         throw_errno("rs485 read");
+    if (size == 0)
+        return;
 
     char const * data = chunk_buffer_;
     while (size--)
         rx_buffer_.push_front(*data++);
+    notify_readable();
 }
 
 void rs485::write_from_buffer()
