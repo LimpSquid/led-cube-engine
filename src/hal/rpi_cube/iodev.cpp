@@ -1,5 +1,7 @@
 #include <hal/rpi_cube/iodev.hpp>
 
+using namespace cube::core;
+
 namespace hal::rpi_cube
 {
 
@@ -35,6 +37,16 @@ iodev_subscription iodev::subscribe(iodev_read_handler_t handler)
     read_handlers_[id] = std::move(handler);
     return {*this, id};
 }
+
+engine_context & iodev::context()
+{
+    return context_;
+}
+
+iodev::iodev(engine_context & context) :
+    context_(context),
+    subscription_id_(0)
+{ }
 
 void iodev::notify_readable() const
 {

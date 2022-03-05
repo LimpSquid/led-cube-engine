@@ -37,7 +37,7 @@ struct graphics_buffer
 
     void operator=(graphics_buffer const & other)
     {
-        memcpy(data, other.data, sizeof(data));
+        std::memcpy(data, other.data, sizeof(data));
     }
 };
 

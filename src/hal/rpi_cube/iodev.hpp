@@ -4,6 +4,7 @@
 #include <functional>
 #include <unordered_map>
 
+namespace cube::core { class engine_context; }
 namespace hal::rpi_cube
 {
 
@@ -29,6 +30,8 @@ using iodev_read_handler_t = std::function<void()>;
 class iodev
 {
 public:
+    cube::core::engine_context & context();
+
     template<typename T>
     bool is_readable() const
     {
@@ -68,7 +71,9 @@ public:
     iodev_subscription subscribe(iodev_read_handler_t handler);
 
 protected:
-    void notify_readable() const;
+    iodev(cube::core::engine_context & context);
+
+    void notify_readable() const; // For now this **MUST** always be called, eventually we could fallback on polling
 
 private:
     friend class iodev_subscription;
@@ -81,8 +86,9 @@ private:
     int next_subscription();
     void unsubscribe(int id);
 
+    cube::core::engine_context & context_;
     std::unordered_map<int, iodev_read_handler_t> read_handlers_;
-    int subscription_id_{0};
+    int subscription_id_;
 };
 
 } // End of namespace

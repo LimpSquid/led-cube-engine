@@ -8,7 +8,6 @@
 #include <mutex>
 #include <thread>
 
-namespace cube::core { class engine_context; }
 namespace hal::rpi_cube
 {
 
