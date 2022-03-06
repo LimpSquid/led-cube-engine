@@ -51,6 +51,11 @@ template<typename E>
 class basic_expected<void, E>
 {
 public:
+    basic_expected() = default;
+    basic_expected(E error) :
+        error_(std::move(error))
+    { }
+
     explicit operator bool() const { return !error_.has_value(); }
 
     E const & error() const { check_error(); return *error_; }
