@@ -117,7 +117,7 @@ std::size_t rs485::read(void * dst, std::size_t count)
 
 std::size_t rs485::write(void const * src, std::size_t count)
 {
-    bool const was_empty = rx_buffer_.empty();
+    bool const was_empty = tx_buffer_.empty();
     std::size_t size = 0;
     char const * in = reinterpret_cast<char const *>(src);
 

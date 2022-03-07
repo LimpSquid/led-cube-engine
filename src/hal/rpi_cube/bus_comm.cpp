@@ -9,48 +9,43 @@ namespace
 
 constexpr milliseconds transfer_timeout{50};
 
-void throw_if_ne(hal::rpi_cube::bus_comm::bus_state expected, hal::rpi_cube::bus_comm::bus_state actual)
+void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
 {
     if (expected != actual)
-        std::runtime_error("Expected bus state: " + std::to_string(expected) + ", got: " + std::to_string(actual));
+        std::runtime_error("Expected bus state: " + to_string(expected) + ", got: " + to_string(actual));
 }
-
 
 } // End of namespace
 
 namespace hal::rpi_cube
 {
 
-void_or_error verify_response_code(bus_response_code response)
+std::string to_string(bus_state state)
 {
-    switch (response) {
-        case bus_response_code::ok:                     return {};
-        case bus_response_code::err_unknown:            return unexpected_error{"Unknown error"};
-        case bus_response_code::err_again:              return unexpected_error{"Try again"};
-        case bus_response_code::err_invalid_payload:    return unexpected_error{"Invalid payload"};
-        case bus_response_code::err_invalid_command:    return unexpected_error{"Invalid command"};
+    switch (state) {
+        case bus_state::idle:       return "idle";
+        case bus_state::transfer:   return "transfer";
+        case bus_state::error:      return "error";
         default:;
     }
 
-     return unexpected_error{"???"};
+    return "???";
 }
 
 bus_comm::bus_comm(iodev & device) :
     device_(device),
     read_subscription_(device_.subscribe([this]() { do_read(); })),
     transfer_watchdog_(device.context(), [this](auto, auto) { do_timeout(); }),
-    state_(idle)
-{
-
-}
+    state_(bus_state::idle)
+{ }
 
 void bus_comm::do_read()
 {
     // Unexpected data from device, bus error
-    if (state_ != transfer)
-        return switch_state(error);
+    if (state_ != bus_state::transfer)
+        return switch_state(bus_state::error);
 
-    if (!device_.is_readable<bus_frame>())
+    if (!device_.is_readable<raw_frame>())
         return;
 
     // Transfer done, stop watchdog
@@ -59,25 +54,25 @@ void bus_comm::do_read()
     // Read frame and forward to handler
     auto frame = read_frame();
     auto const & job = jobs_.back();
-    job.handler(std::move(frame)); // Todo: maybe retry?
+    job.handler(std::move(frame)); // Todo: retry based on the error
 
     jobs_.pop_back();
     if (jobs_.empty())
-        switch_state(idle);
+        switch_state(bus_state::idle);
     else
         do_write_one();
 }
 
 void bus_comm::do_write()
 {
-    throw_if_ne(idle, state_); // Should never happen
-    switch_state(transfer);
+    throw_if_ne(bus_state::idle, state_); // Should never happen
+    switch_state(bus_state::transfer);
     do_write_one();
 }
 
 void bus_comm::do_write_one()
 {
-    throw_if_ne(transfer, state_); // Should never happen
+    throw_if_ne(bus_state::transfer, state_); // Should never happen
 
     if (jobs_.empty())
         throw std::runtime_error("No job to write");
@@ -85,39 +80,63 @@ void bus_comm::do_write_one()
     auto const & job = jobs_.back();
 
     // Unable to write, bus error
-    if (device_.is_writeable<bus_frame>()) {
+    if (device_.is_writeable<raw_frame>()) {
         device_.write_from(job.frame);
         transfer_watchdog_.start(transfer_timeout);
     } else
-        switch_state(error);
+        switch_state(bus_state::error);
 }
 
 void bus_comm::do_timeout()
 {
-    switch_state(error);
+    throw_if_ne(bus_state::transfer, state_); // Should never happen
+
+    auto const & job = jobs_.back();
+    job.handler(error{"Timeout", {}});
+
+    jobs_.pop_back();
+    if (jobs_.empty())
+        switch_state(bus_state::idle);
+    else
+        do_write_one();
 }
 
 void bus_comm::switch_state(bus_state state)
 {
     if (state_ == state)
-        throw std::runtime_error("Already switched to state: " + std::to_string(state));
+        throw std::runtime_error("Already switched to state: " + to_string(state));
 
+    // Todo: error handling
     switch (state) {
         default:;
     }
     state_ = state;
 }
 
-expected_or_error<bus_comm::bus_frame> bus_comm::read_frame()
+bus_comm::frame_or_error bus_comm::read_frame()
 {
-    if (!device_.is_readable<bus_frame>())
-        return unexpected_error{"Unable to read frame from device"};
+    if (!device_.is_readable<raw_frame>())
+        return error{"Unable to read frame from device", {}};
 
-    bus_frame frame;
+    raw_frame frame;
     device_.read_into(frame);
 
-    if (false) // Todo: check crc
-        return unexpected_error{"CRC error"};
+    if (crc16_generator{}(&frame, sizeof(frame))) // If the CRC yields non-zero, then the frame is garbled
+        return error{"CRC error", {}};
+
+    if (frame.request)
+        return error{"Received request message while expecting a response", {}};
+
+    auto response_code = static_cast<bus_response_code>(frame.command_or_response);
+    auto make_error = [response_code](char const * const what) { return error{what, response_code}; };
+    switch (response_code) {
+        case bus_response_code::err_unknown:            return make_error("Unknown error");
+        case bus_response_code::err_again:              return make_error("Try again");
+        case bus_response_code::err_invalid_payload:    return make_error("Invalid payload");
+        case bus_response_code::err_invalid_command:    return make_error("Invalid command");
+        default:;
+    }
+
     return {std::move(frame)};
 }
 

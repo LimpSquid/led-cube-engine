@@ -12,10 +12,11 @@ display::display(engine_context & context) :
     bus_comm_(resources_.bus_comm_device)
 {
     // Todo: remove
-    bus_comm_.send<bus_command::get_sys_version>({}, {0x00},
+    bus_comm_.send<bus_command::get_sys_version>({}, {0},
         [](auto version) {
             if (!version)
-                throw std::runtime_error("Unable to get version number");
+                throw std::runtime_error("Unable to get version number, error: " + version.error().what);
+
             std::cout
                 << "major: " << version->major
                 << "minor: " << version->minor
