@@ -1,5 +1,6 @@
 #pragma once
 
+#include <type_traits>
 #include <cstdint>
 
 namespace hal::rpi_cube
@@ -29,13 +30,24 @@ enum class bus_response_code : unsigned char
 };
 static_assert(sizeof(bus_command) == sizeof(bus_response_code));
 
+template<bool HighPrio>
+struct basic_request_opt
+{
+    using high_prio = std::integral_constant<bool, HighPrio>;
+};
+
+using low_prio_request = basic_request_opt<false>;
+using high_prio_request = basic_request_opt<true>;
+
 template<bus_command>
-struct bus_request_params { };
+struct bus_request_params : low_prio_request { };
 template<bus_command>
 struct bus_response_params { };
 
 template<>
-struct bus_request_params<bus_command::exe_sys_cpu_reset>
+struct bus_request_params<bus_command::exe_dma_swap_buffers> : high_prio_request { };
+template<>
+struct bus_request_params<bus_command::exe_sys_cpu_reset> : low_prio_request
 {
     int32_t delay;
 };

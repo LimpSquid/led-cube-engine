@@ -8,6 +8,7 @@ namespace
 {
 
 constexpr milliseconds transfer_timeout{50};
+constexpr unsigned max_attempts{3};
 
 void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
 {
@@ -53,14 +54,14 @@ void bus_comm::do_read()
 
     // Read frame and forward to handler
     auto frame = read_frame();
-    auto const & job = jobs_.back();
-    job.handler(std::move(frame)); // Todo: retry based on the error
+    auto & job = jobs_.back();
 
-    jobs_.pop_back();
-    if (jobs_.empty())
-        switch_state(bus_state::idle);
+    if (!frame && job.attempt < max_attempts) // Todo: more fine grained retries?
+        jobs_.push_front(std::move(job));
     else
-        do_write_one();
+        job.handler(std::move(frame));
+
+    do_finish();
 }
 
 void bus_comm::do_write()
@@ -77,10 +78,11 @@ void bus_comm::do_write_one()
     if (jobs_.empty())
         throw std::runtime_error("No job to write");
 
-    auto const & job = jobs_.back();
+    auto & job = jobs_.back();
 
     // Unable to write, bus error
     if (device_.is_writeable<raw_frame>()) {
+        job.attempt++;
         device_.write_from(job.frame);
         transfer_watchdog_.start(transfer_timeout);
     } else
@@ -91,8 +93,18 @@ void bus_comm::do_timeout()
 {
     throw_if_ne(bus_state::transfer, state_); // Should never happen
 
-    auto const & job = jobs_.back();
-    job.handler(error{"Timeout", {}});
+    auto & job = jobs_.back();
+    if (job.attempt < max_attempts)
+        jobs_.push_front(std::move(job));
+    else
+        job.handler(error{"Timeout", {}});
+
+    do_finish();
+}
+
+void bus_comm::do_finish()
+{
+    throw_if_ne(bus_state::transfer, state_); // Should never happen
 
     jobs_.pop_back();
     if (jobs_.empty())
@@ -140,9 +152,12 @@ bus_comm::frame_or_error bus_comm::read_frame()
     return {std::move(frame)};
 }
 
-void bus_comm::add_job(job && j)
+void bus_comm::add_job(job && j, bool high_prio)
 {
-    jobs_.push_front(std::move(j));
+    if (high_prio && !jobs_.empty()) // A job is being handled
+        jobs_.insert(jobs_.end() - 1, std::move(j));
+    else
+        jobs_.push_front(std::move(j));
 
     if (jobs_.size() == 1)
         do_write();

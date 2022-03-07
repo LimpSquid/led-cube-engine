@@ -68,7 +68,7 @@ public:
                 std::memcpy(&params, frame->payload.data(), sizeof(params));
                 h(std::move(params));
             }
-        });
+        }, bus_request_params<C>::high_prio::value);
     }
 
     template<bus_command C>
@@ -87,7 +87,7 @@ public:
         std::memcpy(frame.payload.data(), &params, sizeof(params));
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
-        add_job({std::move(frame), nullptr});
+        add_job({std::move(frame), nullptr}, bus_request_params<C>::high_prio::value);
     }
 
 private:
@@ -110,18 +110,26 @@ private:
 
     struct job
     {
+        job(raw_frame f, std::function<void(frame_or_error)> h) :
+            frame(std::move(f)),
+            handler(std::move(h)),
+            attempt(0)
+        { }
+
         raw_frame frame;
         std::function<void(frame_or_error)> handler;
+        unsigned int attempt;
     };
 
     void do_read();
     void do_write();
     void do_write_one();
     void do_timeout();
+    void do_finish();
     void switch_state(bus_state state);
 
     frame_or_error read_frame();
-    void add_job(job && j);
+    void add_job(job && j, bool high_prio = false);
 
     iodev & device_;
     iodev_subscription read_subscription_;
