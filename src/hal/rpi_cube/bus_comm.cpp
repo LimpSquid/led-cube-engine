@@ -58,7 +58,7 @@ void bus_comm::do_read()
 
     if (!frame && job.attempt < max_attempts) // Todo: more fine grained retries?
         jobs_.push_front(std::move(job));
-    else
+    else if (job.handler)
         job.handler(std::move(frame));
 
     do_finish();
@@ -82,9 +82,13 @@ void bus_comm::do_write_one()
 
     // Unable to write, bus error
     if (device_.is_writeable<raw_frame>()) {
-        job.attempt++;
         device_.write_from(job.frame);
-        transfer_watchdog_.start(transfer_timeout);
+
+        if (job.handler) { // Do we expect a response?
+            job.attempt++;
+            transfer_watchdog_.start(transfer_timeout);
+        } else // Nope, its a broadcast
+            do_finish();
     } else
         switch_state(bus_state::error);
 }
@@ -96,7 +100,7 @@ void bus_comm::do_timeout()
     auto & job = jobs_.back();
     if (job.attempt < max_attempts)
         jobs_.push_front(std::move(job));
-    else
+    else if (job.handler)
         job.handler(error{"Timeout", {}});
 
     do_finish();
