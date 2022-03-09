@@ -37,7 +37,7 @@ struct basic_request_opt
 };
 
 using low_prio_request = basic_request_opt<false>;
-using high_prio_request = basic_request_opt<true>;
+using high_prio_request = basic_request_opt<true>; // Only on the first attempt
 
 template<bus_command>
 struct bus_request_params : low_prio_request { };

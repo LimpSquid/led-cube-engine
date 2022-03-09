@@ -5,20 +5,19 @@
 #include <hal/rpi_cube/crc.hpp>
 #include <cube/core/expected.hpp>
 #include <cube/core/timers.hpp>
+#include <cube/core/enum.hpp>
 #include <deque>
 #include <cstring>
+#include <variant>
 
 namespace hal::rpi_cube
 {
 
-enum class bus_state
-{
+SIMPLE_NS_ENUM(bus_state,
     idle,
     transfer,
-    error,
-};
-
-std::string to_string(bus_state state);
+    error
+)
 
 class iodev;
 class bus_comm
@@ -40,6 +39,7 @@ public:
     using response_params_or_error = cube::core::basic_expected<bus_response_params<C>, error>;
     template<bus_command C>
     using response_handler_t = std::function<void(response_params_or_error<C>)>;
+    using broadcast_handler_t = std::function<void()>;
 
     bus_comm(iodev & device);
 
@@ -58,21 +58,22 @@ public:
         std::memcpy(frame.payload.data(), &params, sizeof(params));
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
-        add_job({
-            std::move(frame),
-            [h = std::move(response_handler)](frame_or_error frame) {
-                if (!frame)
-                    return h(frame.error());
+        add_job({std::move(frame),
+            unicast_params{
+                [h = std::move(response_handler)](frame_or_error frame) {
+                    if (!frame)
+                        return h(frame.error());
 
-                bus_response_params<C> params;
-                std::memcpy(&params, frame->payload.data(), sizeof(params));
-                h(std::move(params));
+                    bus_response_params<C> params;
+                    std::memcpy(&params, frame->payload.data(), sizeof(params));
+                    h(std::move(params));
+                }
             }
         }, bus_request_params<C>::high_prio::value);
     }
 
     template<bus_command C>
-    void broadcast(bus_request_params<C> params)
+    void broadcast(bus_request_params<C> params, broadcast_handler_t handler = nullptr)
     {
         constexpr unsigned char broadcast_address{32};
         static_assert(std::is_trivially_copyable_v<bus_request_params<C>>);
@@ -87,7 +88,9 @@ public:
         std::memcpy(frame.payload.data(), &params, sizeof(params));
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
-        add_job({std::move(frame), nullptr}, bus_request_params<C>::high_prio::value);
+        add_job({std::move(frame),
+            broadcast_params{std::move(handler)}
+        }, bus_request_params<C>::high_prio::value);
     }
 
 private:
@@ -108,18 +111,26 @@ private:
 
     using frame_or_error = cube::core::basic_expected<raw_frame, error>;
 
+    struct unicast_params
+    {
+        std::function<void(frame_or_error)> handler;
+        unsigned int attempt{0};
+    };
+
+    struct broadcast_params
+    {
+        broadcast_handler_t handler;
+    };
+
     struct job
     {
-        job(raw_frame f, std::function<void(frame_or_error)> h) :
-            frame(std::move(f)),
-            handler(std::move(h)),
-            attempt(0)
-        { }
-
         raw_frame frame;
-        std::function<void(frame_or_error)> handler;
-        unsigned int attempt;
+        std::variant<
+            unicast_params,
+            broadcast_params
+        > params;
     };
+
 
     void do_read();
     void do_write();

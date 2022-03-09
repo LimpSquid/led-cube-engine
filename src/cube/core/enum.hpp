@@ -19,6 +19,10 @@
 #define ENUM(enum_name, enum_type, start_index, ...) \
     enum enum_name : enum_type { BOOST_PP_SEQ_FOR_EACH_I(ENUM_PROCESS_ONE, start_index, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)) }; \
     friend ENUM_TO_STRING_IMPL(enum_name, enum_type, start_index, __VA_ARGS__)
+#define SIMPLE_ENUM(enum_name, ...) \
+    ENUM(enum_name, int, 0, __VA_ARGS__)
 #define NS_ENUM(enum_name, enum_type, start_index, ...) \
     enum class enum_name : enum_type { BOOST_PP_SEQ_FOR_EACH_I(ENUM_PROCESS_ONE, start_index, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)) }; \
     inline ENUM_TO_STRING_IMPL(enum_name, enum_type, start_index, __VA_ARGS__)
+#define SIMPLE_NS_ENUM(enum_name, ...) \
+    NS_ENUM(enum_name, int, 0, __VA_ARGS__)

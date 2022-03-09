@@ -18,6 +18,7 @@ private:
 
     resources resources_;
     bus_comm bus_comm_;
+    bool ready_to_send_;
 };
 
 } // End of namespace
