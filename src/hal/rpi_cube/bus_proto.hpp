@@ -10,7 +10,6 @@ namespace hal::rpi_cube
 enum class bus_command : unsigned char
 {
     get_layer_ready         = 0,
-    get_dma_ready_to_recv   = 3,
     get_sys_version         = 5,
 
     exe_led_open_detection  = 1,
@@ -54,12 +53,6 @@ struct bus_request_params<bus_command::exe_sys_cpu_reset> : low_prio_request
 
 template<>
 struct bus_response_params<bus_command::get_layer_ready>
-{
-    bool ready;
-};
-
-template<>
-struct bus_response_params<bus_command::get_dma_ready_to_recv>
 {
     bool ready;
 };

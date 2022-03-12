@@ -33,7 +33,7 @@ struct graphics_state
 
 struct graphics_buffer
 {
-    rgba_t data[cube_size_3d]{0};
+    rgba_t data[cube_size_3d] = {};
 
     void operator=(graphics_buffer const & other)
     {
@@ -50,8 +50,8 @@ inline void scale(graphics_buffer & buffer, double scalar)
 
 inline void blend(graphics_buffer const & lhs, graphics_buffer & rhs)
 {
-    rgba_t const * lhs_data = lhs.data;
-    rgba_t * rhs_data = rhs.data;
+    auto const * lhs_data = lhs.data;
+    auto * rhs_data = rhs.data;
     for (int i = 0; i < cube_size_3d; ++i)
         blend(*lhs_data++, *rhs_data++);
 }
@@ -78,7 +78,6 @@ protected:
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
-
     graphics_device(graphics_device & other) = delete;
     graphics_device(graphics_device && other) = delete;
 
