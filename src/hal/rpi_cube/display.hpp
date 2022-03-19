@@ -3,6 +3,7 @@
 #include <hal/rpi_cube/resources.hpp>
 #include <hal/rpi_cube/bus_comm.hpp>
 #include <cube/core/graphics_device.hpp>
+#include <cube/core/timers.hpp>
 
 namespace hal::rpi_cube
 {
@@ -16,6 +17,18 @@ public:
 private:
     virtual void show(cube::core::graphics_buffer const & buffer) override;
 
+    template<bus_command C, typename H>
+    void send_for_each(bus_request_params<C> params, H handler)
+    {
+        for (auto address : resources_.bus_comm_addresses)
+            bus_comm_.send<C>(params, bus_comm::node{address}, [address, h = std::move(handler)](auto && response) {
+                h(bus_comm::node{address}, std::move(response));
+            });
+    }
+
+    void ping_nodes();
+
+    cube::core::recurring_timer bus_monitor_;
     resources resources_;
     bus_comm bus_comm_;
     bool ready_to_send_;

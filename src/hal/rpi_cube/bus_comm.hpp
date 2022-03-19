@@ -25,6 +25,12 @@ class bus_comm
 public:
     struct node
     {
+        using max_address = std::integral_constant<unsigned char, 31>;
+
+        node(unsigned char addr) :
+            address(addr & max_address())
+        { }
+
         unsigned char address   :5;
         unsigned char           :3;
     };
