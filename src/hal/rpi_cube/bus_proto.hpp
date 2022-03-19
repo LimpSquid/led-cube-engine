@@ -14,6 +14,7 @@ enum class bus_command : unsigned char
 
     exe_led_open_detection  = 1,
     exe_dma_reset           = 2,
+    exe_ping                = 3,
     exe_dma_swap_buffers    = 4,
     exe_sys_cpu_reset       = 6, // Fixme: a bit of a special case as this may not send a response with a small timeout!
 };
