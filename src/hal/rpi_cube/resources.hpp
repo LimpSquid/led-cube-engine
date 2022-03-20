@@ -32,7 +32,7 @@ struct resources
     }
 
     rs485 bus_comm_device;
-    std::array<unsigned char, cube_size> const bus_comm_addresses
+    std::array<unsigned char, cube_size> const bus_comm_slave_addresses
     {
          0,  1,  2,  3,
          4,  5,  6,  7,

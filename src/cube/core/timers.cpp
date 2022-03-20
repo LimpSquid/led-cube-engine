@@ -33,9 +33,10 @@ void remove_ticker(Container & tickers, uint64_t id)
 namespace cube::core
 {
 
-recurring_timer::recurring_timer(engine_context & context, timer_handler_t handler) :
+recurring_timer::recurring_timer(engine_context & context, timer_handler_t handler, bool trigger_on_start) :
     context_(context),
-    id_(ticker_id++)
+    id_(ticker_id++),
+    trigger_on_start_(trigger_on_start)
 {
     context_.tickers.push_back(engine_context::ticker{
         [h = std::move(handler)](auto now, auto elapsed) { h(std::move(now), std::move(elapsed)); },
@@ -62,7 +63,7 @@ void recurring_timer::start(milliseconds interval)
 
     ticker.interval = interval;
     ticker.last = now;
-    ticker.next = now + interval;
+    ticker.next = trigger_on_start_ ? now : (now + interval);
     ticker.suspended = false;
 }
 

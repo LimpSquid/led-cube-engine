@@ -15,7 +15,7 @@ class engine_context;
 class recurring_timer
 {
 public:
-    recurring_timer(engine_context & context, timer_handler_t handler);
+    recurring_timer(engine_context & context, timer_handler_t handler, bool trigger_on_start = false);
     ~recurring_timer();
 
     bool is_running() const;
@@ -28,6 +28,7 @@ private:
 
     engine_context & context_;
     uint64_t const id_;
+    bool const trigger_on_start_;
 };
 
 struct single_shot_timer :
