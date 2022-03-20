@@ -43,7 +43,7 @@ display::display(engine_context & context) :
     send_for_each<bus_command::get_sys_version>({}, [](auto node, auto response) {
         if (!response)
             std::cerr << "Failed to get version for target: " << std::to_string(node.address) << '\n';
-        std::cout << "Found target: " << std::to_string(node.address) << " with version: "
+        std::cout << "Found target at address '" << std::to_string(node.address) << "' running software version: "
             << "v" << std::to_string(response->major)
             << "." << std::to_string(response->minor)
             << "." << std::to_string(response->patch)
@@ -74,7 +74,7 @@ void display::ping_nodes()
 {
     send_for_each<bus_command::exe_ping>({}, [](auto node, auto response) {
         if (!response)
-            std::cerr << "Failed to ping target: " << std::to_string(node.address) << '\n';
+            std::cerr << "Failed to ping target at address: " << std::to_string(node.address) << '\n';
     });
 }
 

@@ -141,10 +141,17 @@ bus_comm::frame_or_error bus_comm::read_frame()
     device_.read_into(frame);
 
     if (crc16_generator{}(&frame, sizeof(frame))) // If the CRC yields non-zero, then the frame is garbled
-        return error{"CRC error", {}};
+        return error{"Invalid CRC", {}};
 
     if (frame.request)
         return error{"Received request message while expecting a response", {}};
+
+    auto const & job = jobs_.back();
+    if (job.frame.address != frame.address)
+        return error{"Received response from: '"
+            + std::to_string(frame.address)
+            + "', expected: '"
+            + std::to_string(job.frame.address) + "'", {}};
 
     auto response_code = static_cast<bus_response_code>(frame.command_or_response);
     auto make_error = [response_code](char const * const what) { return error{what, response_code}; };

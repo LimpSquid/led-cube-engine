@@ -22,7 +22,7 @@ public:
         for (unsigned int i = 0; i < size; ++i) {
             crc_ = static_cast<value_type>(crc_ ^ *data);
             for (unsigned int j = 0; j < 8; ++j) {
-                b = (crc_ & 0x0001);
+                b = (crc_ & 0x1);
                 crc_ = static_cast<value_type>(crc_ >> 1);
                 if (b)
                     crc_ ^= polynomial::value;
