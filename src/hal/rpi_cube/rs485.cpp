@@ -23,7 +23,7 @@ safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
         throw std::runtime_error("Unable to lock device: "s + config.device);
 
     termios tty;
-    if (tcgetattr(fd, &tty) < 0)
+    if (::tcgetattr(fd, &tty) < 0)
         throw std::runtime_error("Unable to read tty attributes for device: "s + config.device);
 
     // See https://linux.die.net/man/3/termios
@@ -36,13 +36,35 @@ safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
     tty.c_cc[VTIME] = 0; // Make read() return immediately
     tty.c_cc[VMIN] = 0;
 
-    cfsetispeed(&tty, config.baudrate);
-    cfsetospeed(&tty, config.baudrate);
+    ::cfsetispeed(&tty, config.baudrate);
+    ::cfsetospeed(&tty, config.baudrate);
 
-    if (tcsetattr(fd, TCSANOW, &tty) < 0)
+    if (::tcsetattr(fd, TCSANOW, &tty) < 0)
         throw std::runtime_error("Unable to write tty attributes for device: "s + config.device);
-
     return fd;
+}
+
+unsigned int speed_or_throw(speed_t baudrate)
+{
+    switch (baudrate) {
+#define CASE(speed) \
+    case B##speed: return speed;
+        CASE(9600)
+        CASE(19200)
+        CASE(38400)
+        CASE(57600)
+        CASE(115200)
+        CASE(576000)
+#undef CASE
+        default:
+            throw std::runtime_error("Unknown baudrate:" + std::to_string(baudrate));
+    }
+}
+
+useconds_t approximate_transmission_time(speed_t baudrate, unsigned int num_of_chars)
+{
+    constexpr double bits_per_char = 10.0;
+    return static_cast<useconds_t>(((bits_per_char * num_of_chars) / speed_or_throw(baudrate)) * 1000000LU + 0.5); // Ceil
 }
 
 template<typename H>
@@ -86,7 +108,6 @@ rs485::~rs485()
 {
     safe_join(drain_thread_);
 }
-
 
 std::size_t rs485::bytes_avail_for_reading() const
 {
@@ -174,6 +195,10 @@ void rs485::write_from_buffer()
     if (!can_transfer)
         return;
 
+    termios tty;
+    if (::tcgetattr(fd_, &tty) < 0)
+        throw std::runtime_error("Unable to read tty attributes from filedescriptor.");
+
     std::size_t csize;
     char * data = chunk_buffer_;
     for (csize = 0; csize < sizeof(chunk_buffer_) && !tx_buffer_.empty(); ++csize) {
@@ -188,8 +213,14 @@ void rs485::write_from_buffer()
     if (static_cast<std::size_t>(size) != csize)
         throw std::runtime_error("Chunk size too large, unable to write to underlying device");
 
-    safe_start(drain_thread_, [this]() {
-        ::tcdrain(fd_); // Supposed to be thread safe
+    safe_start(drain_thread_, [this, baudrate = ::cfgetospeed(&tty), num_of_chars = static_cast<unsigned int>(size)]() {
+        // Because tcdrain only polls every couple of milliseconds, we can't use that as the direction would be pulled
+        // low way too late. For now make a rough estimate of how long it would take to transfer the amount of chars
+        // we've just written to the device and sleep for atleast that amount. This is far from ideal but should work
+        // fine for now.
+
+        usleep(approximate_transmission_time(baudrate, num_of_chars));
+        //::tcdrain(fd_);
         dir_gpio_.write(gpio::lo); // Mutually exclusive with main thread, so no lock necessary
 
         synchronize(lock_, [this]() {
