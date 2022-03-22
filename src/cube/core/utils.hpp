@@ -1,7 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <stdexcept>
 #include <cstring>
+#include <cerrno>
 #include <unistd.h>
 
 namespace cube::core
