@@ -8,7 +8,7 @@ using std::operator""s;
 namespace
 {
 
-constexpr milliseconds transfer_timeout{50};
+constexpr milliseconds response_timeout{10};
 constexpr unsigned max_attempts{3};
 
 void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
@@ -25,7 +25,7 @@ namespace hal::rpi_cube
 bus_comm::bus_comm(iodev & device) :
     device_(device),
     read_subscription_(device_.subscribe([this]() { do_read(); })),
-    transfer_watchdog_(device.context(), [this](auto, auto) { do_timeout(); }),
+    response_watchdog_(device.context(), [this](auto, auto) { do_timeout(); }),
     state_(bus_state::idle)
 { }
 
@@ -39,7 +39,7 @@ void bus_comm::do_read()
         return;
 
     // Transfer done, stop watchdog
-    transfer_watchdog_.stop();
+    response_watchdog_.stop();
 
     // Read frame and forward to handler
     auto frame = read_frame();
@@ -84,7 +84,7 @@ void bus_comm::do_write_one()
 
             if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
-                transfer_watchdog_.start(transfer_timeout);
+                response_watchdog_.start(response_timeout);
             } else if constexpr (std::is_same_v<params_t, broadcast_params>) {
                 if (params.handler)
                     params.handler();

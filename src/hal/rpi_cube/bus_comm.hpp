@@ -151,7 +151,7 @@ private:
     iodev & device_;
     iodev_subscription read_subscription_;
 
-    cube::core::single_shot_timer transfer_watchdog_;
+    cube::core::single_shot_timer response_watchdog_;
     std::deque<job> jobs_;
     bus_state state_;
 };
