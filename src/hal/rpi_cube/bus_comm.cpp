@@ -46,7 +46,9 @@ void bus_comm::do_read()
     auto & job = jobs_.back();
 
     std::visit([&](auto & params) {
-        if constexpr (std::is_same_v<decltype(params), unicast_params>) {
+        using params_t = std::remove_reference_t<decltype(params)>;
+
+        if constexpr (std::is_same_v<params_t, unicast_params>) {
             if (!frame && !frame.error().response_code && params.attempt < max_attempts) {
                 params.attempt++;
                 jobs_.push_front(std::move(job));
@@ -78,14 +80,17 @@ void bus_comm::do_write_one()
         device_.write_from(job.frame);
 
         std::visit([&](auto & params) {
-            if constexpr (std::is_same_v<decltype(params), unicast_params>) {
+            using params_t = std::remove_reference_t<decltype(params)>;
+
+            if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
                 transfer_watchdog_.start(transfer_timeout);
-            } else if constexpr (std::is_same_v<decltype(params), broadcast_params>) {
+            } else if constexpr (std::is_same_v<params_t, broadcast_params>) {
                 if (params.handler)
                     params.handler();
                 do_finish();
-            }
+            } else
+                throw std::runtime_error("Unexpected write for current job");
         }, job.params);
     } else
         switch_state(bus_state::error);
@@ -98,7 +103,9 @@ void bus_comm::do_timeout()
     auto & job = jobs_.back();
 
     std::visit([&](auto & params) {
-        if constexpr (std::is_same_v<decltype(params), unicast_params>) {
+        using params_t = std::remove_reference_t<decltype(params)>;
+
+        if constexpr (std::is_same_v<params_t, unicast_params>) {
             if (params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
             else if (params.handler)

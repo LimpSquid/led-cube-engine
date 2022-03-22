@@ -30,7 +30,7 @@ std::FILE * fopen_or_throw(std::string const & filepath, char const * const mode
 
 void fwrite_or_throw(std::string const & filepath, std::string const & out)
 {
-    auto f = fopen_or_throw(filepath, "r+");
+    auto f = fopen_or_throw(filepath, "w");
     std::size_t const size = std::fwrite(out.c_str(), 1, out.size(), f);
     std::fclose(f);
     if (size != out.size())

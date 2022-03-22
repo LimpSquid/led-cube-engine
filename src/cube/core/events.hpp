@@ -84,11 +84,11 @@ public:
         all     = read | write | error
     };
 
-    friend event_flags operator~(event_flags evs) { return static_cast<event_flags>(~evs); }
-    friend event_flags operator|(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs | rhs); }
-    friend event_flags operator&(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs & rhs); }
-    friend event_flags operator|=(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs | rhs); }
-    friend event_flags operator&=(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(lhs & rhs); }
+    friend event_flags operator~(event_flags evs) { return static_cast<event_flags>(~events_t(evs)); }
+    friend event_flags operator|(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(events_t(lhs) | events_t(rhs)); }
+    friend event_flags operator&(event_flags lhs, event_flags rhs) { return static_cast<event_flags>(events_t(lhs) & events_t(rhs)); }
+    friend event_flags & operator|=(event_flags & lhs, event_flags rhs) { lhs = static_cast<event_flags>(events_t(lhs) | events_t(rhs)); return lhs; }
+    friend event_flags & operator&=(event_flags & lhs, event_flags rhs) { lhs = static_cast<event_flags>(events_t(lhs) & events_t(rhs)); return lhs; }
 
     using handler_t = std::function<void(event_flags)>;
 
