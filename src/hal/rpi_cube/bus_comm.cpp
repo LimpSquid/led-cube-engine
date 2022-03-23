@@ -109,7 +109,7 @@ void bus_comm::do_timeout()
             if (params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
             else if (params.handler)
-                params.handler(error{"Timeout", {}});
+                params.handler(bus_error{"Timeout", {}});
             do_finish();
         } else
             throw std::runtime_error("Unexpected timeout for current job");
@@ -142,26 +142,26 @@ void bus_comm::switch_state(bus_state state)
 bus_comm::frame_or_error bus_comm::read_frame()
 {
     if (!device_.is_readable<raw_frame>())
-        return error{"Unable to read frame from device", {}};
+        return bus_error{"Unable to read frame from device", {}};
 
     raw_frame frame;
     device_.read_into(frame);
 
     if (crc16_generator{}(&frame, sizeof(frame))) // If the CRC yields non-zero, then the frame is garbled
-        return error{"Invalid CRC", {}};
+        return bus_error{"Invalid CRC", {}};
 
     if (frame.request)
-        return error{"Received request message while expecting a response", {}};
+        return bus_error{"Received request message while expecting a response", {}};
 
     auto const & job = jobs_.back();
     if (job.frame.address != frame.address)
-        return error{"Received response from: '"
+        return bus_error{"Received response from: '"
             + std::to_string(frame.address)
             + "', expected: '"
             + std::to_string(job.frame.address) + "'", {}};
 
     auto response_code = static_cast<bus_response_code>(frame.command_or_response);
-    auto make_error = [response_code](char const * const what) { return error{what, response_code}; };
+    auto make_error = [response_code](char const * const what) { return bus_error{what, response_code}; };
     switch (response_code) {
         case bus_response_code::err_unknown:            return make_error("Unknown error");
         case bus_response_code::err_again:              return make_error("Try again");

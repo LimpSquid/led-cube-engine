@@ -1,4 +1,5 @@
 #include <hal/rpi_cube/display.hpp>
+#include <cube/core/composite_function.hpp>
 #include <iostream>
 #include <chrono>
 
@@ -82,27 +83,26 @@ void display::ping_slaves()
         if (detected_slaves_.count(slave.address))
             return;
 
-        // Slave detected
-        // Todo: for now the order doesn't matter, but eventually it would be nice to make some helper
-        // class by which we can wait for multiple commands to be handled, and only call a single
-        // handler with the aggregated responses of each command.
-        bus_comm_.send<bus_command::get_sys_version>({}, slave, [slave](auto response) {
-            if (!response) {
-                std::cerr << "Failed to get version for slave: " << std::to_string(slave.address) << '\n';
-                return;
-            }
+        // New slave detected, initialize
+        auto [sys_version_handler, dma_reset_handler] = decompose([this, slave](
+            bus_response_params_or_error<bus_command::get_sys_version> version_response,
+            bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
+                if (!version_response || ! reset_response) {
+                    std::cerr << "Failed to initialize slave: " << std::to_string(slave.address) << '\n';
+                    return;
+                }
 
-            std::cout << "Found slave at address '" << std::to_string(slave.address) << "' running software version: "
-                << "v" << std::to_string(response->major)
-                << "." << std::to_string(response->minor)
-                << "." << std::to_string(response->patch)
-                << '\n';
-        });
-
-        bus_comm_.send<bus_command::exe_dma_reset>({}, slave, [this, slave](auto response) {
-            if (response)
+                std::cout << "Found slave at address '" << std::to_string(slave.address) << "' running software version: "
+                    << "v" << std::to_string(version_response->major)
+                    << "." << std::to_string(version_response->minor)
+                    << "." << std::to_string(version_response->patch)
+                    << '\n';
                 detected_slaves_.insert(slave.address);
-        });
+            }
+        );
+
+        bus_comm_.send<bus_command::get_sys_version>({}, slave, sys_version_handler);
+        bus_comm_.send<bus_command::exe_dma_reset>({}, slave, dma_reset_handler);
     });
 }
 

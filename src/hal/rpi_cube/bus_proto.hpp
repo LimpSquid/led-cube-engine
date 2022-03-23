@@ -30,6 +30,18 @@ enum class bus_response_code : unsigned char
 };
 static_assert(sizeof(bus_command) == sizeof(bus_response_code));
 
+struct bus_node
+{
+    using max_address = std::integral_constant<unsigned char, 31>;
+
+    bus_node(unsigned char addr) :
+        address(addr & max_address())
+    { }
+
+    unsigned char address   :5;
+    unsigned char           :3;
+};
+
 template<bool HighPrio>
 struct basic_request_opt
 {

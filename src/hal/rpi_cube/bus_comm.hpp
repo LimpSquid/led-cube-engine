@@ -19,38 +19,26 @@ SIMPLE_NS_ENUM(bus_state,
     error
 )
 
-class iodev;
+struct bus_error :
+    cube::core::unexpected_error
+{
+    std::optional<bus_response_code> response_code; // If not set we encountered a CRC error, timeout, etc.
+};
+
+template<bus_command C>
+using bus_response_params_or_error = cube::core::basic_expected<bus_response_params<C>, bus_error>;
+
 class bus_comm
 {
 public:
-    struct node
-    {
-        using max_address = std::integral_constant<unsigned char, 31>;
-
-        node(unsigned char addr) :
-            address(addr & max_address())
-        { }
-
-        unsigned char address   :5;
-        unsigned char           :3;
-    };
-
-    struct error :
-        cube::core::unexpected_error
-    {
-        std::optional<bus_response_code> response_code; // If not set we encountered a CRC error, timeout, etc.
-    };
-
     template<bus_command C>
-    using response_params_or_error = cube::core::basic_expected<bus_response_params<C>, error>;
-    template<bus_command C>
-    using response_handler_t = std::function<void(response_params_or_error<C>)>;
+    using response_handler_t = std::function<void(bus_response_params_or_error<C>)>;
     using broadcast_handler_t = std::function<void()>;
 
     bus_comm(iodev & device);
 
     template<bus_command C>
-    void send(bus_request_params<C> params, node const & target, response_handler_t<C> response_handler)
+    void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler)
     {
         static_assert(std::is_trivially_copyable_v<bus_request_params<C>>);
         static_assert(std::is_trivially_copyable_v<bus_response_params<C>>);
@@ -115,7 +103,7 @@ private:
     static_assert(sizeof(raw_frame) == 8);
     static_assert(std::is_trivially_copyable_v<raw_frame>);
 
-    using frame_or_error = cube::core::basic_expected<raw_frame, error>;
+    using frame_or_error = cube::core::basic_expected<raw_frame, bus_error>;
 
     struct unicast_params
     {
