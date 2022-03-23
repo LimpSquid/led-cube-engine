@@ -49,10 +49,9 @@ void bus_comm::do_read()
         using params_t = std::remove_reference_t<decltype(params)>;
 
         if constexpr (std::is_same_v<params_t, unicast_params>) {
-            if (!frame && !frame.error().response_code && params.attempt < max_attempts) {
-                params.attempt++;
+            if (!frame && !frame.error().response_code && params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
-            } else if (params.handler)
+            else if (params.handler)
                 params.handler(std::move(frame));
             do_finish();
         } else
