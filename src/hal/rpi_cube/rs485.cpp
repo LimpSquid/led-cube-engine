@@ -195,6 +195,8 @@ void rs485::write_from_buffer()
     if (!can_transfer)
         return;
 
+    // At this point no locks are necessary as we are sure that the drain thread is not running
+
     termios tty;
     if (::tcgetattr(fd_, &tty) < 0)
         throw std::runtime_error("Unable to read tty attributes from filedescriptor.");
@@ -206,28 +208,33 @@ void rs485::write_from_buffer()
         tx_buffer_.pop_back();
     }
 
-    dir_gpio_.write(gpio::hi);
+    gpio_hi_guard dir_guard{dir_gpio_};
     auto size = ::write(fd_, &chunk_buffer_, csize);
     if (size < 0)
         throw_errno("rs485 write");
     if (static_cast<std::size_t>(size) != csize)
         throw std::runtime_error("Chunk size too large, unable to write to underlying device");
+    draining_ = true;
 
-    safe_start(drain_thread_, [this, baudrate = ::cfgetospeed(&tty), num_of_chars = static_cast<unsigned int>(size)]() {
-        // Because tcdrain only polls every couple of milliseconds, we can't use that as the direction would be pulled
-        // low way too late. For now make a rough estimate of how long it would take to transfer the amount of chars
-        // we've just written to the device and sleep for atleast that amount. This is far from ideal but should work
-        // fine for now.
+    safe_start(drain_thread_, [this,
+        guard = std::move(dir_guard),
+        baudrate = ::cfgetospeed(&tty),
+        num_of_chars = static_cast<unsigned int>(size)]() mutable {
+            // Because tcdrain only polls every couple of milliseconds, we can't use that as the direction would be pulled
+            // low way too late. For now make a rough estimate of how long it would take to transfer the amount of chars
+            // we've just written to the device and sleep for atleast that amount. This is far from ideal but should work
+            // fine for now.
 
-        usleep(approximate_transmission_time(baudrate, num_of_chars));
-        //::tcdrain(fd_);
-        dir_gpio_.write(gpio::lo); // Mutually exclusive with main thread, so no lock necessary
+            usleep(approximate_transmission_time(baudrate, num_of_chars));
+            //::tcdrain(fd_);
+            guard.restore(); // GPIO access is mutually exclusive with main thread, so no lock necessary
 
-        synchronize(lock_, [this]() {
-            event_notifier_.set_events(fd_event_notifier::write); // Underlying epoll_ctl is thread safe w.r.t. our main thread polling the event_poller
-            draining_ = false;
-        });
-    });
+            synchronize(lock_, [this]() {
+                event_notifier_.set_events(fd_event_notifier::write); // Underlying epoll_ctl is thread safe w.r.t. our main thread polling the event_poller
+                draining_ = false;
+            });
+        }
+    );
 }
 
 } // End of namespace
