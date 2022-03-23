@@ -40,7 +40,7 @@ private:
         {
             std::shared_ptr<impl> i;
 
-            void operator()(T && value)
+            void operator()(T value)
             {
                 if (i) {
                     std::get<I>(i->args) = std::move(value);
@@ -55,12 +55,12 @@ private:
         { }
 
         template<std::size_t ... I>
-        std::tuple<std::function<void(A)> ...> decompose(std::index_sequence<I ...>)
+        std::tuple<std::function<void(normalized_t<A>)> ...> decompose(std::index_sequence<I ...>)
         {
-            return std::tuple(closure<I, A>{this->shared_from_this()} ...);
+            return std::tuple(closure<I, normalized_t<A>>{this->shared_from_this()} ...);
         }
 
-        std::tuple<std::function<void(A)> ...> decompose()
+        std::tuple<std::function<void(normalized_t<A>)> ...> decompose()
         {
             return decompose(std::make_index_sequence<sizeof ... (A)>{});
         }
@@ -68,7 +68,7 @@ private:
         template<std::size_t ... I>
         void aggregate_and_forward(std::index_sequence<I ...>)
         {
-            function(*std::get<I>(args) ...);
+            function(std::forward<A>(*std::get<I>(args)) ...);
         }
 
         void arg_set()
@@ -85,6 +85,7 @@ private:
     template<typename ... A>
     static std::shared_ptr<impl<A ...>> make_shared(F && f, function_signature<A ...>)
     {
+        static_assert(sizeof ... (A) > 0, "Decomposing a function requires atleast one parameter");
         return std::make_shared<impl<A ...>>(std::move(f));
     }
 };
