@@ -30,7 +30,16 @@ using iodev_read_handler_t = std::function<void()>;
 class iodev
 {
 public:
+    enum direction
+    {
+        input,
+        output,
+        all_directions
+    };
+
     cube::core::engine_context & context();
+    void clear(direction dir);
+    iodev_subscription subscribe(iodev_read_handler_t handler);
 
     template<typename T>
     bool is_readable() const
@@ -68,8 +77,6 @@ public:
             throw std::runtime_error("Written only " + std::to_string(size) + " bytes, expected " + std::to_string(sizeof(T)));
     }
 
-    iodev_subscription subscribe(iodev_read_handler_t handler);
-
 protected:
     iodev(cube::core::engine_context & context);
 
@@ -82,6 +89,8 @@ private:
     virtual std::size_t bytes_avail_for_writing() const = 0;
     virtual std::size_t read(void * dst, std::size_t count) = 0;
     virtual std::size_t write(void const * src, std::size_t count) = 0;
+    virtual void clear_input() = 0;
+    virtual void clear_output() = 0;
 
     int next_subscription();
     void unsubscribe(int id);

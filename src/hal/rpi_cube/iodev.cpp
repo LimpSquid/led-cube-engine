@@ -31,16 +31,24 @@ void iodev_subscription::unsubscribe()
     }
 }
 
+engine_context & iodev::context()
+{
+    return context_;
+}
+
+void iodev::clear(direction dir)
+{
+    if (dir == all_directions || dir == input)
+        clear_input();
+    if (dir == all_directions || dir == output)
+        clear_output();
+}
+
 iodev_subscription iodev::subscribe(iodev_read_handler_t handler)
 {
     int id = next_subscription();
     read_handlers_[id] = std::move(handler);
     return {*this, id};
-}
-
-engine_context & iodev::context()
-{
-    return context_;
 }
 
 iodev::iodev(engine_context & context) :

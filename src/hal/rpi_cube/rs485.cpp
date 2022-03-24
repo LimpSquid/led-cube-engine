@@ -152,6 +152,20 @@ std::size_t rs485::write(void const * src, std::size_t count)
     return size;
 }
 
+void rs485::clear_input()
+{
+    if (::tcflush(fd_, TCIFLUSH) < 0)
+        throw_errno("rs485 input flush");
+    rx_buffer_.clear();
+}
+
+void rs485::clear_output()
+{
+    if (::tcflush(fd_, TCOFLUSH) < 0)
+        throw_errno("rs485 output flush");
+    tx_buffer_.clear();
+}
+
 void rs485::on_event(fd_event_notifier::event_flags evs)
 {
     if (evs & fd_event_notifier::error)

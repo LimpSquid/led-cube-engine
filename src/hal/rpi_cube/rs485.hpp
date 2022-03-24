@@ -29,10 +29,12 @@ private:
     rs485(rs485 & other) = delete;
     rs485(rs485 && other) = delete;
 
-    std::size_t bytes_avail_for_reading() const;
-    std::size_t bytes_avail_for_writing() const;
-    std::size_t read(void * dst, std::size_t count);
-    std::size_t write(void const * src, std::size_t count);
+    std::size_t bytes_avail_for_reading() const override;
+    std::size_t bytes_avail_for_writing() const override;
+    std::size_t read(void * dst, std::size_t count) override;
+    std::size_t write(void const * src, std::size_t count) override;
+    void clear_input() override;
+    void clear_output() override;
 
     void on_event(cube::core::fd_event_notifier::event_flags evs);
     void throw_error();

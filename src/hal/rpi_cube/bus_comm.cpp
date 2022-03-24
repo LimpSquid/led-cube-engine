@@ -9,7 +9,7 @@ namespace
 {
 
 constexpr milliseconds response_timeout{10};
-constexpr unsigned max_attempts{3};
+constexpr unsigned int max_attempts{3};
 
 void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
 {
@@ -45,11 +45,15 @@ void bus_comm::do_read()
     auto frame = read_frame();
     auto & job = jobs_.back();
 
+    bool const bus_error = !frame && !frame.error().response_code;
+    if (bus_error)
+        device_.clear(iodev::input);
+
     std::visit([&](auto & params) {
         using params_t = std::remove_reference_t<decltype(params)>;
 
         if constexpr (std::is_same_v<params_t, unicast_params>) {
-            if (!frame && !frame.error().response_code && params.attempt < max_attempts)
+            if (bus_error && params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
             else if (params.handler)
                 params.handler(std::move(frame));
