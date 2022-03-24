@@ -230,6 +230,8 @@ void rs485::write_from_buffer()
         throw std::runtime_error("Chunk size too large, unable to write to underlying device");
     draining_ = true;
 
+    // This whole construct sucks balls, wrong choices were made in the hardware, so we have to
+    // deal with it here now.
     safe_start(drain_thread_, [this,
         guard = std::move(dir_guard),
         baudrate = ::cfgetospeed(&tty),

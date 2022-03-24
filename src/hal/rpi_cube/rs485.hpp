@@ -45,7 +45,7 @@ private:
     cube::core::fd_event_notifier event_notifier_;
     boost::circular_buffer<char> tx_buffer_;
     boost::circular_buffer<char> rx_buffer_;
-    char chunk_buffer_[512]; // Max size of single read/write
+    char chunk_buffer_[64]; // Max size of single read/write, don't make this too large otherwise the direction pin gets pulled low too early
     gpio const dir_gpio_;
     std::mutex lock_;
     std::thread drain_thread_;
