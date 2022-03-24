@@ -54,11 +54,11 @@ private:
         void explode();
     };
 
-    virtual void start() override;
-    virtual void paint(core::graphics_device & device) override;
-    virtual void stop() override;
-    virtual nlohmann::json properties_to_json() const override;
-    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    void start() override;
+    void paint(core::graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
     shell make_shell() const;
 

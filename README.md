@@ -147,11 +147,11 @@ private:
         my_color_vector_property,
     )
 
-    virtual void start() override; // Optional, called before the animation is started
-    virtual void paint(core::graphics_device & device) override; // Required, paint a single animation frame
-    virtual void stop() override; // Optional, called after the animation is finished
-    virtual nlohmann::json properties_to_json() const override; // Optional, implement if we have atleast one property
-    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
+    void start() override; // Optional, called before the animation is started
+    void start() override; // Required, paint a single animation frame
+    void start() override; // Optional, called after the animation is finished
+    void start() override; // Optional, implement if we have atleast one property
+    void start() override; // Optional, implement if we have atleast one property
 
     // Optional, use this if you want to render at the specified scene frame rate
     core::animation_scene scene_;

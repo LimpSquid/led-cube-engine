@@ -16,7 +16,7 @@ public:
     display(cube::core::engine_context & context);
 
 private:
-    virtual void show(cube::core::graphics_buffer const & buffer) override;
+    void show(cube::core::graphics_buffer const & buffer) override;
 
     template<bus_command C, typename H>
     void send_for_each(bus_request_params<C> params, H handler)

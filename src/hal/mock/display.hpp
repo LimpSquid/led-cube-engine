@@ -15,7 +15,7 @@ public:
     display(cube::core::engine_context & context);
 
 private:
-    virtual void show(cube::core::graphics_buffer const & buffer) override;
+    void show(cube::core::graphics_buffer const & buffer) override;
 
     void update();
 
