@@ -3,14 +3,46 @@
 #include <cube/core/utils.hpp>
 #include <sys/file.h>
 #include <thread>
+#include <sched.h>
 
 using namespace cube::core;
+using namespace std::chrono;
 using std::operator""s;
 
 namespace
 {
 
 constexpr std::size_t buffer_size{4096};
+
+struct critical_section_guard
+{
+    critical_section_guard() :
+        restore_policy(sched_getscheduler(0))
+    {
+        // https://linux.die.net/man/2/sched_setscheduler
+        sched_param param{};
+        param.sched_priority = 99; // Highest priority
+        sched_setscheduler(0, SCHED_FIFO, &param);
+    }
+
+    ~critical_section_guard()
+    {
+        sched_param param{}; // The sched_priority parameter must be specified as 0;
+        sched_setscheduler(0, restore_policy, &param);
+    }
+
+    critical_section_guard(critical_section_guard &) = delete;
+    critical_section_guard(critical_section_guard &&) = delete;
+
+    int const restore_policy;
+};
+
+template<typename F>
+void critical_section(F func)
+{
+    critical_section_guard g{};
+    func();
+}
 
 safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
 {
@@ -61,10 +93,10 @@ unsigned int speed_or_throw(speed_t baudrate)
     }
 }
 
-useconds_t approximate_transmission_time(speed_t baudrate, unsigned int num_of_chars)
+microseconds approximate_transmission_time(speed_t baudrate, unsigned int num_of_chars)
 {
     constexpr double bits_per_char = 10.0;
-    return static_cast<useconds_t>(((bits_per_char * num_of_chars) / speed_or_throw(baudrate)) * 1000000LU + 0.5); // Ceil
+    return microseconds{static_cast<microseconds::rep>(((bits_per_char * num_of_chars) / speed_or_throw(baudrate)) * 1000000LU + 0.5)}; // Ceil
 }
 
 template<typename H>
@@ -198,6 +230,13 @@ void rs485::read_into_buffer()
 
 void rs485::write_from_buffer()
 {
+    // This whole construct sucks balls, wrong choices were made in the hardware,
+    // as we could've perfectly used the RTS pin of the hardware flow control.
+    // Since I would like to avoid patching this in the hardware we have to deal with
+    // it here. In the future we might want to take it a step further if this user space
+    // solution doesn't suffice, and that is to patch the serial driver and do the RS485
+    // direction toggling over there.
+
     bool const can_transfer = synchronize(lock_, [this, empty = tx_buffer_.empty()]() { // User must write data to the buffer first
         if (empty || draining_) {
             event_notifier_.clr_events(fd_event_notifier::write);
@@ -222,27 +261,35 @@ void rs485::write_from_buffer()
         tx_buffer_.pop_back();
     }
 
+    steady_clock::time_point transmission_end;
     gpio_hi_guard dir_guard{dir_gpio_};
-    auto size = ::write(fd_, &chunk_buffer_, csize);
+    ssize_t size;
+
+    critical_section([&]() {
+        transmission_end = steady_clock::now(); // Mark starting time
+        size = ::write(fd_, &chunk_buffer_, csize);
+    });
+
     if (size < 0)
         throw_errno("rs485 write");
     if (static_cast<std::size_t>(size) != csize)
         throw std::runtime_error("Chunk size too large, unable to write to underlying device");
+
+    transmission_end += approximate_transmission_time(::cfgetospeed(&tty), static_cast<unsigned int>(size)); // Add approximate time to transmit the characters
     draining_ = true;
 
-    // This whole construct sucks balls, wrong choices were made in the hardware, so we have to
-    // deal with it here now.
     safe_start(drain_thread_, [this,
         guard = std::move(dir_guard),
-        baudrate = ::cfgetospeed(&tty),
-        num_of_chars = static_cast<unsigned int>(size)]() mutable {
+        transmission_end = std::move(transmission_end)]() mutable {
             // Because tcdrain only polls every couple of milliseconds, we can't use that as the direction would be pulled
             // low way too late. For now make a rough estimate of how long it would take to transfer the amount of chars
             // we've just written to the device and sleep for atleast that amount. This is far from ideal but should work
             // fine for now.
-
-            usleep(approximate_transmission_time(baudrate, num_of_chars));
-            //::tcdrain(fd_);
+            auto const now = steady_clock::now();
+            if (now < transmission_end) {
+                auto const sleep = duration_cast<microseconds>(transmission_end - now).count();
+                usleep(static_cast<useconds_t>(sleep));
+            }
             guard.restore(); // GPIO access is mutually exclusive with main thread, so no lock necessary
 
             synchronize(lock_, [this]() {
