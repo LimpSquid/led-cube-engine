@@ -21,7 +21,7 @@ struct critical_section_guard
     {
         // https://linux.die.net/man/2/sched_setscheduler
         sched_param param{};
-        param.sched_priority = 99; // Highest priority
+        param.sched_priority = sched_get_priority_max(SCHED_FIFO);
         sched_setscheduler(0, SCHED_FIFO, &param);
     }
 
