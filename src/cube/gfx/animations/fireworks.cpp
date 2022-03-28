@@ -1,5 +1,7 @@
-#include <cube/gfx/animations/fireworks.hpp>
+#include <cube/gfx/configurable_animation.hpp>
+#include <cube/gfx/gradient.hpp>
 #include <cube/gfx/library.hpp>
+#include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 
@@ -10,20 +12,75 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::fireworks> const publisher;
+struct fireworks :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        number_of_shells,       // Number of shells
+        number_of_fragments,    // Number of fragments when exploded
+        explosion_force,        // Factor to limit or increase the explosion force
+        shell_radius,           // Radius of the shell
+        shell_colors,           // Array of shell colors to pick from
+    )
 
-constexpr cube::core::range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
+    struct particle
+    {
+        int radius;
+        glm::dvec3 position;
+        glm::dvec3 velocity;
+        gradient hue;
+
+        void move(std::chrono::milliseconds const & dt);
+        void paint(painter & p) const;
+    };
+
+    struct shell
+    {
+        enum state
+        {
+            flying,
+            exploded,
+            completed,
+        };
+
+        particle shell;
+        std::vector<particle> fragments;
+        double explosion_force;
+        state state{flying};
+
+        void update(std::chrono::milliseconds const & dt);
+        void paint(painter & p) const;
+        void explode();
+    };
+
+    fireworks(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    shell make_shell() const;
+
+    std::vector<shell> shells_;
+    std::vector<color> shell_colors_;
+    animation_scene scene_;
+    double explosion_force_;
+    unsigned int num_fragments_;
+    int shell_radius_;
+};
+
+animation_publisher<fireworks> const publisher;
+
+constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr double default_explosion_force = 1.0;
 constexpr double gravity = -0.000001 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_shells{3};
 constexpr unsigned int default_number_of_fragments{cube::cube_size_1d * 15};
 constexpr int default_shell_radius{cube::cube_size_1d / 8};
-
-} // End of namespace
-
-namespace cube::gfx::animations
-{
 
 fireworks::fireworks(engine_context & context) :
     configurable_animation(context),
@@ -96,12 +153,12 @@ fireworks::shell fireworks::make_shell() const
     };
 
     glm::dvec3 target = random_voxel();
-    target.z = cube_axis_max_value; // Must end on top
+    target.z = cube::cube_axis_max_value; // Must end on top
 
     particle shell;
     shell.radius = shell_radius_;
     shell.position = random_voxel();
-    shell.position.z = cube_axis_min_value; // Must start on bottom
+    shell.position.z = cube::cube_axis_min_value; // Must start on bottom
     shell.velocity = (target - shell.position) * randd({0.001, 0.002});
     shell.hue =
     {

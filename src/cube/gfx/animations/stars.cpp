@@ -1,6 +1,7 @@
-#include <cube/gfx/animations/stars.hpp>
+#include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
+#include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 
 using namespace cube::gfx;
@@ -10,7 +11,44 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::stars> const publisher;
+struct stars :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        number_of_stars,    // Number of unique stars in the cube
+        fade_time_ms,       // Fade time of star
+        galaxy_gradient,    // Gradient of the galaxiy
+        star_radius,        // Radius of a star
+    )
+
+    struct star
+    {
+        voxel_t voxel;
+        int fade_step;
+    };
+
+    stars(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    star make_star() const;
+
+    std::vector<star> stars_;
+    animation_scene scene_;
+    gradient galaxy_gradient_;
+    int gradient_step_;
+    int step_interval_;
+    int star_radius_;
+    double omega_;
+    double omega_gradient_;
+};
+
+animation_publisher<stars> const publisher;
 
 constexpr double gradient_omega_scalar{0.5};
 constexpr double gradient_phase_shift_scalar{0.25};
@@ -26,11 +64,6 @@ gradient const default_galaxy_gradient
     {1.00, color_orange},
 };
 
-} // End of namespace
-
-namespace cube::gfx::animations
-{
-
 stars::stars(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this](auto) {
@@ -45,7 +78,7 @@ void stars::start()
 {
     galaxy_gradient_ = read_property(galaxy_gradient, default_galaxy_gradient);
     star_radius_ = read_property(star_radius, default_radius);
-    step_interval_ = static_cast<int>(read_property(fade_time_ms, default_fade_time) / animation_scene_interval);
+    step_interval_ = static_cast<int>(read_property(fade_time_ms, default_fade_time) / cube::animation_scene_interval);
     omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
     omega_gradient_ = omega_ * gradient_omega_scalar;
     gradient_step_ = 0;
@@ -66,7 +99,7 @@ void stars::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (star const & s : stars_) {
-        double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube_size_1d);
+        double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube::cube_size_1d);
         gradient fade({
             {0.0, color_transparent},
             {1.0, galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift))},

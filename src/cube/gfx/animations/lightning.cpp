@@ -1,5 +1,7 @@
-#include <cube/gfx/animations/lightning.hpp>
+#include <cube/gfx/configurable_animation.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/gfx/library.hpp>
+#include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 
@@ -10,7 +12,40 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::lightning> const publisher;
+struct lightning :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        number_of_clouds,       // Number of clouds in the cube
+        cloud_radius,           // Radius of the cloud
+        cloud_gradient,         // Gradient of the clouds
+    )
+
+    struct cloud
+    {
+        voxel_t voxel;
+        std::unique_ptr<ease_in_bounce> in_fader;
+        std::unique_ptr<ease_out_sine> out_fader;
+    };
+
+    lightning(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    void spawn_cloud(cloud & c);
+
+    std::vector<cloud> clouds_;
+    animation_scene scene_;
+    gradient cloud_gradient_;
+    int cloud_radius_;
+};
+
+animation_publisher<lightning> const publisher;
 
 constexpr unsigned int default_number_of_clouds{3};
 constexpr int default_radius{4 * cube::cube_size_1d / 5};
@@ -20,12 +55,6 @@ gradient const default_gradient
     {0.50, color_blue},
     {1.00, color_white},
 };
-
-
-} // End of namespace
-
-namespace cube::gfx::animations
-{
 
 lightning::lightning(engine_context & context) :
     configurable_animation(context),
@@ -90,7 +119,7 @@ std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann
 void lightning::spawn_cloud(cloud & c)
 {
     auto const fade_in_time = milliseconds(rand(range{750, 2000}));
-    auto const fade_in_resolution = static_cast<unsigned int>(fade_in_time / animation_scene_interval);
+    auto const fade_in_resolution = static_cast<unsigned int>(fade_in_time / cube::animation_scene_interval);
 
     c.voxel = random_voxel();
     c.in_fader = std::make_unique<ease_in_bounce>(context(), easing_config{{0.0, 1.0}, fade_in_resolution, fade_in_time},

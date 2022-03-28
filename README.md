@@ -121,47 +121,10 @@ $ ./led-cube-engine render --help
 > The `properties` field is optional and, if provided, must be a valid JSON object string with fields unique for the animation passed to the `animation` field. Note that the example property fields `int_expression` and `double_expression` are only allowed when the build option `LCE_EVAL_EXPRESSIONS` is enabled. If the build option is not enabled, and a string value was given to a number field (e.g. `int`, `double`), an error will be returned. If a property field is missing, the default values will be used. It is allowed to provide additional fields with a key that is not matching any of the animation's properties, those fields will simply be ignored.
 
 ## Creating a new animation
-Naturally you want to create your own animations. The process of adding an animation to the LED cube engine is a straightforward process. All the animations can be be found in the directory `<repo_root>/src/cube/gfx/animations`. To add a new one, simply create a new header and source file and use the templates that are provided down below:
+Naturally you want to create your own animations. The process of adding an animation to the LED cube engine is a straightforward process. All the animations can be be found in the directory `<repo_root>/src/cube/gfx/animations`. To add a new one, simply create a new source file and use the template that is provided down below:
 
 ```c++
-#pragma once
-
 #include <cube/gfx/configurable_animation.hpp>
-
-namespace cube::gfx::animations
-{
-
-class my_animation :
-    public configurable_animation
-{
-public:
-    my_animation(core::engine_context & context);
-
-private:
-    // Optional, properties that are to be configured via JSON
-    PROPERTY_ENUM
-    (
-        my_int_property,
-        my_double_property,
-        my_gradient_property,
-        my_color_vector_property,
-    )
-
-    void start() override; // Optional, called before the animation is started
-    void start() override; // Required, paint a single animation frame
-    void start() override; // Optional, called after the animation is finished
-    void start() override; // Optional, implement if we have atleast one property
-    void start() override; // Optional, implement if we have atleast one property
-
-    // Optional, use this if you want to render at the specified scene frame rate
-    core::animation_scene scene_;
-};
-
-} // End of namespace
-```
-
-```c++
-#include <cube/gfx/animations/my_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/gfx/gradient.hpp> // Optional, only used if you use a gradient
@@ -172,10 +135,34 @@ using namespace cube::core;
 namespace
 {
 
+struct my_animation :
+    configurable_animation
+{
+    // Optional, properties that are to be configured via JSON
+    PROPERTY_ENUM
+    (
+        my_int_property,
+        my_double_property,
+        my_gradient_property,
+        my_color_vector_property,
+    )
+
+    my_animation(engine_context & context);
+
+    void start() override; // Optional, called before the animation is started
+    void paint(graphics_device & device) override; // Required, paint a single animation frame
+    void stop() override; // Optional, called after the animation is finished
+    nlohmann::json properties_to_json() const override; // Optional, implement if we have atleast one property
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
+
+    // Optional, use this if you want to render at the specified scene frame rate
+    animation_scene scene_;
+};
+
 // Adds the animation to library with name "my_animation".
 // Optionally, you can pass an alternative name to the
 // publisher's constructor.
-animation_publisher<animations::my_animation> const publisher;
+animation_publisher<my_animation> const publisher;
 
 // Some default animation property values
 constexpr int default_int_property = 12345;
@@ -185,13 +172,8 @@ gradient const default_gradient_property =
     {0.00, color_blue},
     {0.25, color_white},
     {0.75, color_white},
-    {1.0, color_magenta},
+    {1.00, color_magenta},
 };
-
-} // End of namespace
-
-namespace cube::gfx::animations
-{
 
 my_animation::my_animation(engine_context & context) :
     configurable_animation(context),

@@ -1,4 +1,5 @@
-#include <cube/gfx/animations/double_sine_wave.hpp>
+#include <cube/gfx/configurable_animation.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/painter.hpp>
@@ -11,17 +12,45 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::double_sine_wave> const publisher;
+struct double_sine_wave :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        wave_period,            // Number of voxels along the x-axis for one wave period
+        wave_period_time_ms,    // Time in milliseconds to complete one wave period
+        color_gradient_start,   // Start color of gradient
+        color_gradient_end      // End color of gradient
+    )
+
+    struct wave
+    {
+        int time_count;
+        color gradient_start;
+        color gradient_end;
+    };
+
+    double_sine_wave(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    std::array<wave, 2> waves_;
+    recurring_timer update_timer_;
+    ease_in_sine fader_;
+    int period_;
+    double omega_;
+};
+
+animation_publisher<double_sine_wave> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr color default_color{color_magenta};
 constexpr milliseconds default_period_time{1250ms};
 constexpr int default_period{2 * cube::cube_size_1d};
-
-} // End of namespace
-
-namespace cube::gfx::animations
-{
 
 double_sine_wave::double_sine_wave(engine_context & context) :
     configurable_animation(context),
@@ -63,13 +92,13 @@ void double_sine_wave::paint(graphics_device & device)
             {1.0, w.gradient_end},
         });
 
-        for (int i = w.time_count; i < (w.time_count + cube_size_1d); ++i) {
+        for (int i = w.time_count; i < (w.time_count + cube::cube_size_1d); ++i) {
             p.set_color(hue(abs_cos(i * omega_)).vec() * rgb_vec(fader_.value()));
 
             int z = map(std::sin(i * omega_), unit_circle_range, cube_axis_range);
             int x = i - w.time_count;
 
-            for (int y = 0; y < cube_size_1d; ++y)
+            for (int y = 0; y < cube::cube_size_1d; ++y)
                 p.draw({x, y, z});
         }
     }

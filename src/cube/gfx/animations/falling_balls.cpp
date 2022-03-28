@@ -1,5 +1,6 @@
-#include <cube/gfx/animations/falling_balls.hpp>
+#include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
+#include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
 
@@ -10,18 +11,52 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::falling_balls> const publisher;
+struct falling_balls :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        number_of_balls,    // Number of falling balls
+        max_ball_radius,    // Maximum radius of a ball
+        min_ball_radius,    // Minimum radius of a ball
+        ball_colors,        // Array of ball colors to pick from
+    )
+
+    struct ball
+    {
+        int radius;
+        double mass;
+        glm::dvec3 position;
+        glm::dvec3 velocity;
+        color c;
+
+        void move(std::chrono::milliseconds const & dt);
+    };
+
+    falling_balls(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    ball make_ball() const;
+
+    std::vector<ball> balls_;
+    std::vector<color> ball_colors_;
+    animation_scene scene_;
+    int max_radius_;
+    int min_radius_;
+};
+
+animation_publisher<falling_balls> const publisher;
 
 constexpr double gravity = -0.000002 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per second
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_balls{3};
 constexpr int default_max_radius{cube::cube_size_1d / 4};
 constexpr int default_min_radius{cube::cube_size_1d / 8};
-
-} // End of namespace
-
-namespace cube::gfx::animations
-{
 
 falling_balls::falling_balls(engine_context & context) :
     configurable_animation(context),
@@ -57,7 +92,7 @@ void falling_balls::paint(graphics_device & device)
     p.set_fill_mode(graphics_fill_mode::none);
 
     for (auto const & ball : balls_) {
-        p.set_color(ball.color);
+        p.set_color(ball.c);
         p.sphere(ball.position, ball.radius);
     }
 }
@@ -92,7 +127,7 @@ falling_balls::ball falling_balls::make_ball() const
     auto const radius = map(randd(), randd_range, range(min_radius_, max_radius_));
     auto const mass = map(radius, range(min_radius_, max_radius_), range(2.0, 8.0));
     glm::dvec3 position = random_voxel();
-    position.z = cube_size_1d + map(randd(), randd_range, range(radius, 4 * radius)); // Spawn outside cube
+    position.z = cube::cube_size_1d + map(randd(), randd_range, range(radius, 4 * radius)); // Spawn outside cube
 
     auto const color = ball_colors_.empty()
         ? random_color()

@@ -1,4 +1,5 @@
-#include <cube/gfx/animations/helix.hpp>
+#include <cube/gfx/configurable_animation.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
@@ -10,7 +11,37 @@ using namespace std::chrono;
 namespace
 {
 
-animation_publisher<animations::helix> const publisher;
+struct helix :
+    configurable_animation
+{
+    PROPERTY_ENUM
+    (
+        helix_rotation_time_ms,         // Time in milliseconds to complete one helix rotation
+        helix_phase_shift_cos_factor,   // Just play with it and you'll see :-)
+        helix_phase_shift_sin_factor,   // Same...
+        helix_thickness,                // Cross-section radius of the helix
+        helix_length,                   // Length of the helix
+        helix_gradient,                 // Helix gradient
+    )
+
+    helix(engine_context & context);
+
+    void start() override;
+    void paint(graphics_device & device) override;
+    void stop() override;
+    nlohmann::json properties_to_json() const override;
+    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+
+    animation_scene scene_;
+    gradient gradient_;
+    ease_in_sine fader_;
+    int step_;
+    int thickness_;
+    double omega_;
+    double length_;
+};
+
+animation_publisher<helix> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr milliseconds default_rotation_time{1500ms};
@@ -24,11 +55,6 @@ gradient const default_gradient
     {1.00, color_magenta},
 };
 
-} // End of namespace
-
-namespace cube::gfx::animations
-{
-
 helix::helix(engine_context & context) :
     configurable_animation(context),
     scene_(*this, [this](auto) { step_++; }),
@@ -37,7 +63,7 @@ helix::helix(engine_context & context) :
 
 void helix::start()
 {
-    int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / animation_scene_interval);
+    int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / cube::animation_scene_interval);
 
     gradient_ = read_property(helix_gradient, default_gradient);
     thickness_ = read_property(helix_thickness, default_thickness);
@@ -57,7 +83,7 @@ void helix::paint(graphics_device & device)
     double phase_shift_sin_factor = read_property(helix_phase_shift_sin_factor, default_phase_shift_factor);
     double phase_shift_cos_factor = read_property(helix_phase_shift_cos_factor, default_phase_shift_factor);
 
-    for (int y = 0; y < cube_size_1d; y++) {
+    for (int y = 0; y < cube::cube_size_1d; y++) {
         double phase_shift = map(y, cube_axis_range, range(0.0, length_));
         double x1 = std::sin(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_sin_factor));
         double z1 = std::cos(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_cos_factor));
