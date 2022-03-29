@@ -12,6 +12,36 @@ using namespace std::chrono;
 namespace
 {
 
+struct particle
+{
+    int radius;
+    glm::dvec3 position;
+    glm::dvec3 velocity;
+    gradient hue;
+
+    void move(std::chrono::milliseconds const & dt);
+    void paint(painter & p) const;
+};
+
+struct shell
+{
+    enum state
+    {
+        flying,
+        exploded,
+        completed,
+    };
+
+    particle shell;
+    std::vector<particle> fragments;
+    double explosion_force;
+    state state{flying};
+
+    void update(std::chrono::milliseconds const & dt);
+    void paint(painter & p) const;
+    void explode();
+};
+
 struct fireworks :
     configurable_animation
 {
@@ -23,36 +53,6 @@ struct fireworks :
         shell_radius,           // Radius of the shell
         shell_colors,           // Array of shell colors to pick from
     )
-
-    struct particle
-    {
-        int radius;
-        glm::dvec3 position;
-        glm::dvec3 velocity;
-        gradient hue;
-
-        void move(std::chrono::milliseconds const & dt);
-        void paint(painter & p) const;
-    };
-
-    struct shell
-    {
-        enum state
-        {
-            flying,
-            exploded,
-            completed,
-        };
-
-        particle shell;
-        std::vector<particle> fragments;
-        double explosion_force;
-        state state{flying};
-
-        void update(std::chrono::milliseconds const & dt);
-        void paint(painter & p) const;
-        void explode();
-    };
 
     fireworks(engine_context & context);
 
@@ -144,7 +144,7 @@ std::vector<fireworks::property_pair_t> fireworks::properties_from_json(nlohmann
     };
 }
 
-fireworks::shell fireworks::make_shell() const
+shell fireworks::make_shell() const
 {
     auto const pick_color = [this]() {
         return shell_colors_.empty()
@@ -169,19 +169,19 @@ fireworks::shell fireworks::make_shell() const
     return {std::move(shell), std::vector<particle>(num_fragments_), explosion_force_};
 }
 
-void fireworks::particle::move(milliseconds const & dt)
+void particle::move(milliseconds const & dt)
 {
     velocity += force * static_cast<double>(dt.count());
     position += velocity * static_cast<double>(dt.count());
 }
 
-void fireworks::particle::paint(painter & p) const
+void particle::paint(painter & p) const
 {
     p.set_color(hue(map(static_cast<int>(position.z), cube_axis_range, gradient_pos_range)));
     p.sphere(position, radius);
 }
 
-void fireworks::shell::update(std::chrono::milliseconds const & dt)
+void shell::update(std::chrono::milliseconds const & dt)
 {
     switch (state) {
         case flying:
@@ -203,7 +203,7 @@ void fireworks::shell::update(std::chrono::milliseconds const & dt)
     }
 }
 
-void fireworks::shell::paint(painter & p) const
+void shell::paint(painter & p) const
 {
     switch (state) {
         case flying:
@@ -217,7 +217,7 @@ void fireworks::shell::paint(painter & p) const
     }
 }
 
-void fireworks::shell::explode()
+void shell::explode()
 {
     color const explosion_color = shell.hue(map(static_cast<int>(shell.position.z), cube_axis_range, gradient_pos_range)); // Get current color of shell
 

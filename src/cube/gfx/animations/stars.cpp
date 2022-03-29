@@ -11,6 +11,12 @@ using namespace std::chrono;
 namespace
 {
 
+struct star
+{
+    voxel_t voxel;
+    int fade_step;
+};
+
 struct stars :
     configurable_animation
 {
@@ -21,12 +27,6 @@ struct stars :
         galaxy_gradient,    // Gradient of the galaxiy
         star_radius,        // Radius of a star
     )
-
-    struct star
-    {
-        voxel_t voxel;
-        int fade_step;
-    };
 
     stars(engine_context & context);
 
@@ -135,7 +135,7 @@ std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json c
     };
 }
 
-stars::star stars::make_star() const
+star stars::make_star() const
 {
     std::vector<star>::const_iterator search;
     voxel_t voxel;

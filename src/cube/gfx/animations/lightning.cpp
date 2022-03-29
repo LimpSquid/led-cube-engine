@@ -12,6 +12,13 @@ using namespace std::chrono;
 namespace
 {
 
+struct cloud
+{
+    voxel_t voxel;
+    std::unique_ptr<ease_in_bounce> in_fader;
+    std::unique_ptr<ease_out_sine> out_fader;
+};
+
 struct lightning :
     configurable_animation
 {
@@ -21,13 +28,6 @@ struct lightning :
         cloud_radius,           // Radius of the cloud
         cloud_gradient,         // Gradient of the clouds
     )
-
-    struct cloud
-    {
-        voxel_t voxel;
-        std::unique_ptr<ease_in_bounce> in_fader;
-        std::unique_ptr<ease_out_sine> out_fader;
-    };
 
     lightning(engine_context & context);
 

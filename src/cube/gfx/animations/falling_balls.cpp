@@ -11,6 +11,17 @@ using namespace std::chrono;
 namespace
 {
 
+struct ball
+{
+    int radius;
+    double mass;
+    glm::dvec3 position;
+    glm::dvec3 velocity;
+    color c;
+
+    void move(std::chrono::milliseconds const & dt);
+};
+
 struct falling_balls :
     configurable_animation
 {
@@ -21,17 +32,6 @@ struct falling_balls :
         min_ball_radius,    // Minimum radius of a ball
         ball_colors,        // Array of ball colors to pick from
     )
-
-    struct ball
-    {
-        int radius;
-        double mass;
-        glm::dvec3 position;
-        glm::dvec3 velocity;
-        color c;
-
-        void move(std::chrono::milliseconds const & dt);
-    };
 
     falling_balls(engine_context & context);
 
@@ -122,7 +122,7 @@ std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(
     };
 }
 
-falling_balls::ball falling_balls::make_ball() const
+ball falling_balls::make_ball() const
 {
     auto const radius = map(randd(), randd_range, range(min_radius_, max_radius_));
     auto const mass = map(radius, range(min_radius_, max_radius_), range(2.0, 8.0));
@@ -136,7 +136,7 @@ falling_balls::ball falling_balls::make_ball() const
     return {radius, mass, position, {}, color};
 }
 
-void falling_balls::ball::move(milliseconds const & dt)
+void ball::move(milliseconds const & dt)
 {
     velocity += (force / mass) * static_cast<double>(dt.count());
     position += velocity * static_cast<double>(dt.count());
