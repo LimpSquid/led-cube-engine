@@ -19,8 +19,8 @@ constexpr rs485_config bus_comm_config
 constexpr spi_config pixel_comm_config
 {
     "/dev/spidev0.0",       // Device
-    8,                      // Bits per word
     SPI_MODE_0 | SPI_NO_CS, // Mode
+    8,                      // Bits per word
     40000000,               // Max speed in Hz
 };
 
