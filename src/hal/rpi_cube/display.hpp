@@ -16,6 +16,7 @@ public:
     display(cube::core::engine_context & context);
 
 private:
+    int map_to_offset(int x, int y, int z) const override;
     void show(cube::core::graphics_buffer const & buffer) override;
 
     template<bus_command C, typename H>

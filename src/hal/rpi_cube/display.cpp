@@ -30,13 +30,13 @@ private:
 
 struct rgb_buffer
 {
-    using buffer_slice_t = std::array<color_t, cube::cube_size_2d>;
+    using buffer_slice_t = std::array<color_t, cube::cube_size_2d>; // Slice per LED controller board
 
     std::array<buffer_slice_t, cube::cube_size_1d> r;
     std::array<buffer_slice_t, cube::cube_size_1d> g;
     std::array<buffer_slice_t, cube::cube_size_1d> b;
 };
-static_assert(sizeof(rgb_buffer) == (3 * sizeof(color_t) * cube::cube_size_3d));
+static_assert(sizeof(rgb_buffer) == (3 * sizeof(uint8_t) * cube::cube_size_3d));
 
 rgb_buffer transform(graphics_buffer const & buffer)
 {
@@ -67,6 +67,11 @@ display::display(engine_context & context) :
     bus_comm_(resources_.bus_comm_device)
 {
     bus_monitor_.start(bus_monitor_interval);
+}
+
+int display::map_to_offset(int x, int y, int z) const
+{
+    return x + z * cube::cube_size_1d + y * cube::cube_size_2d;
 }
 
 void display::show(graphics_buffer const & buffer)
