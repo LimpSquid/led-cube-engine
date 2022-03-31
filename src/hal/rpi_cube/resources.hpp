@@ -2,6 +2,7 @@
 
 #include <hal/rpi_cube/gpio.hpp>
 #include <hal/rpi_cube/rs485.hpp>
+#include <hal/rpi_cube/spi.hpp>
 #include <hal/rpi_cube/specs_fwd.hpp>
 #include <array>
 
@@ -10,16 +11,25 @@ namespace hal::rpi_cube
 
 constexpr rs485_config bus_comm_config
 {
-    "/dev/serial0", // device
-    B115200,        // baudrate
-    2,              // gpio dir pin
+    "/dev/serial0", // Device
+    B115200,        // Baudrate
+    2,              // GPIO dir pin
+};
+
+constexpr spi_config pixel_comm_config
+{
+    "/dev/spidev0.0",       // Device
+    8,                      // Bits per word
+    SPI_MODE_0 | SPI_NO_CS, // Mode
+    40000000,               // Max speed in Hz
 };
 
 // Wrap all resources in order to provide a defined state on acquisition (and release).
 struct resources
 {
     resources(cube::core::engine_context & context) :
-        bus_comm_device(bus_comm_config, context)
+        bus_comm_device(bus_comm_config, context),
+        pixel_comm_device(pixel_comm_config, context)
     {
         for (gpio const & ss : pixel_comm_ss)
             ss.write(gpio::hi);
@@ -40,6 +50,7 @@ struct resources
         12, 13, 14, 15,
     };
 
+    spi pixel_comm_device;
     std::array<gpio, cube_size> const pixel_comm_ss
     {
         make_output( 5), make_output(22), make_output(17), make_output( 4),

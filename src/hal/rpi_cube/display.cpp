@@ -3,9 +3,8 @@
 #include <iostream>
 #include <chrono>
 
-using namespace std::chrono;
-
 using namespace cube::core;
+using namespace std::chrono;
 
 namespace
 {
@@ -29,6 +28,32 @@ private:
     bool & b_;
 };
 
+struct rgb_buffer
+{
+    using buffer_slice_t = std::array<color_t, cube::cube_size_2d>;
+
+    std::array<buffer_slice_t, cube::cube_size_1d> r;
+    std::array<buffer_slice_t, cube::cube_size_1d> g;
+    std::array<buffer_slice_t, cube::cube_size_1d> b;
+};
+static_assert(sizeof(rgb_buffer) == (3 * sizeof(color_t) * cube::cube_size_3d));
+
+rgb_buffer transform(graphics_buffer const & buffer)
+{
+    rgb_buffer rgbb;
+    color_t * r = rgbb.r.begin()->data();
+    color_t * b = rgbb.b.begin()->data();
+    color_t * g = rgbb.g.begin()->data();
+
+    for (rgba_t const & data : buffer) {
+        *r++ = static_cast<color_t>(data >> 24);
+        *g++ = static_cast<color_t>(data >> 16);
+        *b++ = static_cast<color_t>(data >>  8);
+    }
+
+    return rgbb;
+}
+
 } // End of namespace
 
 namespace hal::rpi_cube
@@ -49,7 +74,9 @@ void display::show(graphics_buffer const & buffer)
     if (!ready_to_send_)
         return; // Todo: log?
 
-    // Update all slaves with new pixel data
+    rgb_buffer const rgbb = transform(buffer); // Ideally we avoid this transform altogether
+
+    // Update all slaves with new pixel transformdata
     auto slave_select = resources_.pixel_comm_ss.begin();
     auto slave_addr = resources_.bus_comm_slave_addresses.begin();
     for (int i = 0; i < cube_size; ++i) {
@@ -58,7 +85,9 @@ void display::show(graphics_buffer const & buffer)
 
         if (detected_slaves_.count(*slave_addr)) { // Only write to slave we actually detected
             slave_select->write(gpio::lo);
-            // Todo: write pixel data
+            resources_.pixel_comm_device.write_from(rgbb.r[i]);
+            resources_.pixel_comm_device.write_from(rgbb.g[i]);
+            resources_.pixel_comm_device.write_from(rgbb.b[i]);
             slave_select->write(gpio::hi);
         }
 

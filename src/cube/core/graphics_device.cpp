@@ -107,9 +107,8 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 
 void graphics_device::fill()
 {
-    rgba_t * data = buffer_.data;
-    for (int i = 0; i < cube_size_3d; ++i)
-        blend(draw_color_, *data++);
+    for (rgba_t & data : buffer_)
+        blend(draw_color_, data);
 }
 
 void graphics_device::show_animation(std::shared_ptr<animation> animation)

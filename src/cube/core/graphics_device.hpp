@@ -6,6 +6,7 @@
 #include <cube/core/voxel.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cstring>
+#include <array>
 
 namespace cube::core
 {
@@ -33,27 +34,18 @@ struct graphics_state
 
 struct graphics_buffer
 {
-    rgba_t data[cube_size_3d] = {};
+    std::array<rgba_t, cube_size_3d> data = {};
 
-    void operator=(graphics_buffer const & other)
-    {
-        std::memcpy(data, other.data, sizeof(data));
-    }
+    auto begin() { return data.begin(); }
+    auto const begin() const { return data.begin(); }
+    auto end() { return data.end(); }
+    auto const end() const { return data.end(); }
 };
 
 inline void scale(graphics_buffer & buffer, double scalar)
 {
-    rgba_t * data = buffer.data;
-    for (int i = 0; i < cube_size_3d; ++i)
-        scale(*data++, scalar);
-}
-
-inline void blend(graphics_buffer const & lhs, graphics_buffer & rhs)
-{
-    auto const * lhs_data = lhs.data;
-    auto * rhs_data = rhs.data;
-    for (int i = 0; i < cube_size_3d; ++i)
-        blend(*lhs_data++, *rhs_data++);
+    for (rgba_t & data : buffer)
+        scale(data, scalar);
 }
 
 class engine_context;
