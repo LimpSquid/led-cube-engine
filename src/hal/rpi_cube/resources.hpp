@@ -19,9 +19,9 @@ constexpr rs485_config bus_comm_config
 constexpr spi_config pixel_comm_config
 {
     "/dev/spidev0.0",       // Device
-    SPI_MODE_0 | SPI_NO_CS, // Mode
+    SPI_MODE_3 | SPI_NO_CS, // Mode
     8,                      // Bits per word
-    40000000,               // Max speed in Hz
+    20000000,               // Max speed in Hz
 };
 
 // Wrap all resources in order to provide a defined state on acquisition (and release).

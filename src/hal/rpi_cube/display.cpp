@@ -42,9 +42,9 @@ struct rgb_buffer
         auto const begin() const { return data.begin() + Tag::offset::value; }
 
         template<typename Tag>
-        auto end() { return begin<Tag>() + cube::cube_size_1d; }
+        auto end() { return begin<Tag>() + cube::cube_size_2d; }
         template<typename Tag>
-        auto const end() const { return begin<Tag>() + cube::cube_size_1d; }
+        auto const end() const { return begin<Tag>() + cube::cube_size_2d; }
 
         std::array<color_t, 3 * cube::cube_size_2d> data;
     };
