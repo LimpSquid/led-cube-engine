@@ -24,6 +24,9 @@ safe_fd open_or_throw(hal::rpi_cube::spi_config const & config)
     if (::ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &config.bits_per_word) < 0)
         throw std::runtime_error("Unable to write SPI bits per word to device: "s + config.device);
 
+    if (::ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &config.max_speed_hz) < 0)
+        throw std::runtime_error("Unable to write SPI max speed to device: "s + config.device);
+
     return fd;
 }
 

@@ -30,25 +30,45 @@ private:
 
 struct rgb_buffer
 {
-    using buffer_slice_t = std::array<color_t, cube::cube_size_2d>; // Slice per LED controller board
+    struct red_tag   { using offset = std::integral_constant<std::size_t, 0 * cube::cube_size_2d>; };
+    struct green_tag { using offset = std::integral_constant<std::size_t, 1 * cube::cube_size_2d>; };
+    struct blue_tag  { using offset = std::integral_constant<std::size_t, 2 * cube::cube_size_2d>; };
 
-    std::array<buffer_slice_t, cube::cube_size_1d> r;
-    std::array<buffer_slice_t, cube::cube_size_1d> g;
-    std::array<buffer_slice_t, cube::cube_size_1d> b;
+    struct slice_buffer
+    {
+        template<typename Tag>
+        auto begin() { return data.begin() + Tag::offset::value; }
+        template<typename Tag>
+        auto const begin() const { return data.begin() + Tag::offset::value; }
+
+        template<typename Tag>
+        auto end() { return begin<Tag>() + cube::cube_size_1d; }
+        template<typename Tag>
+        auto const end() const { return begin<Tag>() + cube::cube_size_1d; }
+
+        std::array<color_t, 3 * cube::cube_size_2d> data;
+    };
+
+    std::array<slice_buffer, cube::cube_size_1d> slices;
 };
 static_assert(sizeof(rgb_buffer) == (3 * sizeof(uint8_t) * cube::cube_size_3d));
+static_assert(std::is_trivially_copyable_v<rgb_buffer>);
 
 rgb_buffer transform(graphics_buffer const & buffer)
 {
     rgb_buffer rgbb;
-    color_t * r = rgbb.r.begin()->data();
-    color_t * b = rgbb.b.begin()->data();
-    color_t * g = rgbb.g.begin()->data();
+    auto rgba = buffer.begin();
 
-    for (rgba_t const & data : buffer) {
-        *r++ = static_cast<color_t>(data >> 24);
-        *g++ = static_cast<color_t>(data >> 16);
-        *b++ = static_cast<color_t>(data >>  8);
+    for (auto & slice : rgbb.slices) {
+        auto r = slice.begin<rgb_buffer::red_tag>();
+        auto g = slice.begin<rgb_buffer::green_tag>();
+        auto b = slice.begin<rgb_buffer::blue_tag>();
+
+        while (r != slice.end<rgb_buffer::red_tag>()) {
+            *r++ = static_cast<color_t>(*rgba   >> 24);
+            *g++ = static_cast<color_t>(*rgba   >> 16);
+            *b++ = static_cast<color_t>(*rgba++ >>  8);
+        }
     }
 
     return rgbb;
@@ -77,23 +97,24 @@ int display::map_to_offset(int x, int y, int z) const
 void display::show(graphics_buffer const & buffer)
 {
     if (!ready_to_send_)
-        return; // Todo: log?
+        return; // Todo: log
 
     rgb_buffer const rgbb = transform(buffer); // Ideally we avoid this transform altogether
 
-    // Update all slaves with new pixel transformdata
+    // Todo: Maybe we want to schedule this in the event loop and chop it up
+    // into "cube_size_1d" number of function calls as writing to the pixel_comm_device
+    // is a blocking operation.
+
+    // Update all slaves with new pixel data
     auto slave_select = resources_.pixel_comm_ss.begin();
     auto slave_addr = resources_.bus_comm_slave_addresses.begin();
-    for (int i = 0; i < cube_size; ++i) {
+    for (int i = 0; i < cube::cube_size_1d; ++i) {
         assert(slave_select != resources_.pixel_comm_ss.end());
         assert(slave_addr != resources_.bus_comm_slave_addresses.end());
 
-        if (detected_slaves_.count(*slave_addr)) { // Only write to slave we actually detected
-            slave_select->write(gpio::lo);
-            resources_.pixel_comm_device.write_from(rgbb.r[i]);
-            resources_.pixel_comm_device.write_from(rgbb.g[i]);
-            resources_.pixel_comm_device.write_from(rgbb.b[i]);
-            slave_select->write(gpio::hi);
+        if (detected_slaves_.count(*slave_addr)) { // Only write to the slaves we actually detected
+            gpio_lo_guard gpio_guard{*slave_select};
+            resources_.pixel_comm_device.write_from(rgbb.slices[i]);
         }
 
         slave_select++;
