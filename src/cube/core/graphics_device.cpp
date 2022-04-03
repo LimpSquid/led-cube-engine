@@ -135,14 +135,14 @@ void graphics_device::render_animation()
 }
 
 graphics_device::graphics_device(engine_context & context) :
-    io_context_(context.io_context),
+    context_(context),
     fill_mode_(graphics_fill_mode::solid),
     draw_color_(color_transparent)
 { }
 
-io_context_t & graphics_device::io_context()
+engine_context & graphics_device::context()
 {
-    return io_context_;
+    return context_;
 }
 
 int graphics_device::map_to_offset(int x, int y, int z) const

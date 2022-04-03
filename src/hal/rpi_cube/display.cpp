@@ -1,5 +1,6 @@
 #include <hal/rpi_cube/display.hpp>
 #include <cube/core/composite_function.hpp>
+#include <cube/core/events.hpp>
 #include <iostream>
 #include <chrono>
 
@@ -30,21 +31,21 @@ private:
 
 struct rgb_buffer
 {
-    struct red_tag   { using offset = std::integral_constant<std::size_t, 0 * cube::cube_size_2d>; };
-    struct green_tag { using offset = std::integral_constant<std::size_t, 1 * cube::cube_size_2d>; };
-    struct blue_tag  { using offset = std::integral_constant<std::size_t, 2 * cube::cube_size_2d>; };
+    struct red   { using offset = std::integral_constant<std::size_t, 0 * cube::cube_size_2d>; };
+    struct green { using offset = std::integral_constant<std::size_t, 1 * cube::cube_size_2d>; };
+    struct blue  { using offset = std::integral_constant<std::size_t, 2 * cube::cube_size_2d>; };
 
     struct slice_buffer
     {
-        template<typename Tag>
-        auto begin() { return data.begin() + Tag::offset::value; }
-        template<typename Tag>
-        auto const begin() const { return data.begin() + Tag::offset::value; }
+        template<typename C>
+        auto begin() { return data.begin() + C::offset::value; }
+        template<typename C>
+        auto const begin() const { return data.begin() + C::offset::value; }
 
-        template<typename Tag>
-        auto end() { return begin<Tag>() + cube::cube_size_2d; }
-        template<typename Tag>
-        auto const end() const { return begin<Tag>() + cube::cube_size_2d; }
+        template<typename C>
+        auto end() { return begin<C>() + cube::cube_size_2d; }
+        template<typename C>
+        auto const end() const { return begin<C>() + cube::cube_size_2d; }
 
         std::array<color_t, 3 * cube::cube_size_2d> data;
     };
@@ -60,11 +61,11 @@ rgb_buffer transform(graphics_buffer const & buffer)
     auto rgba = buffer.begin();
 
     for (auto & slice : rgbb.slices) {
-        auto r = slice.begin<rgb_buffer::red_tag>();
-        auto g = slice.begin<rgb_buffer::green_tag>();
-        auto b = slice.begin<rgb_buffer::blue_tag>();
+        auto r = slice.begin<rgb_buffer::red>();
+        auto g = slice.begin<rgb_buffer::green>();
+        auto b = slice.begin<rgb_buffer::blue>();
 
-        while (r != slice.end<rgb_buffer::red_tag>()) {
+        while (r != slice.end<rgb_buffer::red>()) {
             *r++ = static_cast<color_t>(*rgba   >> 24);
             *g++ = static_cast<color_t>(*rgba   >> 16);
             *b++ = static_cast<color_t>(*rgba++ >>  8);
@@ -73,6 +74,58 @@ rgb_buffer transform(graphics_buffer const & buffer)
 
     return rgbb;
 }
+
+class async_pixel_pump
+{
+public:
+    using completion_handler_t = std::function<void()>;
+    using resources_t = hal::rpi_cube::resources;
+
+    static void run(event_poller & poller, graphics_buffer const & buffer, resources_t & resources, completion_handler_t completion_handler)
+    {
+        std::make_shared<impl>(poller, buffer, resources)->run(std::move(completion_handler));
+    }
+
+private:
+    struct impl :
+        std::enable_shared_from_this<impl>
+    {
+        impl(event_poller & p, graphics_buffer const & b, resources_t & r) :
+            resources(r),
+            invoker(p, [&]() { pump_one(); }),
+            buffer(transform(b)),
+            current_slice(0)
+        { }
+
+        void run(completion_handler_t handler)
+        {
+            completion_handler = [self = shared_from_this(), h = std::move(handler)] { h(); };
+            pump_one();
+        }
+
+        void pump_one()
+        {
+            auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
+            auto slave_addr = resources.bus_comm_slave_addresses.begin() + current_slice;
+            assert(slave_select != resources.pixel_comm_ss.end());
+            assert(slave_addr != resources.bus_comm_slave_addresses.end());
+
+            hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
+            resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
+
+            if (++current_slice == cube::cube_size_1d)
+                completion_handler();
+            else
+                invoker.schedule();
+        }
+
+        resources_t & resources;
+        completion_handler_t completion_handler;
+        function_invoker invoker;
+        rgb_buffer buffer;
+        int current_slice;
+    };
+};
 
 } // End of namespace
 
@@ -99,29 +152,9 @@ void display::show(graphics_buffer const & buffer)
     if (!ready_to_send_)
         return; // Todo: log
 
-    rgb_buffer const rgbb = transform(buffer); // Ideally we avoid this transform altogether
-
-    // Todo: Maybe we want to schedule this in the event loop and chop it up
-    // into "cube_size_1d" number of function calls as writing to the pixel_comm_device
-    // is a blocking operation.
-
-    // Update all slaves with new pixel data
-    auto slave_select = resources_.pixel_comm_ss.begin();
-    auto slave_addr = resources_.bus_comm_slave_addresses.begin();
-    for (int i = 0; i < cube::cube_size_1d; ++i) {
-        assert(slave_select != resources_.pixel_comm_ss.end());
-        assert(slave_addr != resources_.bus_comm_slave_addresses.end());
-
-        if (detected_slaves_.count(*slave_addr)) { // Only write to the slaves we actually detected
-            gpio_lo_guard gpio_guard{*slave_select};
-            resources_.pixel_comm_device.write_from(rgbb.slices[i]);
-        }
-
-        slave_select++;
-        slave_addr++;
-    }
-
-    bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, bool_latch{ready_to_send_});
+    async_pixel_pump::run(context().event_poller, buffer, resources_, [&]() {
+        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, bool_latch{ready_to_send_});
+    });
 }
 
 void display::ping_slaves()

@@ -65,7 +65,7 @@ public:
 protected:
     graphics_device(engine_context & context);
 
-    io_context_t & io_context();
+    engine_context & context();
 
     virtual int map_to_offset(int x, int y, int z) const;
 
@@ -75,7 +75,7 @@ private:
 
     virtual void show(graphics_buffer const & buffer) = 0;
 
-    io_context_t & io_context_;
+    engine_context & context_;
     graphics_buffer buffer_;
     graphics_fill_mode fill_mode_;
     color draw_color_;
