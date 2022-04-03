@@ -9,11 +9,14 @@
 namespace hal::rpi_cube
 {
 
+namespace detail { struct async_pixel_pump; }
+
 class display :
     public cube::core::graphics_device
 {
 public:
     display(cube::core::engine_context & context);
+    ~display();
 
 private:
     int map_to_offset(int x, int y, int z) const override;
@@ -37,6 +40,7 @@ private:
 
     // Keep last
     bus_comm bus_comm_;
+    std::unique_ptr<detail::async_pixel_pump const> pixel_pump_;
 };
 
 } // End of namespace

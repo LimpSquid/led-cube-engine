@@ -75,62 +75,58 @@ rgb_buffer transform(graphics_buffer const & buffer)
     return rgbb;
 }
 
-class async_pixel_pump
-{
-public:
-    using completion_handler_t = std::function<void()>;
-    using resources_t = hal::rpi_cube::resources;
-
-    static void run(event_poller & poller, graphics_buffer const & buffer, resources_t & resources, completion_handler_t completion_handler)
-    {
-        std::make_shared<impl>(poller, buffer, resources)->run(std::move(completion_handler));
-    }
-
-private:
-    struct impl :
-        std::enable_shared_from_this<impl>
-    {
-        impl(event_poller & p, graphics_buffer const & b, resources_t & r) :
-            resources(r),
-            invoker(p, [&]() { pump_one(); }),
-            buffer(transform(b)),
-            current_slice(0)
-        { }
-
-        void run(completion_handler_t handler)
-        {
-            completion_handler = [self = shared_from_this(), h = std::move(handler)] { h(); };
-            pump_one();
-        }
-
-        void pump_one()
-        {
-            auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
-            auto slave_addr = resources.bus_comm_slave_addresses.begin() + current_slice;
-            assert(slave_select != resources.pixel_comm_ss.end());
-            assert(slave_addr != resources.bus_comm_slave_addresses.end());
-
-            hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
-            resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
-
-            if (++current_slice == cube::cube_size_1d)
-                completion_handler();
-            else
-                invoker.schedule();
-        }
-
-        resources_t & resources;
-        completion_handler_t completion_handler;
-        function_invoker invoker;
-        rgb_buffer buffer;
-        int current_slice;
-    };
-};
-
 } // End of namespace
 
 namespace hal::rpi_cube
 {
+
+namespace detail
+{
+
+struct async_pixel_pump
+{
+    using completion_handler_t = std::function<void()>;
+    using resources_t = hal::rpi_cube::resources;
+    using pointer_t = std::unique_ptr<async_pixel_pump>;
+
+    static pointer_t make_unique_and_run(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h)
+    {
+        pointer_t pp{new async_pixel_pump(p, b, r, std::move(h))};
+        pp->run();
+        return pp;
+    }
+
+private:
+    async_pixel_pump(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h) :
+        resources(r),
+        completion_handler(std::move(h)),
+        invoker(p, [&]() { run(); }),
+        buffer(transform(b)),
+        current_slice(0)
+    { }
+
+    void run()
+    {
+        assert(current_slice < cube::cube_size_1d);
+        auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
+
+        hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
+        resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
+
+        if (++current_slice == cube::cube_size_1d)
+            completion_handler();
+        else
+            invoker.schedule();
+    }
+
+    resources_t & resources;
+    completion_handler_t completion_handler;
+    function_invoker invoker;
+    rgb_buffer buffer;
+    int current_slice;
+};
+
+} // End of namespace
 
 display::display(engine_context & context) :
     graphics_device(context),
@@ -142,6 +138,11 @@ display::display(engine_context & context) :
     bus_monitor_.start(bus_monitor_interval);
 }
 
+display::~display()
+{
+
+}
+
 int display::map_to_offset(int x, int y, int z) const
 {
     return x + z * cube::cube_size_1d + y * cube::cube_size_2d;
@@ -149,12 +150,17 @@ int display::map_to_offset(int x, int y, int z) const
 
 void display::show(graphics_buffer const & buffer)
 {
-    if (!ready_to_send_)
-        return; // Todo: log
+    using namespace detail;
 
-    async_pixel_pump::run(context().event_poller, buffer, resources_, [&]() {
-        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, bool_latch{ready_to_send_});
-    });
+    if (ready_to_send_) {
+        // TODO: not safe yet when display gets destroyed and the async pixel pump hasn't finished yet
+        pixel_pump_ = async_pixel_pump::make_unique_and_run(context().event_poller, buffer, resources_,
+            [&, bl = bool_latch{ready_to_send_}]()
+            {
+                bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, std::move(bl));
+            }
+        );
+    }
 }
 
 void display::ping_slaves()
