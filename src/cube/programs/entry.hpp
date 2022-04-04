@@ -4,7 +4,6 @@ namespace cube::programs
 {
 
 // Signals
-void sigint_library();
 void sigint_render();
 
 // Main entry

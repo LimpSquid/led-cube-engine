@@ -23,8 +23,8 @@ public:
 
 private:
     library() = default;
-    library(library & other) = delete;
-    library(library && other) = delete;
+    library(library &) = delete;
+    library(library &&) = delete;
 
     std::unordered_map<std::string, animation_incubator_t> animations_;
 };

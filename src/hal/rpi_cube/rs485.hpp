@@ -26,8 +26,8 @@ public:
     ~rs485();
 
 private:
-    rs485(rs485 & other) = delete;
-    rs485(rs485 && other) = delete;
+    rs485(rs485 &) = delete;
+    rs485(rs485 &&) = delete;
 
     std::size_t bytes_avail_for_reading() const override;
     std::size_t bytes_avail_for_writing() const override;

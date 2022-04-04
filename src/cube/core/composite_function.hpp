@@ -8,6 +8,8 @@
 namespace cube::core
 {
 
+struct void_param {};
+
 template<typename F>
 class composite_function
 {
@@ -50,17 +52,32 @@ private:
             }
         };
 
+        template<std::size_t I>
+        struct closure<I, void_param>
+        {
+            std::shared_ptr<impl> i;
+
+            void operator()()
+            {
+                if (i) {
+                    std::get<I>(i->args) = void_param{};
+                    i->arg_set();
+                    i.reset();
+                }
+            }
+        };
+
         impl(F && f) :
             function(std::move(f))
         { }
 
         template<std::size_t ... I>
-        std::tuple<std::function<void(normalized_t<A>)> ...> decompose(std::index_sequence<I ...>)
+        auto decompose(std::index_sequence<I ...>)
         {
             return std::tuple(closure<I, normalized_t<A>>{this->shared_from_this()} ...);
         }
 
-        std::tuple<std::function<void(normalized_t<A>)> ...> decompose()
+        auto decompose()
         {
             return decompose(std::make_index_sequence<sizeof ... (A)>{});
         }

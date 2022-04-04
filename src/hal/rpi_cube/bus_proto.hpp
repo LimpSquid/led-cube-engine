@@ -61,7 +61,7 @@ struct bus_request_params<bus_command::exe_dma_swap_buffers> : high_prio_request
 template<>
 struct bus_request_params<bus_command::exe_sys_cpu_reset> : low_prio_request
 {
-    int32_t delay;
+    int32_t delay_ms;
 };
 
 template<>

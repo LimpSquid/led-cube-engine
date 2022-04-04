@@ -70,8 +70,8 @@ protected:
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
-    graphics_device(graphics_device & other) = delete;
-    graphics_device(graphics_device && other) = delete;
+    graphics_device(graphics_device &) = delete;
+    graphics_device(graphics_device &&) = delete;
 
     virtual void show(graphics_buffer const & buffer) = 0;
 

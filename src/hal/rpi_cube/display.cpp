@@ -11,6 +11,7 @@ namespace
 {
 
 constexpr seconds bus_monitor_interval{5};
+constexpr seconds cpu_reset_delay{1};
 
 struct bool_latch
 {
@@ -130,6 +131,7 @@ private:
 
 display::display(engine_context & context) :
     graphics_device(context),
+    engine_shutdown_signal(context),
     bus_monitor_(context, [&](auto, auto) { ping_slaves(); }, true),
     resources_(context),
     ready_to_send_(true),
@@ -160,6 +162,14 @@ void display::show(graphics_buffer const & buffer)
             }
         );
     }
+}
+
+void display::shutdown_requested()
+{
+    bus_request_params<bus_command::exe_sys_cpu_reset> params;
+    params.delay_ms = static_cast<int32_t>(duration_cast<milliseconds>(cpu_reset_delay).count());
+
+    send_all(std::move(params), [&]() { ready_for_shutdown(); });
 }
 
 void display::ping_slaves()

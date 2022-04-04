@@ -38,8 +38,8 @@ public:
     void stop();
 
 private:
-    engine(engine & other) = delete;
-    engine(engine && other) = delete;
+    engine(engine &) = delete;
+    engine(engine &&) = delete;
 
     engine_context & context_;
     std::shared_ptr<animation> animation_;

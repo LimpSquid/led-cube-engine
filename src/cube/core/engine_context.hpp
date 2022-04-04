@@ -5,6 +5,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <functional>
 #include <chrono>
+#include <unordered_set>
 
 namespace cube::core
 {
@@ -13,6 +14,7 @@ using event_poller_t = event_poller;
 using io_context_t = boost::asio::io_context;
 using executor_work_guard_t = boost::asio::executor_work_guard<io_context_t::executor_type>;
 
+class engine_shutdown_signal;
 class engine_context
 {
 public:
@@ -23,6 +25,7 @@ private:
     // Following classes may access the internals of the engine's context
     friend class recurring_timer;
     friend class engine;
+    friend class engine_shutdown_signal;
     friend class graphics_device;
 
     executor_work_guard_t work_guard{io_context.get_executor()};
@@ -40,6 +43,49 @@ private:
     };
 
     std::vector<ticker> tickers;
+    std::unordered_set<engine_shutdown_signal *> shutdown_signals;
+};
+
+class engine_shutdown_signal
+{
+public:
+    engine_shutdown_signal(engine_context & context) :
+        context_(&context)
+    {
+        context_->shutdown_signals.insert(this);
+    }
+
+    ~engine_shutdown_signal()
+    {
+        remove();
+    }
+
+    void operator()()
+    {
+        shutdown_requested();
+    }
+
+protected:
+    void ready_for_shutdown()
+    {
+        remove();
+    }
+
+private:
+    engine_shutdown_signal(engine_shutdown_signal &) = delete;
+    engine_shutdown_signal(engine_shutdown_signal &&) = delete;
+
+    virtual void shutdown_requested() = 0;
+
+    void remove()
+    {
+        if (context_) {
+            context_->shutdown_signals.erase(this);
+            context_ = nullptr;
+        }
+    }
+
+    engine_context * context_;
 };
 
 } // End of namespace

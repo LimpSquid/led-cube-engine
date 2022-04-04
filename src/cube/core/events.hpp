@@ -29,8 +29,8 @@ public:
     std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> poll_events(std::optional<std::chrono::milliseconds> timeout = {});
 
 private:
-    event_poller(event_poller & other) = delete;
-    event_poller(event_poller && other) = delete;
+    event_poller(event_poller &) = delete;
+    event_poller(event_poller &&) = delete;
 
     std::vector<epoll_event> events_;
     safe_fd fd_;
@@ -64,8 +64,8 @@ public:
     void schedule();
 
 private:
-    function_invoker(function_invoker & other) = delete;
-    function_invoker(function_invoker && other) = delete;
+    function_invoker(function_invoker &) = delete;
+    function_invoker(function_invoker &&) = delete;
 
     event_poller & event_poller_;
     event_handler_t handler_;
@@ -100,8 +100,8 @@ public:
     void clr_events(event_flags evs);
 
 private:
-    fd_event_notifier(fd_event_notifier & other) = delete;
-    fd_event_notifier(fd_event_notifier && other) = delete;
+    fd_event_notifier(fd_event_notifier &) = delete;
+    fd_event_notifier(fd_event_notifier &&) = delete;
 
     event_poller & event_poller_;
     std::optional<event_handler_t> event_handler_;

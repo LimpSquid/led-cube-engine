@@ -12,7 +12,8 @@ namespace hal::rpi_cube
 namespace detail { struct async_pixel_pump; }
 
 class display :
-    public cube::core::graphics_device
+    public cube::core::graphics_device,
+    private cube::core::engine_shutdown_signal
 {
 public:
     display(cube::core::engine_context & context);
@@ -21,13 +22,25 @@ public:
 private:
     int map_to_offset(int x, int y, int z) const override;
     void show(cube::core::graphics_buffer const & buffer) override;
+    void shutdown_requested() override;
 
     template<bus_command C, typename H>
     void send_for_each(bus_request_params<C> params, H handler)
     {
         for (auto address : resources_.bus_comm_slave_addresses)
-            bus_comm_.send<C>(params, bus_node{address}, [address, h = std::move(handler)](auto && response) {
-                h(bus_node{address}, std::move(response));
+            bus_comm_.send<C>(params, bus_node{address}, [address, handler](auto && response) {
+                handler(bus_node{address}, std::move(response));
+            });
+    }
+
+    template<bus_command C, typename H>
+    void send_all(bus_request_params<C> params, H handler)
+    {
+        auto ref = std::make_shared<std::size_t>(resources_.bus_comm_slave_addresses.size());
+        for (auto address : resources_.bus_comm_slave_addresses)
+            bus_comm_.send<C>(params, bus_node{address}, [handler, ref](auto &&) {
+                if (--*ref == 0)
+                    handler(); // TODO: eventually pass in success/error responses?
             });
     }
 

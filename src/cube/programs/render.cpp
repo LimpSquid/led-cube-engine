@@ -18,7 +18,6 @@ namespace fs = std::filesystem;
 namespace
 {
 
-
 std::vector<std::function<void()>> sigint_handlers;
 
 engine & engine_instance()

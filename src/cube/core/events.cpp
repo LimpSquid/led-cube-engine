@@ -69,8 +69,12 @@ std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> event_pol
     using std::operator""s;
 
     int r = ::epoll_wait(fd_, events_.data(), static_cast<int>(events_.size()), timeout ? static_cast<int>(timeout->count()) : -1);
-    if (r < 0)
+    if (r < 0) {
+        if (errno == EINTR)
+            return {0, std::cref(events_)};
         throw_errno("epoll_wait");
+    }
+
     return {r, std::cref(events_)};
 }
 

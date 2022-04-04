@@ -48,8 +48,16 @@ void engine::run()
 {
     std::shared_ptr<animation> animation;
     bool new_animation = false;
+    bool shutdown = false;
 
-    while (!stopping_) {
+    while (!shutdown || !context_.shutdown_signals.empty()) {
+        // We're requested to stop
+        if (stopping_ && !shutdown) {
+            for (auto * signal : context_.shutdown_signals)
+                (*signal)();
+            shutdown = true;
+        }
+
         // Poll tickers before the animation is rendered as it is common practice
         // that an animation is marked dirty from within a ticker handler
         poll(context_.tickers);

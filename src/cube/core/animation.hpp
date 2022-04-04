@@ -24,8 +24,8 @@ protected:
     animation(engine_context & context);
 
 private:
-    animation(animation & other) = delete;
-    animation(animation && other) = delete;
+    animation(animation &) = delete;
+    animation(animation &&) = delete;
 
     virtual void start();
     virtual void paint(graphics_device & device) = 0;

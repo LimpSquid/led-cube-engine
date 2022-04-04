@@ -94,11 +94,6 @@ void handle_dump_properties(std::vector<std::string> const & args)
 namespace cube::programs
 {
 
-void sigint_library()
-{
-
-}
-
 int main_library(int ac, char const * const av[])
 {
     po::options_description desc("Available options");

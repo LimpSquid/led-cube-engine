@@ -20,7 +20,7 @@ struct program
 std::map<std::string, program> const programs =
 {
     {"render",  {main_render,   sigint_render,  "render animations to the LED cube engine's graphics device"}},
-    {"library", {main_library,  sigint_library, "list info about the LED cube engine's animation library"}},
+    {"library", {main_library,  nullptr,        "list info about the LED cube engine's animation library"}},
 };
 
 std::optional<program> prog;
@@ -38,9 +38,13 @@ void exit_with_help()
 
 void signal_handler(int signal)
 {
-    if (signal == SIGINT)
-        return prog->sigint();
+    auto exec = [](auto handler) {
+        if (handler)
+            handler();
+    };
 
+    if (signal == SIGINT)
+        return exec(prog->sigint);
     throw std::runtime_error("Unhandled signal: "s + std::to_string(signal));
 }
 

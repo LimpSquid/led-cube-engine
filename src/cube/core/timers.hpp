@@ -23,8 +23,8 @@ public:
     void stop();
 
 private:
-    recurring_timer(recurring_timer & other) = delete;
-    recurring_timer(recurring_timer && other) = delete;
+    recurring_timer(recurring_timer &) = delete;
+    recurring_timer(recurring_timer &&) = delete;
 
     engine_context & context_;
     uint64_t const id_;
