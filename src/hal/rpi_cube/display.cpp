@@ -153,7 +153,6 @@ void display::show(graphics_buffer const & buffer)
     using namespace detail;
 
     if (ready_to_send_) {
-        // TODO: not safe yet when display gets destroyed and the async pixel pump hasn't finished yet
         pixel_pump_ = async_pixel_pump::make_unique_and_run(context().event_poller, buffer, resources_,
             [&, bl = bool_latch{ready_to_send_}]()
             {

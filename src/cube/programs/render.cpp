@@ -18,11 +18,24 @@ namespace fs = std::filesystem;
 namespace
 {
 
+
+std::vector<std::function<void()>> sigint_handlers;
+
 engine & engine_instance()
 {
-    static engine_context context;
-    static engine instance(context, graphics_device_factory<hal::graphics_device_t>{});
-    return instance;
+    struct engine_singleton
+    {
+        engine_singleton()
+        {
+            sigint_handlers.push_back([&]() { instance.stop(); });
+        }
+
+        engine_context context;
+        engine instance{context, graphics_device_factory<hal::graphics_device_t>{}};
+    };
+
+    static engine_singleton s;
+    return s.instance;
 }
 
 void handle_file(std::vector<std::string> const & args)
@@ -62,7 +75,7 @@ void handle_file(std::vector<std::string> const & args)
                 player.start(animation->get_duration());
             });
             player.start(0ms);
-            engine.run(); // Does not return
+            engine.run();
         }
 
         std::exit(EXIT_SUCCESS);
@@ -88,7 +101,8 @@ void handle_animation(std::vector<std::string> const & args)
             (*animation)->load_properties(nlohmann::json::parse(args[1]));
 
         engine.load(std::static_pointer_cast<cube::core::animation>(*animation));
-        engine.run(); // Does not return
+        engine.run();
+        std::exit(EXIT_SUCCESS);
     }
 
     std::cout
@@ -103,6 +117,12 @@ void handle_animation(std::vector<std::string> const & args)
 
 namespace cube::programs
 {
+
+void sigint_render()
+{
+    for (auto const & handler : sigint_handlers)
+        handler();
+}
 
 int main_render(int ac, char const * const av[])
 {

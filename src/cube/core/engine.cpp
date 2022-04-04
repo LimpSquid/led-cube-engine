@@ -49,7 +49,7 @@ void engine::run()
     std::shared_ptr<animation> animation;
     bool new_animation = false;
 
-    for (;;) {
+    while (!stopping_) {
         // Poll tickers before the animation is rendered as it is common practice
         // that an animation is marked dirty from within a ticker handler
         poll(context_.tickers);
@@ -76,6 +76,11 @@ void engine::run()
         } else
             context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
     }
+}
+
+void engine::stop()
+{
+    stopping_ = true;
 }
 
 } // End of namespace

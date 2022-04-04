@@ -28,12 +28,14 @@ public:
     engine(engine_context & context, graphics_device_factory<T> factory) :
         context_(context),
         animation_(nullptr),
-        device_(factory(context))
+        device_(factory(context)),
+        stopping_(false)
     { }
 
     engine_context & context();
     void load(std::shared_ptr<animation> animation);
     void run();
+    void stop();
 
 private:
     engine(engine & other) = delete;
@@ -42,6 +44,7 @@ private:
     engine_context & context_;
     std::shared_ptr<animation> animation_;
     std::unique_ptr<graphics_device> device_;
+    bool stopping_;
 };
 
 } // End of namespace
