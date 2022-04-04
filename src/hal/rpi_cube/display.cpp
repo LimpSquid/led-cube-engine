@@ -169,7 +169,7 @@ void display::shutdown_requested()
     bus_request_params<bus_command::exe_sys_cpu_reset> params;
     params.delay_ms = static_cast<int32_t>(duration_cast<milliseconds>(cpu_reset_delay).count());
 
-    send_all(std::move(params), [&]() { ready_for_shutdown(); });
+    send_all(std::move(params), [&](auto && /* responses */) { ready_for_shutdown(); });
 }
 
 void display::ping_slaves()

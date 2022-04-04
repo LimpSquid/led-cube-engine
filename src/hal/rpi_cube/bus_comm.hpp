@@ -125,7 +125,6 @@ private:
         > params;
     };
 
-
     void do_read();
     void do_write();
     void do_write_one();

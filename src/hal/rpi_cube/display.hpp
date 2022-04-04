@@ -36,11 +36,20 @@ private:
     template<bus_command C, typename H>
     void send_all(bus_request_params<C> params, H handler)
     {
-        auto ref = std::make_shared<std::size_t>(resources_.bus_comm_slave_addresses.size());
+        struct session
+        {
+            std::vector<std::pair<bus_node, bus_response_params_or_error<C>>> responses;
+            std::size_t ref;
+        };
+
+        auto s = std::make_shared<session>();
+        s->ref = resources_.bus_comm_slave_addresses.size();
+
         for (auto address : resources_.bus_comm_slave_addresses)
-            bus_comm_.send<C>(params, bus_node{address}, [handler, ref](auto &&) {
-                if (--*ref == 0)
-                    handler(); // TODO: eventually pass in success/error responses?
+            bus_comm_.send<C>(params, bus_node{address}, [address, handler, s](auto && response) {
+                s->responses.push_back(std::make_pair(bus_node{address}, std::move(response)));
+                if (--s->ref == 0)
+                    handler(std::move(s->responses));
             });
     }
 
