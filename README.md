@@ -150,13 +150,11 @@ struct my_animation :
     my_animation(engine_context & context);
 
     void start() override; // Optional, called before the animation is started
+    void scene_tick(std::chrono::milliseconds dt) override; // Optional, called with an interval of `animation_scene_interval` ms.
     void paint(graphics_device & device) override; // Required, paint a single animation frame
     void stop() override; // Optional, called after the animation is finished
     nlohmann::json properties_to_json() const override; // Optional, implement if we have atleast one property
     std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
-
-    // Optional, use this if you want to render at the specified scene frame rate
-    animation_scene scene_;
 };
 
 // Adds the animation to library with name "my_animation".
@@ -176,8 +174,7 @@ gradient const default_gradient_property =
 };
 
 my_animation::my_animation(engine_context & context) :
-    configurable_animation(context),
-    scene_(*this, [this](auto elapsed) { /* Do some additional processing each scene frame */ })
+    configurable_animation(context)
 { }
 
 void my_animation::start()
@@ -195,8 +192,11 @@ void my_animation::start()
 
     // Or a vector of colors:
     auto const my_colors = read_property(my_color_vector_property, std::vector<color>{});
+}
 
-    scene_.start();
+void my_animation::scene_tick(std::chrono::milliseconds dt)
+{
+    // Do some additional processing each scene frame
 }
 
 void my_animation::paint(graphics_device & device)
@@ -214,8 +214,6 @@ void my_animation::stop()
     // Do some additional processing after the animation has finished
     // ...
     // ...
-
-    scene_.stop();
 }
 
 nlohmann::json my_animation::properties_to_json() const
