@@ -40,7 +40,6 @@ struct lightning :
     void spawn_cloud(cloud & c);
 
     std::vector<cloud> clouds_;
-    animation_scene scene_;
     gradient cloud_gradient_;
     int cloud_radius_;
 };
@@ -57,8 +56,7 @@ gradient const default_gradient
 };
 
 lightning::lightning(engine_context & context) :
-    configurable_animation(context),
-    scene_(*this)
+    configurable_animation(context)
 { }
 
 void lightning::start()
@@ -70,8 +68,6 @@ void lightning::start()
     clouds_.resize(num_clouds);
     for (auto & cloud : clouds_)
         spawn_cloud(cloud);
-
-    scene_.start();
 }
 
 void lightning::paint(graphics_device & device)
@@ -90,8 +86,6 @@ void lightning::paint(graphics_device & device)
 
 void lightning::stop()
 {
-    scene_.stop();
-
     for (auto & cloud : clouds_) {
         cloud.in_fader.reset();
         cloud.out_fader.reset();

@@ -36,8 +36,8 @@ struct falling_balls :
     falling_balls(engine_context & context);
 
     void start() override;
+    void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    void stop() override;
     nlohmann::json properties_to_json() const override;
     std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
@@ -45,7 +45,6 @@ struct falling_balls :
 
     std::vector<ball> balls_;
     std::vector<color> ball_colors_;
-    animation_scene scene_;
     int max_radius_;
     int min_radius_;
 };
@@ -59,16 +58,7 @@ constexpr int default_max_radius{cube::cube_size_1d / 4};
 constexpr int default_min_radius{cube::cube_size_1d / 8};
 
 falling_balls::falling_balls(engine_context & context) :
-    configurable_animation(context),
-    scene_(*this, [this](auto elapsed) {
-        for (auto & ball : balls_) {
-            int const top = static_cast<int>(ball.position.z) + ball.radius;
-            if (top >= 0)
-                ball.move(elapsed);
-            else
-                ball = make_ball();
-        }
-    })
+    configurable_animation(context)
 { }
 
 void falling_balls::start()
@@ -81,8 +71,17 @@ void falling_balls::start()
     balls_.resize(num_balls);
     for (auto & ball : balls_)
         ball = make_ball();
+}
 
-    scene_.start();
+void falling_balls::scene_tick(milliseconds dt)
+{
+    for (auto & ball : balls_) {
+        int const top = static_cast<int>(ball.position.z) + ball.radius;
+        if (top >= 0)
+            ball.move(dt);
+        else
+            ball = make_ball();
+    }
 }
 
 void falling_balls::paint(graphics_device & device)
@@ -95,11 +94,6 @@ void falling_balls::paint(graphics_device & device)
         p.set_color(ball.c);
         p.sphere(ball.position, ball.radius);
     }
-}
-
-void falling_balls::stop()
-{
-    scene_.stop();
 }
 
 nlohmann::json falling_balls::properties_to_json() const

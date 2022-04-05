@@ -27,12 +27,12 @@ struct helix :
     helix(engine_context & context);
 
     void start() override;
+    void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     void stop() override;
     nlohmann::json properties_to_json() const override;
     std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
-    animation_scene scene_;
     gradient gradient_;
     ease_in_sine fader_;
     int step_;
@@ -57,7 +57,6 @@ gradient const default_gradient
 
 helix::helix(engine_context & context) :
     configurable_animation(context),
-    scene_(*this, [this](auto) { step_++; }),
     fader_(context, {{0.1, 1.0}, 10, 1000ms})
 { }
 
@@ -71,8 +70,12 @@ void helix::start()
     omega_ = (2.0 * M_PI) / step_interval;
     step_ = rand(range{0, UINT16_MAX});
 
-    scene_.start();
     fader_.start();
+}
+
+void helix::scene_tick(milliseconds)
+{
+    step_++;
 }
 
 void helix::paint(graphics_device & device)
@@ -97,7 +100,6 @@ void helix::paint(graphics_device & device)
 
 void helix::stop()
 {
-    scene_.stop();
     fader_.stop();
 }
 

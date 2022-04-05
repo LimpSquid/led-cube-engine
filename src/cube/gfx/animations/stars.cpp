@@ -31,15 +31,14 @@ struct stars :
     stars(engine_context & context);
 
     void start() override;
+    void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    void stop() override;
     nlohmann::json properties_to_json() const override;
     std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
     star make_star() const;
 
     std::vector<star> stars_;
-    animation_scene scene_;
     gradient galaxy_gradient_;
     int gradient_step_;
     int step_interval_;
@@ -65,13 +64,7 @@ gradient const default_galaxy_gradient
 };
 
 stars::stars(engine_context & context) :
-    configurable_animation(context),
-    scene_(*this, [this](auto) {
-        for (auto & star : stars_)
-            if (++star.fade_step > step_interval_)
-                star = make_star();
-        gradient_step_++;
-    })
+    configurable_animation(context)
 { }
 
 void stars::start()
@@ -89,8 +82,14 @@ void stars::start()
         star = make_star();
         star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
     }
+}
 
-    scene_.start();
+void stars::scene_tick(milliseconds)
+{
+    for (auto & star : stars_)
+        if (++star.fade_step > step_interval_)
+            star = make_star();
+    gradient_step_++;
 }
 
 void stars::paint(graphics_device & device)
@@ -108,11 +107,6 @@ void stars::paint(graphics_device & device)
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
         p.sphere(s.voxel, star_radius_);
     }
-}
-
-void stars::stop()
-{
-    scene_.stop();
 }
 
 nlohmann::json stars::properties_to_json() const

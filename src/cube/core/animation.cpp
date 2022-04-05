@@ -17,6 +17,7 @@ bool animation::dirty() const
 void animation::init()
 {
     dirty_ = true;
+    scene_timer_.start(animation_scene_interval);
     start();
 }
 
@@ -28,6 +29,7 @@ void animation::update()
 void animation::finish()
 {
     dirty_ = false;
+    scene_timer_.stop();
     stop();
 }
 
@@ -39,31 +41,20 @@ void animation::paint_event(graphics_device & device)
 
 animation::animation(engine_context & context) :
     context_(context),
+    scene_timer_(context, [&](auto, auto elapsed) {
+        scene_tick(std::move(elapsed));
+        update();
+    }),
     dirty_(true)
 { }
 
 void animation::start()
 { }
 
+void animation::scene_tick(std::chrono::milliseconds)
+{ }
+
 void animation::stop()
 { }
-
-animation_scene::animation_scene(animation & animation, std::optional<scene_update_handler_t> handler) :
-    timer_(animation.context(), [&animation, h = std::move(handler)](auto, auto elapsed) {
-        if (h)
-            (*h)(std::move(elapsed));
-        animation.update();
-    })
-{ }
-
-void animation_scene::start()
-{
-    timer_.start(animation_scene_interval);
-}
-
-void animation_scene::stop()
-{
-    timer_.stop();
-}
 
 } // End of namespace

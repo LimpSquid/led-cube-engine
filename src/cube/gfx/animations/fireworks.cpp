@@ -57,8 +57,8 @@ struct fireworks :
     fireworks(engine_context & context);
 
     void start() override;
+    void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    void stop() override;
     nlohmann::json properties_to_json() const override;
     std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
 
@@ -66,7 +66,6 @@ struct fireworks :
 
     std::vector<shell> shells_;
     std::vector<color> shell_colors_;
-    animation_scene scene_;
     double explosion_force_;
     unsigned int num_fragments_;
     int shell_radius_;
@@ -83,14 +82,7 @@ constexpr unsigned int default_number_of_fragments{cube::cube_size_1d * 15};
 constexpr int default_shell_radius{cube::cube_size_1d / 8};
 
 fireworks::fireworks(engine_context & context) :
-    configurable_animation(context),
-    scene_(*this, [this](auto elapsed) {
-        for (auto & shell : shells_) {
-            shell.update(elapsed);
-            if (shell.state == shell::completed)
-                shell = make_shell();
-        }
-    })
+    configurable_animation(context)
 { }
 
 void fireworks::start()
@@ -104,8 +96,15 @@ void fireworks::start()
     shells_.resize(num_shells);
     for (auto & shell : shells_)
         shell = make_shell();
+}
 
-    scene_.start();
+void fireworks::scene_tick(milliseconds dt)
+{
+    for (auto & shell : shells_) {
+        shell.update(dt);
+        if (shell.state == shell::completed)
+            shell = make_shell();
+    }
 }
 
 void fireworks::paint(graphics_device & device)
@@ -115,11 +114,6 @@ void fireworks::paint(graphics_device & device)
 
     for (auto const & shell : shells_)
         shell.paint(p);
-}
-
-void fireworks::stop()
-{
-    scene_.stop();
 }
 
 nlohmann::json fireworks::properties_to_json() const

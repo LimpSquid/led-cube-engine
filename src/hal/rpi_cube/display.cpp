@@ -37,6 +37,7 @@ struct rgb_buffer
     std::array<slice_buffer, cube::cube_size_1d> slices;
 };
 static_assert(sizeof(rgb_buffer) == (3 * sizeof(uint8_t) * cube::cube_size_3d));
+static_assert(sizeof(rgb_buffer) == (sizeof(graphics_buffer) - sizeof(color_t) * cube::cube_size_3d)); // Must be same size except alpha channel
 static_assert(std::is_trivially_copyable_v<rgb_buffer>);
 
 rgb_buffer transform(graphics_buffer const & buffer)
@@ -73,7 +74,7 @@ struct async_pixel_pump
     using resources_t = hal::rpi_cube::resources;
     using pointer_t = std::unique_ptr<async_pixel_pump>;
 
-    static pointer_t make_unique_and_run(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h)
+    static pointer_t run(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h)
     {
         pointer_t pp{new async_pixel_pump(p, b, r, std::move(h))};
         pp->run();
@@ -91,6 +92,9 @@ private:
 
     void run()
     {
+        // Writing pixels is a blocking operation, write one slice
+        // at the time and allow the event to run in between.
+
         assert(current_slice < cube::cube_size_1d);
         auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
 
@@ -160,7 +164,7 @@ void display::show(graphics_buffer const & buffer)
         });
     };
 
-    pixel_pump_ = async_pixel_pump::make_unique_and_run(context().event_poller,
+    pixel_pump_ = async_pixel_pump::run(context().event_poller,
         buffer, resources_, std::move(swap_buffers));
 }
 

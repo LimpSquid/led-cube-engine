@@ -28,25 +28,13 @@ private:
     animation(animation &&) = delete;
 
     virtual void start();
+    virtual void scene_tick(std::chrono::milliseconds dt);
     virtual void paint(graphics_device & device) = 0;
     virtual void stop();
 
     engine_context & context_;
+    recurring_timer scene_timer_;
     bool dirty_;
-};
-
-using scene_update_handler_t = std::function<void(std::chrono::milliseconds)>;
-
-class animation_scene
-{
-public:
-    animation_scene(animation & animation, std::optional<scene_update_handler_t> handler = {});
-
-    void start();
-    void stop();
-
-private:
-    recurring_timer timer_;
 };
 
 }
