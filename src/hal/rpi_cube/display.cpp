@@ -13,23 +13,6 @@ namespace
 constexpr seconds bus_monitor_interval{5};
 constexpr seconds cpu_reset_delay{1};
 
-struct bool_latch
-{
-    bool_latch(bool & b) :
-        b_(b)
-    {
-        b_ = false;
-    }
-
-    void operator()()
-    {
-        b_ = true;
-    }
-
-private:
-    bool & b_;
-};
-
 struct rgb_buffer
 {
     struct red   { using offset = std::integral_constant<std::size_t, 0 * cube::cube_size_2d>; };
@@ -127,15 +110,28 @@ private:
     int current_slice;
 };
 
+
+display_shutdown_signal::display_shutdown_signal(display & display) :
+    engine_shutdown_signal(display.context()),
+    display_(display)
+{ }
+
+void display_shutdown_signal::shutdown_requested()
+{
+    bus_request_params<bus_command::exe_sys_cpu_reset> params;
+    params.delay_ms = static_cast<int32_t>(duration_cast<milliseconds>(cpu_reset_delay).count());
+
+    display_.send_all(std::move(params), [&](auto && /* responses */) { ready_for_shutdown(); });
+}
+
 } // End of namespace
 
 display::display(engine_context & context) :
     graphics_device(context),
-    engine_shutdown_signal(context),
     bus_monitor_(context, [&](auto, auto) { ping_slaves(); }, true),
     resources_(context),
-    ready_to_send_(true),
-    bus_comm_(resources_.bus_comm_device)
+    bus_comm_(resources_.bus_comm_device),
+    shutdown_signal_(*this)
 {
     bus_monitor_.start(bus_monitor_interval);
 }
@@ -154,22 +150,18 @@ void display::show(graphics_buffer const & buffer)
 {
     using namespace detail;
 
-    if (ready_to_send_) {
-        pixel_pump_ = async_pixel_pump::make_unique_and_run(context().event_poller, buffer, resources_,
-            [&, bl = bool_latch{ready_to_send_}]()
-            {
-                bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, std::move(bl));
-            }
-        );
-    }
-}
+    // Another pixel pump still running
+    if (pixel_pump_)
+        return;
 
-void display::shutdown_requested()
-{
-    bus_request_params<bus_command::exe_sys_cpu_reset> params;
-    params.delay_ms = static_cast<int32_t>(duration_cast<milliseconds>(cpu_reset_delay).count());
+    auto swap_buffers = [&]() {
+        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() {
+            pixel_pump_.reset();
+        });
+    };
 
-    send_all(std::move(params), [&](auto && /* responses */) { ready_for_shutdown(); });
+    pixel_pump_ = async_pixel_pump::make_unique_and_run(context().event_poller,
+        buffer, resources_, std::move(swap_buffers));
 }
 
 void display::ping_slaves()
