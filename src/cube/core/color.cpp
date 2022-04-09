@@ -95,7 +95,7 @@ void alpha_blend(rgba_t const & c, rgba_t & bucket)
     color_t const * const c_ptr = reinterpret_cast<color_t const *>(&c);
     color_t * const bucket_ptr = reinterpret_cast<color_t *>(&bucket);
 
-    color_t const alpha = c_ptr[3];
+    color_t const alpha = color_t(c); // bit 0 - 7
     color_t const inv_alpha = static_cast<color_t>(color_max_value - alpha);
     bucket_ptr[0] = static_cast<color_t>((alpha * c_ptr[0] + inv_alpha * bucket_ptr[0]) >> shift);
     bucket_ptr[1] = static_cast<color_t>((alpha * c_ptr[1] + inv_alpha * bucket_ptr[1]) >> shift);
