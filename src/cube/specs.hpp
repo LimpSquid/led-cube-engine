@@ -21,5 +21,4 @@ static_assert(animation_scene_fps > 0);
 static_assert(animation_scene_fps <= 120); // Limit to some sane number
 constexpr auto animation_scene_interval{std::chrono::milliseconds(1000) / animation_scene_fps};
 
-
 } // End of namespace

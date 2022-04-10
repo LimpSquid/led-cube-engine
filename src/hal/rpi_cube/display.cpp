@@ -1,6 +1,7 @@
 #include <hal/rpi_cube/display.hpp>
 #include <cube/core/composite_function.hpp>
 #include <cube/core/events.hpp>
+#include <cube/core/logging.hpp>
 #include <iostream>
 #include <chrono>
 
@@ -174,7 +175,7 @@ void display::ping_slaves()
         if (!response) {
             detected_slaves_.erase(slave.address);
 
-            std::cerr << "Failed to ping slave at address: " << std::to_string(slave.address) << '\n';
+            LOG_WRN("Failed to ping slave", LOG_ARG("address", as_hex(slave.address)));
             return;
         }
 
@@ -187,15 +188,18 @@ void display::ping_slaves()
             bus_response_params_or_error<bus_command::get_sys_version> version_response,
             bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
                 if (!version_response || ! reset_response) {
-                    std::cerr << "Failed to initialize slave: " << std::to_string(slave.address) << '\n';
+                    LOG_WRN("Failed to initialize", LOG_ARG("address", as_hex(slave.address)));
                     return;
                 }
 
-                std::cout << "Found slave at address '" << std::to_string(slave.address) << "' running software version: "
-                    << "v" << std::to_string(version_response->major)
-                    << "." << std::to_string(version_response->minor)
-                    << "." << std::to_string(version_response->patch)
-                    << '\n';
+                std::string version =
+                    "v" + std::to_string(version_response->major) +
+                    "." + std::to_string(version_response->minor) +
+                    "." + std::to_string(version_response->patch);
+
+                LOG_INF("Found slave",
+                    LOG_ARG("address", as_hex(slave.address)),
+                    LOG_ARG("version", version));
                 detected_slaves_.insert(slave.address);
             }
         );

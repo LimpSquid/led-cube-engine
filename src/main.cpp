@@ -1,4 +1,5 @@
 #include <cube/programs/entry.hpp>
+#include <cube/core/logging.hpp>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -64,7 +65,7 @@ int main(int ac, char const * const av[])
     try {
         return prog->entry(ac - 1, &av[1]);
     } catch (std::exception const & ex) {
-        std::cerr << "Application exited with error: " << ex.what() << '\n';
+        LOG_ERR("Application exited with error", LOG_ARG("what", ex.what()));
         return EXIT_FAILURE;
     }
 }

@@ -8,7 +8,7 @@
 namespace cube::core
 {
 
-struct void_param {};
+struct void_arg {};
 
 template<typename F>
 class composite_function
@@ -53,14 +53,14 @@ private:
         };
 
         template<std::size_t I>
-        struct closure<I, void_param>
+        struct closure<I, void_arg>
         {
             std::shared_ptr<impl> i;
 
             void operator()()
             {
                 if (i) {
-                    std::get<I>(i->args) = void_param{};
+                    std::get<I>(i->args) = void_arg{};
                     i->arg_set();
                     i.reset();
                 }

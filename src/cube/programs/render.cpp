@@ -1,6 +1,7 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/timers.hpp>
+#include <cube/core/logging.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <hal/graphics_device.hpp>
@@ -26,7 +27,10 @@ engine & engine_instance()
     {
         engine_singleton()
         {
-            sigint_handlers.push_back([&]() { instance.stop(); });
+            sigint_handlers.push_back([&]() {
+                LOG_INF("Stopping engine");
+                instance.stop();
+            });
         }
 
         engine_context context;
@@ -46,7 +50,7 @@ void handle_file(std::vector<std::string> const & args)
         for (auto const & arg : args) {
             auto const filepath = fs::path(arg);
             if (!fs::exists(filepath)) {
-                std::cout << "Ignoring non-existing file: " + filepath.native() << '\n';
+                LOG_WRN("Ignoring non-existing file", LOG_ARG("filepath", filepath.native()));
                 continue;
             }
 
@@ -63,7 +67,7 @@ void handle_file(std::vector<std::string> const & args)
             }
         }
 
-        std::cout << "Found " << animations.size() << " animations in file(s)\n";
+        LOG_INF("Playing animations from file", LOG_ARG("number_of_animations", animations.size()));
 
         if (!animations.empty()) {
             std::size_t index = 0;
@@ -72,6 +76,10 @@ void handle_file(std::vector<std::string> const & args)
                 index = (index + 1) % animations.size();
                 engine.load(std::static_pointer_cast<cube::core::animation>(animation));
                 player.start(animation->get_duration());
+
+                LOG_INF("Playing animation",
+                    LOG_ARG("label", animation->get_label()),
+                    LOG_ARG("duration_ms", animation->get_duration().count()));
             });
             player.start(0ms);
             engine.run();

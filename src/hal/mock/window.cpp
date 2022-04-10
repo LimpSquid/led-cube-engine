@@ -1,4 +1,5 @@
 #include <hal/mock/window.hpp>
+#include <cube/core/logging.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cstdlib>
@@ -22,7 +23,7 @@ constexpr glm::dvec3 default_view{x_axis_view + glm::dvec3(25, 0, -35)};
 
 void glfw_error_callback(int, const char * const desc)
 {
-    std::cerr << "glfw error: " << desc << "\n";
+    LOG_ERR("glfw error", LOG_ARG("description", desc));
 }
 
 } // End of namespace
@@ -234,7 +235,10 @@ void window::process_cursor_pos_change(double xpos, double ypos)
         camera_.rotation.z = std::clamp(camera_.rotation.z + rdz, z_axis_min, z_axis_max);
         camera_.rotation.x = std::clamp(camera_.rotation.x + rdx, x_axis_min, x_axis_max);
 
-        //std::cout << "x: " << camera_.rotation.x << " y: " << camera_.rotation.y << " z: " << camera_.rotation.z << "\n";
+        LOG_DBG("Camera rotation changed",
+            LOG_ARG("x", camera_.rotation.x),
+            LOG_ARG("y", camera_.rotation.y),
+            LOG_ARG("z", camera_.rotation.z));
     }
 
     mouse_.previous_cursor_pos.x = xpos;
