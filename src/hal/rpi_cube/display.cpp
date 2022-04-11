@@ -12,7 +12,7 @@ namespace
 {
 
 constexpr seconds bus_monitor_interval{5};
-constexpr seconds cpu_reset_delay{1};
+constexpr milliseconds cpu_reset_delay{100};
 
 struct rgb_buffer
 {
