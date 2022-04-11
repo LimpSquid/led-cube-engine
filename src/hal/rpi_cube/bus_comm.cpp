@@ -58,6 +58,7 @@ void bus_comm::do_read()
                 LOG_WRN("Bus error",
                     LOG_ARG("error", frame.error().what),
                     LOG_ARG("address", as_hex(job.frame.address)),
+                    LOG_ARG("command", as_hex(job.frame.command_or_response)),
                     LOG_ARG("attempt", params.attempt));
                 jobs_.push_front(std::move(job));
             } else if (params.handler)
@@ -116,6 +117,7 @@ void bus_comm::do_timeout()
         if constexpr (std::is_same_v<params_t, unicast_params>) {
             LOG_DBG("Bus timeout",
                 LOG_ARG("address", as_hex(job.frame.address)),
+                LOG_ARG("command", as_hex(job.frame.command_or_response)),
                 LOG_ARG("attempt", params.attempt));
             if (params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));

@@ -34,9 +34,14 @@ inline log_prio get_runtime_log_level()
     using std::operator""s;
 
     char const * const debug = std::getenv("DEBUG");
-    return (debug && debug == "1"s)
-        ? log_prio::debug
-        : log_prio::info;
+    char const * const quiet = std::getenv("QUIET");
+
+    if (debug && debug == "1"s)
+        return log_prio::debug;
+    else if(quiet && quiet == "1"s)
+        return log_prio::warning;
+    else
+        return log_prio::info;
 }
 
 template<typename T>
