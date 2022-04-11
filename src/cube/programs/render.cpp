@@ -45,7 +45,7 @@ void handle_file(std::vector<std::string> const & args)
 {
     if (!args.empty()) {
         auto & engine = engine_instance();
-        std::vector<animation_pointer_t> animations;
+        animation_list_t animations;
 
         for (auto const & arg : args) {
             auto const filepath = fs::path(arg);
@@ -56,12 +56,11 @@ void handle_file(std::vector<std::string> const & args)
 
             try {
                 std::ifstream ifs(filepath.native());
-                auto file_animations = load_animations(nlohmann::json::parse(ifs), engine.context());
+                auto load_result = load_animations(nlohmann::json::parse(ifs), engine.context());
 
-                if (!file_animations)
-                    throw std::runtime_error(file_animations.error().what);
-                for (auto & animation : *file_animations)
-                    animations.push_back(std::move(animation));
+                if (!load_result)
+                    throw std::runtime_error(load_result.error().what);
+                animations = std::move(*load_result);
             } catch (std::exception const & ex) {
                 throw std::runtime_error("In file " + filepath.native() + ": " + ex.what());
             }
@@ -72,12 +71,13 @@ void handle_file(std::vector<std::string> const & args)
         if (!animations.empty()) {
             std::size_t index = 0;
             single_shot_timer player(engine.context(), [&](auto, auto) {
-                auto & animation = animations[index];
+                auto const & [name, animation] = animations[index];
                 index = (index + 1) % animations.size();
                 engine.load(std::static_pointer_cast<cube::core::animation>(animation));
                 player.start(animation->get_duration());
 
                 LOG_INF("Playing animation",
+                    LOG_ARG("animation", name),
                     LOG_ARG("label", animation->get_label()),
                     LOG_ARG("duration_ms", animation->get_duration().count()));
             });

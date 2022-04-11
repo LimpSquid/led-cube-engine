@@ -43,13 +43,13 @@ expected_or_error<animation_pointer_t> library::incubate(std::string const & ani
     return {std::move(incubated)};
 }
 
-expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::json const & json, engine_context & context)
+expected_or_error<animation_list_t> load_animations(nlohmann::json const & json, engine_context & context)
 {
     if (!json.is_array())
         return unexpected_error{"Expected JSON array got: "s + json.type_name()};
 
     library & lib = library::instance();
-    std::vector<animation_pointer_t> result;
+    animation_list_t result;
 
     try {
         for (auto const & element : json) {
@@ -64,7 +64,7 @@ expected_or_error<std::vector<animation_pointer_t>> load_animations(nlohmann::js
                 return incubated.error();
 
             (*incubated)->load_properties(properties);
-            result.push_back(std::move(*incubated));
+            result.push_back(std::make_pair(animation, std::move(*incubated)));
         }
     } catch (std::exception const & ex) {
         return unexpected_error{ex.what()};
