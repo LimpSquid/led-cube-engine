@@ -57,6 +57,12 @@ inline std::size_t write(char * buffer, std::string_view str)
     return str.size();
 }
 
+inline std::size_t write(char * buffer, bool value)
+{
+    buffer[0] = value ? 't' : 'f';
+    return 1;
+}
+
 template<typename T>
 struct as_hex
 {
@@ -121,7 +127,7 @@ void log(int fd, log_prio prio, std::string_view msg, log_arg<T> ... args)
     if (prio > log_level)
         return;
 
-    thread_local char buffer[2048];
+    thread_local char buffer[2048]; // Todo: handle out of bounds array access?
 
     std::size_t off = write(buffer, "\033[1;");
     off += write(buffer + off, color[static_cast<std::size_t>(prio)]);

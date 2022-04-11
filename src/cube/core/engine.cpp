@@ -66,7 +66,7 @@ void engine::run()
         new_animation = (animation != animation_);
         animation = animation_;
 
-        if (animation) {
+        if (!shutdown && animation) {
             if (new_animation)
                 device_->show_animation(animation);
             else

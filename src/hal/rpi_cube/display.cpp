@@ -82,7 +82,6 @@ struct async_pixel_pump
         return pp;
     }
 
-private:
     async_pixel_pump(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h) :
         resources(r),
         completion_handler(std::move(h)),
@@ -123,10 +122,8 @@ display_shutdown_signal::display_shutdown_signal(display & display) :
 
 void display_shutdown_signal::shutdown_requested()
 {
-    bus_request_params<bus_command::exe_sys_cpu_reset> params;
-    params.delay_ms = static_cast<int32_t>(duration_cast<milliseconds>(cpu_reset_delay).count());
-
-    display_.send_all(std::move(params), [&](auto && /* responses */) { ready_for_shutdown(); });
+    display_.pixel_pump_.reset(); // Immediately stop sending pixels
+    display_.send_all<bus_command::exe_layer_clear>({}, [&](auto && /* responses */) { ready_for_shutdown(); });
 }
 
 } // End of namespace
