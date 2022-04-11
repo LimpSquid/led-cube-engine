@@ -1,4 +1,5 @@
 #include <hal/rpi_cube/bus_comm.hpp>
+#include <cube/core/logging.hpp>
 #include <cassert>
 
 using namespace cube::core;
@@ -53,6 +54,11 @@ void bus_comm::do_read()
         using params_t = std::remove_reference_t<decltype(params)>;
 
         if constexpr (std::is_same_v<params_t, unicast_params>) {
+            LOG_WRN("Bus error",
+                LOG_ARG("error", frame.error().what),
+                LOG_ARG("address", as_hex(job.frame.address)),
+                LOG_ARG("attempt", params.attempt));
+
             if (bus_error && params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
             else if (params.handler)
@@ -109,6 +115,9 @@ void bus_comm::do_timeout()
         using params_t = std::remove_reference_t<decltype(params)>;
 
         if constexpr (std::is_same_v<params_t, unicast_params>) {
+            LOG_DBG("Bus timeout",
+                LOG_ARG("address", as_hex(job.frame.address)),
+                LOG_ARG("attempt", params.attempt));
             if (params.attempt < max_attempts)
                 jobs_.push_front(std::move(job));
             else if (params.handler)
