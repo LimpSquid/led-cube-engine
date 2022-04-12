@@ -187,7 +187,7 @@ void shell::update(std::chrono::milliseconds const & dt)
             bool x = true;
             for (auto & fragment : fragments) {
                 fragment.move(dt);
-                x &= less_than(fragment.position.z, 0.0);
+                x &= (fragment.position.z < 0.0);
             }
             if (x)
                 state = completed;
@@ -216,7 +216,7 @@ void shell::explode()
     color const explosion_color = shell.hue(map(static_cast<int>(shell.position.z), cube_axis_range, gradient_pos_range)); // Get current color of shell
 
     for (auto & fragment : fragments) {
-        color const c = adjust_brightness(explosion_color, randd());
+        color const c = adjust_brightness(explosion_color, randd({0.1, 0.6}));
 
         // Use polar coordinate system for picking random points inside a sphere
         // https://datagenetics.com/blog/january32020/index.html
@@ -245,8 +245,8 @@ void shell::explode()
         fragment.velocity.z += less_than_or_equal(vz, 0.06) ? vz : randd({0.02, 0.06});
         fragment.hue =
         {
-            {0.00, color_transparent},
-            {0.10, c},
+            {0.00, color_white},
+            {0.15, c},
             {1.00, c},
         };
     }

@@ -57,6 +57,11 @@ inline std::size_t write(char * buffer, std::string_view str)
     return str.size();
 }
 
+inline std::size_t write(char * buffer, char const * const str)
+{
+    return write(buffer, std::string_view(str));
+}
+
 inline std::size_t write(char * buffer, bool value)
 {
     buffer[0] = value ? 't' : 'f';
