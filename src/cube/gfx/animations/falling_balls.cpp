@@ -38,8 +38,8 @@ struct falling_balls :
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    nlohmann::json properties_to_json() const override;
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    json_or_error_t properties_to_json() const override;
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     ball make_ball() const;
 
@@ -96,23 +96,23 @@ void falling_balls::paint(graphics_device & device)
     }
 }
 
-nlohmann::json falling_balls::properties_to_json() const
+json_or_error_t falling_balls::properties_to_json() const
 {
-    return {
-        to_json(number_of_balls, default_number_of_balls),
-        to_json(max_ball_radius, default_max_radius),
-        to_json(min_ball_radius, default_min_radius),
-        to_json(ball_colors, std::vector<color>{}),
+    return nlohmann::json {
+        property_to_json(number_of_balls, default_number_of_balls),
+        property_to_json(max_ball_radius, default_max_radius),
+        property_to_json(min_ball_radius, default_min_radius),
+        property_to_json(ball_colors, std::vector<color>{}),
     };
 }
 
-std::vector<falling_balls::property_pair_t> falling_balls::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t falling_balls::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, number_of_balls, default_number_of_balls),
-        from_json(json, max_ball_radius, default_max_radius),
-        from_json(json, min_ball_radius, default_min_radius),
-        from_json(json, ball_colors, std::vector<color>{}),
+    return property_pairs_t {
+        property_from_json(json, number_of_balls, default_number_of_balls),
+        property_from_json(json, max_ball_radius, default_max_radius),
+        property_from_json(json, min_ball_radius, default_min_radius),
+        property_from_json(json, ball_colors, std::vector<color>{}),
     };
 }
 

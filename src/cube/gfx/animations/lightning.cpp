@@ -34,8 +34,8 @@ struct lightning :
     void start() override;
     void paint(graphics_device & device) override;
     void stop() override;
-    nlohmann::json properties_to_json() const override;
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    json_or_error_t properties_to_json() const override;
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     void spawn_cloud(cloud & c);
 
@@ -92,33 +92,37 @@ void lightning::stop()
     }
 }
 
-nlohmann::json lightning::properties_to_json() const
+json_or_error_t lightning::properties_to_json() const
 {
-    return {
-        to_json(number_of_clouds, default_number_of_clouds),
-        to_json(cloud_radius, default_radius),
-        to_json(cloud_gradient, default_gradient),
+    return nlohmann::json {
+        property_to_json(number_of_clouds, default_number_of_clouds),
+        property_to_json(cloud_radius, default_radius),
+        property_to_json(cloud_gradient, default_gradient),
     };
 }
 
-std::vector<lightning::property_pair_t> lightning::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t lightning::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, number_of_clouds, default_number_of_clouds),
-        from_json(json, cloud_radius, default_radius),
-        from_json(json, cloud_gradient, default_gradient),
+    return property_pairs_t {
+        property_from_json(json, number_of_clouds, default_number_of_clouds),
+        property_from_json(json, cloud_radius, default_radius),
+        property_from_json(json, cloud_gradient, default_gradient),
     };
 }
 
 void lightning::spawn_cloud(cloud & c)
 {
-    auto const fade_in_time = milliseconds(rand(range{750, 2000}));
+    constexpr int fade_out_factor = 8;
+    constexpr int fade_time_min = std::max(750ms, fade_out_factor * cube::animation_scene_interval).count();
+    constexpr int fade_time_max = fade_time_min + 1250;
+
+    milliseconds fade_in_time{rand(range{fade_time_min, fade_time_max})};
     auto const fade_in_resolution = static_cast<unsigned int>(fade_in_time / cube::animation_scene_interval);
 
     c.voxel = random_voxel();
     c.in_fader = std::make_unique<ease_in_bounce>(context(), easing_config{{0.0, 1.0}, fade_in_resolution, fade_in_time},
         [&c]() { c.out_fader->start(); });
-    c.out_fader = std::make_unique<ease_out_sine>(context(), easing_config{{1.0, 0.0}, fade_in_resolution / 8, fade_in_time / 8},
+    c.out_fader = std::make_unique<ease_out_sine>(context(), easing_config{{1.0, 0.0}, fade_in_resolution / fade_out_factor, fade_in_time / fade_out_factor},
         [this, &c]() { spawn_cloud(c); });
     c.in_fader->start();
 }

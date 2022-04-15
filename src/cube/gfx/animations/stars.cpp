@@ -7,6 +7,7 @@
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
+using std::operator""s;
 
 namespace
 {
@@ -33,8 +34,8 @@ struct stars :
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    nlohmann::json properties_to_json() const override;
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    json_or_error_t properties_to_json() const override;
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     star make_star() const;
 
@@ -109,23 +110,28 @@ void stars::paint(graphics_device & device)
     }
 }
 
-nlohmann::json stars::properties_to_json() const
+json_or_error_t stars::properties_to_json() const
 {
-    return {
-        to_json(fade_time_ms, default_fade_time),
-        to_json(number_of_stars, default_number_of_stars),
-        to_json(galaxy_gradient, default_galaxy_gradient),
-        to_json(star_radius, default_radius),
+    return nlohmann::json {
+        property_to_json(fade_time_ms, default_fade_time),
+        property_to_json(number_of_stars, default_number_of_stars),
+        property_to_json(galaxy_gradient, default_galaxy_gradient),
+        property_to_json(star_radius, default_radius),
     };
 }
 
-std::vector<stars::property_pair_t> stars::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t stars::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, fade_time_ms, default_fade_time),
-        from_json(json, number_of_stars, default_number_of_stars),
-        from_json(json, galaxy_gradient, default_galaxy_gradient),
-        from_json(json, star_radius, default_radius),
+    auto fade_time = parse_field(json, fade_time_ms, default_fade_time);
+    if (fade_time < cube::animation_scene_interval)
+        return unexpected_error{"Field '"s + to_string(fade_time_ms) + "' must be atleast "
+            + std::to_string(cube::animation_scene_interval.count()) + "ms"};
+
+    return property_pairs_t {
+        make_property(fade_time_ms, std::move(fade_time)),
+        property_from_json(json, number_of_stars, default_number_of_stars),
+        property_from_json(json, galaxy_gradient, default_galaxy_gradient),
+        property_from_json(json, star_radius, default_radius),
     };
 }
 

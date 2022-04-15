@@ -59,8 +59,8 @@ struct fireworks :
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    nlohmann::json properties_to_json() const override;
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    json_or_error_t properties_to_json() const override;
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     shell make_shell() const;
 
@@ -116,25 +116,25 @@ void fireworks::paint(graphics_device & device)
         shell.paint(p);
 }
 
-nlohmann::json fireworks::properties_to_json() const
+json_or_error_t fireworks::properties_to_json() const
 {
-    return {
-        to_json(number_of_shells, default_number_of_shells),
-        to_json(number_of_fragments, default_number_of_fragments),
-        to_json(shell_radius, default_shell_radius),
-        to_json(explosion_force, default_explosion_force),
-        to_json(shell_colors, std::vector<color>{}),
+    return nlohmann::json {
+        property_to_json(number_of_shells, default_number_of_shells),
+        property_to_json(number_of_fragments, default_number_of_fragments),
+        property_to_json(shell_radius, default_shell_radius),
+        property_to_json(explosion_force, default_explosion_force),
+        property_to_json(shell_colors, std::vector<color>{}),
     };
 }
 
-std::vector<fireworks::property_pair_t> fireworks::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t fireworks::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, number_of_shells, default_number_of_shells),
-        from_json(json, number_of_fragments, default_number_of_fragments),
-        from_json(json, shell_radius, default_shell_radius),
-        from_json(json, explosion_force, default_explosion_force),
-        from_json(json, shell_colors, std::vector<color>{}),
+    return property_pairs_t {
+        property_from_json(json, number_of_shells, default_number_of_shells),
+        property_from_json(json, number_of_fragments, default_number_of_fragments),
+        property_from_json(json, shell_radius, default_shell_radius),
+        property_from_json(json, explosion_force, default_explosion_force),
+        property_from_json(json, shell_colors, std::vector<color>{}),
     };
 }
 

@@ -153,8 +153,8 @@ struct my_animation :
     void scene_tick(std::chrono::milliseconds dt) override; // Optional, called with an interval of `animation_scene_interval` ms.
     void paint(graphics_device & device) override; // Required, paint a single animation frame
     void stop() override; // Optional, called after the animation is finished
-    nlohmann::json properties_to_json() const override; // Optional, implement if we have atleast one property
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
+    json_or_error_t properties_to_json() const override; // Optional, implement if we have atleast one property
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
 };
 
 // Adds the animation to library with name "my_animation".
@@ -216,23 +216,28 @@ void my_animation::stop()
     // ...
 }
 
-nlohmann::json my_animation::properties_to_json() const
+json_or_error_t my_animation::properties_to_json() const
 {
-    return {
-        to_json(my_int_property, default_int_property),
-        to_json(my_double_property, default_double_property),
-        to_json(my_gradient_property, default_gradient_property),
-        to_json(my_color_vector_property, std::vector<color>{}),
+    return nlohmann::json {
+        property_to_json(my_int_property, default_int_property),
+        property_to_json(my_double_property, default_double_property),
+        property_to_json(my_gradient_property, default_gradient_property),
+        property_to_json(my_color_vector_property, std::vector<color>{}),
     };
 }
 
-std::vector<my_animation::property_pair_t> my_animation::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t my_animation::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, my_int_property, default_int_property),
-        from_json(json, my_double_property, default_double_property),
-        from_json(json, my_gradient_property, default_gradient_property),
-        from_json(json, my_color_vector_property, std::vector<color>{}),
+    // Return error when certain JSON values are not allowed
+    auto my_int = parse_field(json, my_int_property, default_int_property);
+    if (my_int == 1234)
+        return unexpected_error{"Field '"s + to_string(my_int_property) + "' cannot be 1234"};
+
+    return property_pairs_t {
+        make_property(my_int_property, my_int),
+        property_from_json(json, my_double_property, default_double_property),
+        property_from_json(json, my_gradient_property, default_gradient_property),
+        property_from_json(json, my_color_vector_property, std::vector<color>{}),
     };
 }
 

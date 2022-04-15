@@ -7,6 +7,7 @@
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
+using std::operator""s;
 
 namespace
 {
@@ -30,8 +31,8 @@ struct helix :
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     void stop() override;
-    nlohmann::json properties_to_json() const override;
-    std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const override;
+    json_or_error_t properties_to_json() const override;
+    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     gradient gradient_;
     ease_in_sine fader_;
@@ -103,27 +104,32 @@ void helix::stop()
     fader_.stop();
 }
 
-nlohmann::json helix::properties_to_json() const
+json_or_error_t helix::properties_to_json() const
 {
-    return {
-        to_json(helix_rotation_time_ms, default_rotation_time),
-        to_json(helix_phase_shift_cos_factor, default_phase_shift_factor),
-        to_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
-        to_json(helix_thickness, default_thickness),
-        to_json(helix_length, default_length),
-        to_json(helix_gradient, default_gradient),
+    return nlohmann::json {
+        property_to_json(helix_rotation_time_ms, default_rotation_time),
+        property_to_json(helix_phase_shift_cos_factor, default_phase_shift_factor),
+        property_to_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
+        property_to_json(helix_thickness, default_thickness),
+        property_to_json(helix_length, default_length),
+        property_to_json(helix_gradient, default_gradient),
     };
 }
 
-std::vector<helix::property_pair_t> helix::properties_from_json(nlohmann::json const & json) const
+property_pairs_or_error_t helix::properties_from_json(nlohmann::json const & json) const
 {
-    return {
-        from_json(json, helix_rotation_time_ms, default_rotation_time),
-        from_json(json, helix_phase_shift_cos_factor, default_phase_shift_factor),
-        from_json(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
-        from_json(json, helix_thickness, default_thickness),
-        from_json(json, helix_length, default_length),
-        from_json(json, helix_gradient, default_gradient),
+    auto rotation_time = parse_field(json, helix_rotation_time_ms, default_rotation_time);
+    if (rotation_time < cube::animation_scene_interval)
+        return unexpected_error{"Field '"s + to_string(helix_rotation_time_ms) + "' must be atleast "
+            + std::to_string(cube::animation_scene_interval.count()) + "ms"};
+
+    return property_pairs_t {
+        make_property(helix_rotation_time_ms, std::move(rotation_time)),
+        property_from_json(json, helix_phase_shift_cos_factor, default_phase_shift_factor),
+        property_from_json(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
+        property_from_json(json, helix_thickness, default_thickness),
+        property_from_json(json, helix_length, default_length),
+        property_from_json(json, helix_gradient, default_gradient),
     };
 }
 

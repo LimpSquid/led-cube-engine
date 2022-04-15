@@ -4,6 +4,7 @@
 #include <cube/core/animation.hpp>
 #include <cube/core/enum.hpp>
 #include <cube/core/color.hpp>
+#include <cube/core/expected.hpp>
 #include <unordered_map>
 #include <variant>
 
@@ -23,6 +24,18 @@ using property_value_t = std::variant<
     core::color, std::vector<core::color>,
     gradient, gradient_stop>;
 
+using property_label_t = int;
+using property_pair_t = std::pair<property_label_t, property_value_t>;
+using property_pairs_t = std::vector<property_pair_t>;
+using json_or_error_t = core::expected_or_error<nlohmann::json>;
+using property_pairs_or_error_t = core::expected_or_error<property_pairs_t>;
+
+template<typename T>
+inline property_pair_t make_property(property_label_t label, T value)
+{
+    return std::make_pair(label, property_value_t{std::move(value)});
+}
+
 class configurable_animation :
     public core::animation
 {
@@ -34,9 +47,6 @@ public:
     nlohmann::json dump_properties() const;
 
 protected:
-    using property_label_t = int;
-    using property_pair_t = std::pair<property_label_t, property_value_t>;
-
     PROPERTY_ENUM
     (
         label,
@@ -70,18 +80,18 @@ protected:
         }
     }
 
-    void write_properties(std::vector<property_pair_t> const & properties);
+    void write_properties(property_pairs_t const & properties);
 
     template<typename T, typename L>
-    nlohmann::json to_json(L label, T def = {}) const { return core::make_field(label, read_property(label, def)); }
+    nlohmann::json property_to_json(L label, T def = {}) const { return core::make_field(label, read_property(label, def)); }
     template<typename T, typename L>
-    property_pair_t from_json(nlohmann::json const & json, L label) const { return {label, core::parse_field<T>(json, label)}; }
+    property_pair_t property_from_json(nlohmann::json const & json, L label) const { return {label, core::parse_field<T>(json, label)}; }
     template<typename T, typename L>
-    property_pair_t from_json(nlohmann::json const & json, L label, T def) const { return {label, core::parse_field(json, label, def)}; }
+    property_pair_t property_from_json(nlohmann::json const & json, L label, T def) const { return {label, core::parse_field(json, label, def)}; }
 
 private:
-    virtual nlohmann::json properties_to_json() const;
-    virtual std::vector<property_pair_t> properties_from_json(nlohmann::json const & json) const;
+    virtual json_or_error_t properties_to_json() const;
+    virtual property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const;
 
     std::unordered_map<property_label_t, property_value_t> properties_;
 };
