@@ -61,8 +61,14 @@ void bus_comm::do_read()
                     LOG_ARG("command", as_hex(job.frame.command_or_response)),
                     LOG_ARG("attempt", params.attempt));
                 jobs_.push_front(std::move(job));
-            } else if (params.handler)
+            } else if (params.handler) {
+                if (!frame)
+                    LOG_DBG("Bus error response",
+                        LOG_ARG("error", frame.error().what),
+                        LOG_ARG("address", as_hex(job.frame.address)),
+                        LOG_ARG("command", as_hex(job.frame.command_or_response)));
                 params.handler(std::move(frame));
+            }
             do_finish();
         } else
             throw std::runtime_error("Unexpected read for current job");
