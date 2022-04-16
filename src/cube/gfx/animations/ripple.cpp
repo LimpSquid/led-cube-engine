@@ -20,6 +20,8 @@ struct ripple :
         ripple_wave_time_ms,    // Time in milliseconds to complete one ripple period
         ripple_gradient,        // Ripple gradient
         ripple_length,          // Ripple length
+        ripple_drift_factor_x,  // Drift factor in the X direction
+        ripple_drift_factor_y,  // Drift factor in the Y direction
     )
 
     ripple(engine_context & context);
@@ -41,6 +43,7 @@ animation_publisher<ripple> const publisher;
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr milliseconds default_wave_time{1500ms};
 constexpr double default_length{3.0};
+constexpr double default_drift_factor{0.0};
 gradient const default_gradient
 {
     {0.00, color_cyan},
@@ -74,10 +77,23 @@ void ripple::paint(graphics_device & device)
     p.wipe_canvas();
     p.set_color(color_red);
 
+    double const drift_factor_x = read_property(ripple_drift_factor_x, default_drift_factor);
+    double const drift_factor_y = read_property(ripple_drift_factor_y, default_drift_factor);
+    auto const compute_range = [&](double drift_factor) -> range<double> {
+        if (equal(drift_factor, 0.0))
+            return {-1.0, 1.0};
+
+        double drift = std::sin(step_ * omega_ * drift_factor);
+        return {
+            map(drift, unit_circle_range, range{-1.0, -0.2}),
+            map(drift, unit_circle_range, range{ 0.2,  1.0})
+        };
+    };
+
     for (int x = 0; x < cube::cube_size_1d; ++x) {
-        double x1 = map(x, cube_axis_range, unit_circle_range);
+        double x1 = map(x, cube_axis_range, compute_range(drift_factor_x));
         for (int y = 0; y < cube::cube_size_1d; ++y) {
-            double y1 = map(y, cube_axis_range, unit_circle_range);
+            double y1 = map(y, cube_axis_range, compute_range(drift_factor_y));
             double z1 = std::sin(step_ * omega_ + length_ * std::sqrt(x1 * x1 + y1 * y1));
             int z = map(z1, unit_circle_range, cube_axis_range);
 
@@ -93,6 +109,8 @@ json_or_error_t ripple::properties_to_json() const
         property_to_json(ripple_wave_time_ms, default_wave_time),
         property_to_json(ripple_length, default_length),
         property_to_json(ripple_gradient, default_gradient),
+        property_to_json(ripple_drift_factor_x, default_drift_factor),
+        property_to_json(ripple_drift_factor_y, default_drift_factor),
     };
 }
 
@@ -107,6 +125,8 @@ property_pairs_or_error_t ripple::properties_from_json(nlohmann::json const & js
         make_property(ripple_wave_time_ms, std::move(wave_time)),
         property_from_json(json, ripple_length, default_length),
         property_from_json(json, ripple_gradient, default_gradient),
+        property_from_json(json, ripple_drift_factor_x, default_drift_factor),
+        property_from_json(json, ripple_drift_factor_y, default_drift_factor),
     };
 }
 

@@ -37,4 +37,4 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE ${Boost_LIBRARIES}
     PRIVATE stdc++fs) # Apparently need for some systems
 target_compile_options(${PROJECT_NAME}
-    PRIVATE -Wall -Wextra -Wconversion -Wpedantic -O3)
+    PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wstrict-aliasing -O3)
