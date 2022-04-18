@@ -1,10 +1,10 @@
 #pragma once
 
+#include <cube/core/timers.hpp>
 #include <stdexcept>
 #include <functional>
 #include <unordered_map>
 
-namespace cube::core { class engine_context; }
 namespace hal::rpi_cube
 {
 
@@ -24,6 +24,33 @@ private:
 
     iodev & device_;
     int id_;
+};
+
+class iodev_metrics_logger
+{
+public:
+    iodev_metrics_logger(cube::core::engine_context & context, char const * const name);
+
+    void bytes_written(std::size_t bytes) { bytes_written_ += bytes; }
+    void bytes_read(std::size_t bytes) { bytes_read_ += bytes; }
+
+private:
+    struct snapshot_last_log
+    {
+        std::size_t bytes_written{0};
+        std::size_t bytes_read{0};
+        std::chrono::seconds epoch{std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch())};
+    };
+
+    iodev_metrics_logger(iodev_metrics_logger &) = delete;
+    iodev_metrics_logger(iodev_metrics_logger &&) = delete;
+
+    cube::core::engine_context & context_;
+    cube::core::recurring_timer timer_;
+
+    snapshot_last_log snapshot_;
+    std::size_t bytes_written_;
+    std::size_t bytes_read_;
 };
 
 using iodev_read_handler_t = std::function<void()>;
@@ -64,6 +91,7 @@ public:
     {
         static_assert(std::is_trivially_copyable_v<T>); // Because we're memcpying buffer into dst
         std::size_t size = read(&dst, sizeof(T));
+        metrics_logger_.bytes_read(size);
         if (size != sizeof(T))
             throw std::runtime_error("Read only " + std::to_string(size) + " bytes, expected " + std::to_string(sizeof(T)));
     }
@@ -73,12 +101,13 @@ public:
     {
         static_assert(std::is_trivially_copyable_v<T>); // Because we're memcpying src into buffer
         std::size_t size = write(&src, sizeof(T));
+        metrics_logger_.bytes_written(size);
         if (size != sizeof(T))
             throw std::runtime_error("Written only " + std::to_string(size) + " bytes, expected " + std::to_string(sizeof(T)));
     }
 
 protected:
-    iodev(cube::core::engine_context & context);
+    iodev(cube::core::engine_context & context, char const * const name);
 
     void notify_readable() const; // For now this **MUST** always be called, eventually we could fallback on polling
 
@@ -97,6 +126,7 @@ private:
 
     cube::core::engine_context & context_;
     std::unordered_map<int, iodev_read_handler_t> read_handlers_;
+    iodev_metrics_logger metrics_logger_;
     int subscription_id_;
 };
 

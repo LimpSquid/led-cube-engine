@@ -36,7 +36,7 @@ namespace hal::rpi_cube
 {
 
 spi::spi(spi_config config, engine_context & context) :
-    iodev(context),
+    iodev(context, config.device),
     fd_(open_or_throw(config))
 { }
 

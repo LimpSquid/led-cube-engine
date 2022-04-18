@@ -125,7 +125,7 @@ namespace hal::rpi_cube
 {
 
 rs485::rs485(rs485_config config, engine_context & context) :
-    iodev(context),
+    iodev(context, config.device),
     fd_(open_or_throw(config)),
     event_notifier_(context.event_poller, fd_, fd_event_notifier::read | fd_event_notifier::error, [this](auto evs) { on_event(evs); }),
     tx_buffer_(buffer_size),

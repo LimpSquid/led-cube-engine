@@ -1,6 +1,7 @@
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/core/json_utils.hpp>
+#include <cube/core/logging.hpp>
 #include <algorithm>
 
 using namespace cube::core;
@@ -28,6 +29,8 @@ void library::publish_animation(std::string const & name, animation_incubator_t 
     if (animations_.find(name) != animations_.cend())
         throw std::runtime_error("Failed to publish animation '" + name + "', name already exists");
     animations_[name] = std::move(incubator);
+
+    LOG_DBG("Published animation", LOG_ARG("name", name));
 }
 
 expected_or_error<animation_pointer_t> library::incubate(std::string const & animation, engine_context & context) const
@@ -65,6 +68,10 @@ expected_or_error<animation_list_t> load_animations(nlohmann::json const & json,
 
             (*incubated)->load_properties(properties);
             result.push_back(std::make_pair(animation, std::move(*incubated)));
+
+            LOG_DBG("Loaded animation from file",
+                LOG_ARG("animation", animation),
+                LOG_ARG("properties", properties.dump(-1)));
         }
     } catch (std::exception const & ex) {
         return unexpected_error{ex.what()};

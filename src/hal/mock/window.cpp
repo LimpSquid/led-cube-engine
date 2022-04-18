@@ -23,7 +23,7 @@ constexpr glm::dvec3 default_view{x_axis_view + glm::dvec3(25, 0, -35)};
 
 void glfw_error_callback(int, const char * const desc)
 {
-    LOG_ERR("glfw error", LOG_ARG("description", desc));
+    LOG_ERR("GLFW error", LOG_ARG("description", desc));
 }
 
 } // End of namespace
@@ -248,27 +248,37 @@ void window::process_cursor_pos_change(double xpos, double ypos)
 void window::process_scroll_change(double /* xoffset */, double yoffset)
 {
     camera_.translation.z += -yoffset * mouse_scroll_resolution * camera_.translation.z; // Increase/decrease step size based on how far we are away from the object
+    LOG_DBG("Camera translation changed",
+        LOG_ARG("x", camera_.translation.x),
+        LOG_ARG("y", camera_.translation.y),
+        LOG_ARG("z", camera_.translation.z));
 }
 
 void window::process_inputs()
 {
     auto update_camera = [this](int key, auto handler) {
-        if (glfwGetKey(glfw_window_, key) == GLFW_PRESS)
-            handler();
+        if (glfwGetKey(glfw_window_, key) == GLFW_PRESS) {
+            handler(camera_.translation);
+
+            LOG_DBG("Camera translation changed",
+                LOG_ARG("x", camera_.translation.x),
+                LOG_ARG("y", camera_.translation.y),
+                LOG_ARG("z", camera_.translation.z));
+        }
     };
 
     update_camera(GLFW_KEY_UP,
-        [this](){ camera_.translation.y -= translation_step; });
+        [](auto & translation){ translation.y -= translation_step; });
     update_camera(GLFW_KEY_DOWN,
-        [this](){ camera_.translation.y += translation_step; });
+        [](auto & translation){ translation.y += translation_step; });
     update_camera(GLFW_KEY_RIGHT,
-        [this](){ camera_.translation.x -= translation_step; });
+        [](auto & translation){ translation.x -= translation_step; });
     update_camera(GLFW_KEY_LEFT,
-        [this](){ camera_.translation.x += translation_step; });
+        [](auto & translation){ translation.x += translation_step; });
     update_camera(GLFW_KEY_PAGE_UP,
-        [this](){ camera_.translation.z -= translation_step; });
+        [](auto & translation){ translation.z -= translation_step; });
     update_camera(GLFW_KEY_PAGE_DOWN,
-        [this](){ camera_.translation.z += translation_step; });
+        [](auto & translation){ translation.z += translation_step; });
 }
 
 } // End of namespace

@@ -1,6 +1,8 @@
 #include <hal/rpi_cube/iodev.hpp>
+#include <cube/core/logging.hpp>
 
 using namespace cube::core;
+using namespace std::chrono;
 
 namespace hal::rpi_cube
 {
@@ -31,6 +33,31 @@ void iodev_subscription::unsubscribe()
     }
 }
 
+iodev_metrics_logger::iodev_metrics_logger(cube::core::engine_context & context, char const * const name) :
+    context_(context),
+    timer_(context, [this, name](auto now, auto) {
+        seconds now_s = duration_cast<seconds>(now.time_since_epoch());
+        seconds elapsed = now_s - snapshot_.epoch;
+        std::size_t write_rate = (bytes_written_ - snapshot_.bytes_written) / elapsed.count();
+        std::size_t read_rate = (bytes_read_ - snapshot_.bytes_read) / elapsed.count();
+
+        LOG_DBG("IO device metrics",
+            LOG_ARG("name", name),
+            LOG_ARG("bytes_written", bytes_written_),
+            LOG_ARG("bytes_read", bytes_read_),
+            LOG_ARG("avg_write_rate", std::to_string(write_rate) + "B/s"),
+            LOG_ARG("avg_read_rate", std::to_string(read_rate) + "B/s"));
+
+        snapshot_.epoch = now_s;
+        snapshot_.bytes_written = bytes_written_;
+        snapshot_.bytes_read = bytes_read_;
+    }),
+    bytes_written_(0),
+    bytes_read_(0)
+{
+    timer_.start(30s);
+}
+
 engine_context & iodev::context()
 {
     return context_;
@@ -51,8 +78,9 @@ iodev_subscription iodev::subscribe(iodev_read_handler_t handler)
     return {*this, id};
 }
 
-iodev::iodev(engine_context & context) :
+iodev::iodev(engine_context & context, char const * const name) :
     context_(context),
+    metrics_logger_(context, name),
     subscription_id_(0)
 { }
 
