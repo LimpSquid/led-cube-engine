@@ -38,15 +38,15 @@ iodev_metrics_logger::iodev_metrics_logger(cube::core::engine_context & context,
     timer_(context, [this, name](auto now, auto) {
         seconds now_s = duration_cast<seconds>(now.time_since_epoch());
         seconds elapsed = now_s - snapshot_.epoch;
-        std::size_t write_rate = (bytes_written_ - snapshot_.bytes_written) / elapsed.count();
-        std::size_t read_rate = (bytes_read_ - snapshot_.bytes_read) / elapsed.count();
+        long double write_rate = (bytes_written_ - snapshot_.bytes_written) / (1024.0l * elapsed.count());
+        long double read_rate = (bytes_read_ - snapshot_.bytes_read) / (1024.0l * elapsed.count());
 
         LOG_DBG("IO device metrics",
             LOG_ARG("name", name),
             LOG_ARG("bytes_written", bytes_written_),
             LOG_ARG("bytes_read", bytes_read_),
-            LOG_ARG("avg_write_rate", std::to_string(write_rate) + "B/s"),
-            LOG_ARG("avg_read_rate", std::to_string(read_rate) + "B/s"));
+            LOG_ARG("avg_write_rate", std::to_string(write_rate) + " KiB/s"),
+            LOG_ARG("avg_read_rate", std::to_string(read_rate) + " KiB/s"));
 
         snapshot_.epoch = now_s;
         snapshot_.bytes_written = bytes_written_;
