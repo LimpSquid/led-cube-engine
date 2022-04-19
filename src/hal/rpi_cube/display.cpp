@@ -74,16 +74,18 @@ struct async_pixel_pump
     using completion_handler_t = std::function<void()>;
     using resources_t = hal::rpi_cube::resources;
     using pointer_t = std::unique_ptr<async_pixel_pump>;
+    using detected_slaves_t = std::unordered_set<unsigned char>;
 
-    static pointer_t run(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h)
+    static pointer_t run(event_poller & p, graphics_buffer const & b, resources_t & r, detected_slaves_t & d, completion_handler_t h)
     {
-        pointer_t pp{new async_pixel_pump(p, b, r, std::move(h))};
+        pointer_t pp{new async_pixel_pump(p, b, r, d, std::move(h))};
         pp->run();
         return pp;
     }
 
-    async_pixel_pump(event_poller & p, graphics_buffer const & b, resources_t & r, completion_handler_t h) :
+    async_pixel_pump(event_poller & p, graphics_buffer const & b, resources_t & r, detected_slaves_t & d, completion_handler_t h) :
         resources(r),
+        detected_slaves(d),
         completion_handler(std::move(h)),
         invoker(p, [&]() { run(); }),
         buffer(transform(b)),
@@ -96,11 +98,14 @@ struct async_pixel_pump
         // at the time and allow the event to run in between.
 
         assert(current_slice < cube::cube_size_1d);
-        auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
+        auto const slave_select = resources.pixel_comm_ss.begin() + current_slice;
+        auto const slave_address = resources.bus_comm_slave_addresses.begin() + current_slice;
 
-        // TODO: only update when slave is found
-        hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
-        resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
+        auto const search = detected_slaves.find(*slave_address);
+        if (search != detected_slaves.end()) {
+            hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
+            resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
+        }
 
         if (++current_slice == cube::cube_size_1d)
             completion_handler();
@@ -109,6 +114,7 @@ struct async_pixel_pump
     }
 
     resources_t & resources;
+    detected_slaves_t & detected_slaves;
     completion_handler_t completion_handler;
     function_invoker invoker;
     rgb_buffer buffer;
@@ -162,7 +168,7 @@ void display::show(graphics_buffer const & buffer)
     };
 
     pixel_pump_ = async_pixel_pump::run(context().event_poller,
-        buffer, resources_, std::move(swap_buffers));
+        buffer, resources_, detected_slaves_, std::move(swap_buffers));
 }
 
 void display::probe_slaves()
