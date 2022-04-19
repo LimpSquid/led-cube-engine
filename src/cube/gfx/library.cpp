@@ -69,7 +69,7 @@ expected_or_error<animation_list_t> load_animations(nlohmann::json const & json,
             (*incubated)->load_properties(properties);
             result.push_back(std::make_pair(animation, std::move(*incubated)));
 
-            LOG_DBG("Loaded animation from file",
+            LOG_DBG("Loaded animation",
                 LOG_ARG("animation", animation),
                 LOG_ARG("properties", properties.dump(-1)));
         }

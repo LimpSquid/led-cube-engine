@@ -38,7 +38,7 @@ public:
     bus_comm(iodev & device);
 
     template<bus_command C>
-    void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler)
+    void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler = nullptr)
     {
         static_assert(std::is_trivially_copyable_v<bus_request_params<C>>);
         static_assert(std::is_trivially_copyable_v<bus_response_params<C>>);
@@ -52,18 +52,19 @@ public:
         std::memcpy(frame.payload.data(), &params, sizeof(params));
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
-        add_job({std::move(frame),
-            unicast_params{
-                [h = std::move(response_handler)](frame_or_error frame) {
-                    if (!frame)
-                        return h(frame.error());
+        unicast_params uparams{};
+        if (response_handler) {
+            uparams.handler = [h = std::move(response_handler)](frame_or_error frame) {
+                if (!frame)
+                    return h(frame.error());
 
-                    bus_response_params<C> params;
-                    std::memcpy(&params, frame->payload.data(), sizeof(params));
-                    h(std::move(params));
-                }
-            }
-        }, bus_request_params<C>::high_prio::value);
+                bus_response_params<C> params;
+                std::memcpy(&params, frame->payload.data(), sizeof(params));
+                h(std::move(params));
+            };
+        }
+
+        add_job({std::move(frame), std::move(uparams)}, bus_request_params<C>::high_prio::value);
     }
 
     template<bus_command C>
@@ -108,7 +109,7 @@ private:
     struct unicast_params
     {
         std::function<void(frame_or_error)> handler;
-        unsigned int attempt{0};
+        unsigned int attempt;
     };
 
     struct broadcast_params

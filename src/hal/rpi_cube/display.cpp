@@ -123,14 +123,14 @@ display_shutdown_signal::display_shutdown_signal(display & display) :
 void display_shutdown_signal::shutdown_requested()
 {
     display_.pixel_pump_.reset(); // Immediately stop sending pixels
-    display_.send_all<bus_command::exe_layer_clear>({}, [&](auto && /* responses */) { ready_for_shutdown(); });
+    display_.send_all<bus_command::exe_layer_clear>({}, std::bind(&display_shutdown_signal::ready_for_shutdown, this));
 }
 
 } // End of namespace
 
 display::display(engine_context & context) :
     graphics_device(context),
-    bus_monitor_(context, [&](auto, auto) { ping_slaves(); }, true),
+    bus_monitor_(context, std::bind(&display::probe_slaves, this), true),
     resources_(context),
     bus_comm_(resources_.bus_comm_device),
     shutdown_signal_(*this)
@@ -157,18 +157,16 @@ void display::show(graphics_buffer const & buffer)
         return;
 
     auto swap_buffers = [&]() {
-        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() {
-            pixel_pump_.reset();
-        });
+        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() { pixel_pump_.reset(); });
     };
 
     pixel_pump_ = async_pixel_pump::run(context().event_poller,
         buffer, resources_, std::move(swap_buffers));
 }
 
-void display::ping_slaves()
+void display::probe_slaves()
 {
-    send_for_each<bus_command::exe_ping>({}, [this](auto slave, auto response) {
+    send_for_each<bus_command::get_status>({}, [this](auto slave, auto response) {
         if (!response) {
             detected_slaves_.erase(slave.address);
 
@@ -176,9 +174,15 @@ void display::ping_slaves()
             return;
         }
 
-        // Already detected the slave
-        if (detected_slaves_.count(slave.address))
+        // Already detected the slave, check status
+        if (detected_slaves_.count(slave.address)) {
+            // DMA error, try to reset
+            if (response->layer_dma_error) {
+                LOG_WRN("DMA error", LOG_ARG("address", as_hex(slave.address)));
+                bus_comm_.send<bus_command::exe_dma_reset>({}, slave);
+            }
             return;
+        }
 
         // New slave detected, initialize
         auto [sys_version_handler, dma_reset_handler] = decompose([this, slave](

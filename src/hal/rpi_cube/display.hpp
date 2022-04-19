@@ -70,7 +70,7 @@ private:
             });
     }
 
-    void ping_slaves();
+    void probe_slaves();
 
     cube::core::recurring_timer bus_monitor_;
     std::unordered_set<unsigned char> detected_slaves_;

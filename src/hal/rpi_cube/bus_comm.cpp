@@ -25,8 +25,8 @@ namespace hal::rpi_cube
 
 bus_comm::bus_comm(iodev & device) :
     device_(device),
-    read_subscription_(device_.subscribe([this]() { do_read(); })),
-    response_watchdog_(device.context(), [this](auto, auto) { do_timeout(); }),
+    read_subscription_(device_.subscribe(std::bind(&bus_comm::do_read, this))),
+    response_watchdog_(device.context(), std::bind(&bus_comm::do_timeout, this)),
     state_(bus_state::idle)
 { }
 

@@ -9,12 +9,11 @@ namespace hal::rpi_cube
 // See: https://github.com/LimpSquid/led-controller/blob/master/led-controller.X/source/bus_func_impl.c
 enum class bus_command : unsigned char
 {
-    get_layer_ready         = 0,
+    get_status              = 3,
     get_sys_version         = 5,
 
     exe_led_open_detection  = 1,
     exe_dma_reset           = 2,
-    exe_ping                = 3,
     exe_dma_swap_buffers    = 4,
     exe_sys_cpu_reset       = 6, // Fixme: a bit of a special case as this may not send a response with a small timeout!
     exe_layer_clear         = 7,
@@ -66,17 +65,18 @@ struct bus_request_params<bus_command::exe_sys_cpu_reset> : low_prio_request
 };
 
 template<>
-struct bus_response_params<bus_command::get_layer_ready>
-{
-    bool ready;
-};
-
-template<>
 struct bus_response_params<bus_command::get_sys_version>
 {
     uint8_t major;
     uint8_t minor;
     uint8_t patch;
+};
+
+template<>
+struct bus_response_params<bus_command::get_status>
+{
+    uint8_t layer_ready     :1;
+    uint8_t layer_dma_error :1;
 };
 
 } // End of namespace
