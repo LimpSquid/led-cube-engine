@@ -98,6 +98,7 @@ struct async_pixel_pump
         assert(current_slice < cube::cube_size_1d);
         auto slave_select = resources.pixel_comm_ss.begin() + current_slice;
 
+        // TODO: only update when slave is found
         hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
         resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
 
@@ -170,26 +171,26 @@ void display::probe_slaves()
         if (!response) {
             detected_slaves_.erase(slave.address);
 
-            LOG_WRN("Failed to ping slave", LOG_ARG("address", as_hex(slave.address)));
+            LOG_WRN("Failed to probe slave", LOG_ARG("address", as_hex(slave.address)));
             return;
         }
 
         // Already detected the slave, check status
         if (detected_slaves_.count(slave.address)) {
-            // DMA error, try to reset
-            if (response->layer_dma_error) {
-                LOG_WRN("DMA error", LOG_ARG("address", as_hex(slave.address)));
-                bus_comm_.send<bus_command::exe_dma_reset>({}, slave);
-            }
-            return;
+            if (!response->layer_dma_error)
+                return;
+
+            // If we add more error flags, introduce a generic log message
+            detected_slaves_.erase(slave.address);
+            LOG_WRN("DMA error, reinitializing slave", LOG_ARG("address", as_hex(slave.address)));
         }
 
-        // New slave detected, initialize
+        // Slave detected, (re)initialize
         auto [sys_version_handler, dma_reset_handler] = decompose([this, slave](
             bus_response_params_or_error<bus_command::get_sys_version> version_response,
             bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
                 if (!version_response || ! reset_response) {
-                    LOG_WRN("Failed to initialize", LOG_ARG("address", as_hex(slave.address)));
+                    LOG_WRN("Failed to initialize slave", LOG_ARG("address", as_hex(slave.address)));
                     return;
                 }
 
@@ -198,7 +199,7 @@ void display::probe_slaves()
                     "." + std::to_string(version_response->minor) +
                     "." + std::to_string(version_response->patch);
 
-                LOG_INF("Found slave",
+                LOG_INF("Initialized slave",
                     LOG_ARG("address", as_hex(slave.address)),
                     LOG_ARG("version", version));
                 detected_slaves_.insert(slave.address);
