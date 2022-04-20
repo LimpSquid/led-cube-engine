@@ -158,8 +158,9 @@ void display::show(graphics_buffer const & buffer)
 
     // Another pixel pump still running
     if (pixel_pump_) {
-        LOG_DBG("Ignoring new graphics buffer, pixel pump is still running",
-            LOG_ARG("current_slice", pixel_pump_->current_slice));
+        // TODO: spams the logs too much
+        // LOG_DBG("Ignoring new graphics buffer, pixel pump is still running",
+        //     LOG_ARG("current_slice", pixel_pump_->current_slice));
         return;
     }
 
