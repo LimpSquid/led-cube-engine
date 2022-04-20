@@ -72,39 +72,37 @@ namespace detail
 struct async_pixel_pump
 {
     using completion_handler_t = std::function<void()>;
-    using resources_t = hal::rpi_cube::resources;
     using pointer_t = std::unique_ptr<async_pixel_pump>;
-    using detected_slaves_t = std::unordered_set<unsigned char>;
 
-    static pointer_t run(event_poller & p, graphics_buffer const & b, resources_t & r, detected_slaves_t & d, completion_handler_t h)
+    static pointer_t run(display & d, graphics_buffer const & b, completion_handler_t h)
     {
-        pointer_t pp{new async_pixel_pump(p, b, r, d, std::move(h))};
+        pointer_t pp{new async_pixel_pump(d, b, std::move(h))};
         pp->run();
         return pp;
     }
 
-    async_pixel_pump(event_poller & p, graphics_buffer const & b, resources_t & r, detected_slaves_t & d, completion_handler_t h) :
-        resources(r),
-        detected_slaves(d),
+    async_pixel_pump(display & d, graphics_buffer const & b, completion_handler_t h) :
+        disp(d),
         completion_handler(std::move(h)),
-        invoker(p, [&]() { run(); }),
+        invoker(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
         buffer(transform(b)),
         current_slice(0)
     { }
 
+    void run(int) { }
     void run()
     {
         // Writing pixels is a blocking operation, write one slice
         // at the time and allow the event to run in between.
 
         assert(current_slice < cube::cube_size_1d);
-        auto const slave_select = resources.pixel_comm_ss.begin() + current_slice;
-        auto const slave_address = resources.bus_comm_slave_addresses.begin() + current_slice;
+        auto const slave_select = disp.resources_.pixel_comm_ss.begin() + current_slice;
+        auto const slave_address = disp.resources_.bus_comm_slave_addresses.begin() + current_slice;
 
-        auto const search = detected_slaves.find(*slave_address);
-        if (search != detected_slaves.end()) {
+        auto const search = disp.detected_slaves_.find(*slave_address);
+        if (search != disp.detected_slaves_.end()) {
             hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
-            resources.pixel_comm_device.write_from(buffer.slices[current_slice]);
+            disp.resources_.pixel_comm_device.write_from(buffer.slices[current_slice]);
         }
 
         if (++current_slice == cube::cube_size_1d)
@@ -113,8 +111,7 @@ struct async_pixel_pump
             invoker.schedule();
     }
 
-    resources_t & resources;
-    detected_slaves_t & detected_slaves;
+    display & disp;
     completion_handler_t completion_handler;
     function_invoker invoker;
     rgb_buffer buffer;
@@ -160,15 +157,15 @@ void display::show(graphics_buffer const & buffer)
     using namespace detail;
 
     // Another pixel pump still running
-    if (pixel_pump_)
+    if (pixel_pump_) {
+        LOG_WRN("Ignoring new graphics buffer, pixel pump is still running",
+            LOG_ARG("current_slice", pixel_pump_->current_slice));
         return;
+    }
 
-    auto swap_buffers = [&]() {
+    pixel_pump_ = async_pixel_pump::run(*this, buffer, [&]() {
         bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() { pixel_pump_.reset(); });
-    };
-
-    pixel_pump_ = async_pixel_pump::run(context().event_poller,
-        buffer, resources_, detected_slaves_, std::move(swap_buffers));
+    });
 }
 
 void display::probe_slaves()

@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <unistd.h>
 
 #define LOG_ARG(name, value) \
@@ -125,6 +126,7 @@ std::size_t write(char * buffer, log_arg<T> const & arg, log_arg<A> const & ... 
 template<typename ... T>
 void log(int fd, log_prio prio, std::string_view msg, log_arg<T> ... args)
 {
+    // Console colors: https://gist.github.com/jneander/7443174
     static std::string_view const prefix[] = { "ERRO: ", "WARN: ", "INFO: ", "DEBG: "};
     static std::string_view const color[]  = { "31",     "34",     "32",     "33"    };
     static const log_prio log_level = get_runtime_log_level();
@@ -133,8 +135,12 @@ void log(int fd, log_prio prio, std::string_view msg, log_arg<T> ... args)
         return;
 
     thread_local char buffer[2048]; // Todo: handle out of bounds array access?
+    thread_local std::time_t time;
 
-    std::size_t off = write(buffer, "\033[1;");
+    time = std::time(nullptr);
+
+    std::size_t off = write(buffer, std::asctime(std::localtime(&time)));
+    off += write(buffer + off, " \033[1;");
     off += write(buffer + off, color[static_cast<std::size_t>(prio)]);
     off += write(buffer + off, "m");
     off += write(buffer + off, prefix[static_cast<std::size_t>(prio)]);

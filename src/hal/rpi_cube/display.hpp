@@ -37,6 +37,7 @@ public:
 
 private:
     friend class detail::display_shutdown_signal;
+    friend struct detail::async_pixel_pump;
 
     int map_to_offset(int x, int y, int z) const override;
     void show(cube::core::graphics_buffer const & buffer) override;

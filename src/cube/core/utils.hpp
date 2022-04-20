@@ -88,4 +88,13 @@ inline void throw_errno(char const * const op = nullptr)
         throw std::runtime_error("Error: "s + std::strerror(errno));
 }
 
+template<typename ... A>
+struct signature
+{
+    template<typename T, typename R>
+    constexpr static auto select_overload(R (T::*f)(A ...)) { return f; }
+    template<typename R>
+    constexpr static auto select_overload(R (*f)(A ...)) { return f; }
+};
+
 } // End of namespace
