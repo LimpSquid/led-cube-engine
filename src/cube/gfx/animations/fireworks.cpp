@@ -119,22 +119,22 @@ void fireworks::paint(graphics_device & device)
 json_or_error_t fireworks::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(number_of_shells, default_number_of_shells),
-        property_to_json(number_of_fragments, default_number_of_fragments),
-        property_to_json(shell_radius, default_shell_radius),
-        property_to_json(explosion_force, default_explosion_force),
-        property_to_json(shell_colors, std::vector<color>{}),
+        make_json(number_of_shells, default_number_of_shells),
+        make_json(number_of_fragments, default_number_of_fragments),
+        make_json(shell_radius, default_shell_radius),
+        make_json(explosion_force, default_explosion_force),
+        make_json(shell_colors, std::vector<color>{}),
     };
 }
 
 property_pairs_or_error_t fireworks::properties_from_json(nlohmann::json const & json) const
 {
     return property_pairs_t {
-        property_from_json(json, number_of_shells, default_number_of_shells),
-        property_from_json(json, number_of_fragments, default_number_of_fragments),
-        property_from_json(json, shell_radius, default_shell_radius),
-        property_from_json(json, explosion_force, default_explosion_force),
-        property_from_json(json, shell_colors, std::vector<color>{}),
+        make_property(json, number_of_shells, default_number_of_shells),
+        make_property(json, number_of_fragments, default_number_of_fragments),
+        make_property(json, shell_radius, default_shell_radius),
+        make_property(json, explosion_force, default_explosion_force),
+        make_property(json, shell_colors, std::vector<color>{}),
     };
 }
 

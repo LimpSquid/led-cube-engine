@@ -113,10 +113,10 @@ void stars::paint(graphics_device & device)
 json_or_error_t stars::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(fade_time_ms, default_fade_time),
-        property_to_json(number_of_stars, default_number_of_stars),
-        property_to_json(galaxy_gradient, default_galaxy_gradient),
-        property_to_json(star_radius, default_radius),
+        make_json(fade_time_ms, default_fade_time),
+        make_json(number_of_stars, default_number_of_stars),
+        make_json(galaxy_gradient, default_galaxy_gradient),
+        make_json(star_radius, default_radius),
     };
 }
 
@@ -129,9 +129,9 @@ property_pairs_or_error_t stars::properties_from_json(nlohmann::json const & jso
 
     return property_pairs_t {
         make_property(fade_time_ms, std::move(fade_time)),
-        property_from_json(json, number_of_stars, default_number_of_stars),
-        property_from_json(json, galaxy_gradient, default_galaxy_gradient),
-        property_from_json(json, star_radius, default_radius),
+        make_property(json, number_of_stars, default_number_of_stars),
+        make_property(json, galaxy_gradient, default_galaxy_gradient),
+        make_property(json, star_radius, default_radius),
     };
 }
 

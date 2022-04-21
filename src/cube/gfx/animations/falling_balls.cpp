@@ -99,20 +99,20 @@ void falling_balls::paint(graphics_device & device)
 json_or_error_t falling_balls::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(number_of_balls, default_number_of_balls),
-        property_to_json(max_ball_radius, default_max_radius),
-        property_to_json(min_ball_radius, default_min_radius),
-        property_to_json(ball_colors, std::vector<color>{}),
+        make_json(number_of_balls, default_number_of_balls),
+        make_json(max_ball_radius, default_max_radius),
+        make_json(min_ball_radius, default_min_radius),
+        make_json(ball_colors, std::vector<color>{}),
     };
 }
 
 property_pairs_or_error_t falling_balls::properties_from_json(nlohmann::json const & json) const
 {
     return property_pairs_t {
-        property_from_json(json, number_of_balls, default_number_of_balls),
-        property_from_json(json, max_ball_radius, default_max_radius),
-        property_from_json(json, min_ball_radius, default_min_radius),
-        property_from_json(json, ball_colors, std::vector<color>{}),
+        make_property(json, number_of_balls, default_number_of_balls),
+        make_property(json, max_ball_radius, default_max_radius),
+        make_property(json, min_ball_radius, default_min_radius),
+        make_property(json, ball_colors, std::vector<color>{}),
     };
 }
 

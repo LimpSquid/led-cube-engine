@@ -106,11 +106,11 @@ void ripple::paint(graphics_device & device)
 json_or_error_t ripple::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(ripple_wave_time_ms, default_wave_time),
-        property_to_json(ripple_length, default_length),
-        property_to_json(ripple_gradient, default_gradient),
-        property_to_json(ripple_drift_factor_x, default_drift_factor),
-        property_to_json(ripple_drift_factor_y, default_drift_factor),
+        make_json(ripple_wave_time_ms, default_wave_time),
+        make_json(ripple_length, default_length),
+        make_json(ripple_gradient, default_gradient),
+        make_json(ripple_drift_factor_x, default_drift_factor),
+        make_json(ripple_drift_factor_y, default_drift_factor),
     };
 }
 
@@ -123,10 +123,10 @@ property_pairs_or_error_t ripple::properties_from_json(nlohmann::json const & js
 
     return property_pairs_t {
         make_property(ripple_wave_time_ms, std::move(wave_time)),
-        property_from_json(json, ripple_length, default_length),
-        property_from_json(json, ripple_gradient, default_gradient),
-        property_from_json(json, ripple_drift_factor_x, default_drift_factor),
-        property_from_json(json, ripple_drift_factor_y, default_drift_factor),
+        make_property(json, ripple_length, default_length),
+        make_property(json, ripple_gradient, default_gradient),
+        make_property(json, ripple_drift_factor_x, default_drift_factor),
+        make_property(json, ripple_drift_factor_y, default_drift_factor),
     };
 }
 

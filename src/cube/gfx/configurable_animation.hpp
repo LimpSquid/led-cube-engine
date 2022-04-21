@@ -23,7 +23,6 @@ using property_value_t = std::variant<
     std::chrono::nanoseconds, std::chrono::milliseconds, std::chrono::seconds,
     core::color, std::vector<core::color>,
     gradient, gradient_stop>;
-
 using property_label_t = int;
 using property_pair_t = std::pair<property_label_t, property_value_t>;
 using property_pairs_t = std::vector<property_pair_t>;
@@ -31,9 +30,21 @@ using json_or_error_t = core::expected_or_error<nlohmann::json>;
 using property_pairs_or_error_t = core::expected_or_error<property_pairs_t>;
 
 template<typename T>
-inline property_pair_t make_property(property_label_t label, T value)
+property_pair_t make_property(property_label_t label, T value)
 {
     return std::make_pair(label, property_value_t{std::move(value)});
+}
+
+template<typename T, typename E>
+property_pair_t make_property(nlohmann::json const & json, E label)
+{
+    return make_property(label, core::parse_field<T>(json, label));
+}
+
+template<typename T, typename E>
+property_pair_t make_property(nlohmann::json const & json, E label, T def)
+{
+    return make_property(label, core::parse_field(json, label, std::move(def)));
 }
 
 class configurable_animation :
@@ -61,8 +72,8 @@ protected:
         properties_[label] = property_value_t{std::move(value)};
     }
 
-    template<typename T, typename L>
-    T read_property(L label, T def = {}) const
+    template<typename T, typename E>
+    T read_property(E label, T def = {}) const
     {
         using std::operator""s;
 
@@ -73,7 +84,7 @@ protected:
         try {
             return std::get<T>(search->second);
         } catch(std::bad_variant_access const & ex) {
-            if constexpr(std::is_enum_v<L>) // If the enum was used we can give a more detailed description
+            if constexpr(std::is_enum_v<E>) // If the enum was used we can give a more detailed description
                 throw std::invalid_argument("Property type mismatch for property: "s + to_string(label));
             else
                 throw std::invalid_argument("Property type mismatch");
@@ -82,12 +93,11 @@ protected:
 
     void write_properties(property_pairs_t const & properties);
 
-    template<typename T, typename L>
-    nlohmann::json property_to_json(L label, T def = {}) const { return core::make_field(label, read_property(label, def)); }
-    template<typename T, typename L>
-    property_pair_t property_from_json(nlohmann::json const & json, L label) const { return {label, core::parse_field<T>(json, label)}; }
-    template<typename T, typename L>
-    property_pair_t property_from_json(nlohmann::json const & json, L label, T def) const { return {label, core::parse_field(json, label, def)}; }
+    template<typename T, typename E>
+    nlohmann::json make_json(E label, T def = {}) const
+    {
+        return core::make_field(label, read_property(label, def));
+    }
 
 private:
     virtual json_or_error_t properties_to_json() const;

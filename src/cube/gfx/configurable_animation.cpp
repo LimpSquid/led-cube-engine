@@ -33,24 +33,21 @@ void configurable_animation::load_properties(nlohmann::json const & json)
     if (!json.is_object())
         throw std::runtime_error("Expected JSON object got: "s + json.type_name());
 
-    write_properties({
-        {label, parse_field(json, label, std::string(default_label))},
-        {duration_ms, parse_field(json, duration_ms, default_duration)},
-    });
+    auto properties = properties_from_json(json);
+    if (!properties)
+        throw std::runtime_error("Failed to load properties: " + properties.error().what);
 
-    auto other = properties_from_json(json);
-    if (!other)
-        throw std::runtime_error("Failed to load properties: " + other.error().what);
-
-    write_properties(*other);
+    properties->push_back(make_property(json, label, std::string(default_label)));
+    properties->push_back(make_property(json, duration_ms, default_duration));
+    write_properties(*properties);
 }
 
 nlohmann::json configurable_animation::dump_properties() const
 {
     nlohmann::json json =
     {
-        make_field(label, read_property(label, std::string(default_label))),
-        make_field(duration_ms, read_property(duration_ms, default_duration)),
+        make_json(label, std::string(default_label)),
+        make_json(duration_ms, default_duration),
     };
 
     auto other = properties_to_json();

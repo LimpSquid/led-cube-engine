@@ -89,7 +89,6 @@ struct async_pixel_pump
         current_slice(0)
     { }
 
-    void run(int) { }
     void run()
     {
         // Writing pixels is a blocking operation, write one slice

@@ -219,10 +219,10 @@ void my_animation::stop()
 json_or_error_t my_animation::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(my_int_property, default_int_property),
-        property_to_json(my_double_property, default_double_property),
-        property_to_json(my_gradient_property, default_gradient_property),
-        property_to_json(my_color_vector_property, std::vector<color>{}),
+        make_json(my_int_property, default_int_property),
+        make_json(my_double_property, default_double_property),
+        make_json(my_gradient_property, default_gradient_property),
+        make_json(my_color_vector_property, std::vector<color>{}),
     };
 }
 
@@ -235,9 +235,9 @@ property_pairs_or_error_t my_animation::properties_from_json(nlohmann::json cons
 
     return property_pairs_t {
         make_property(my_int_property, my_int),
-        property_from_json(json, my_double_property, default_double_property),
-        property_from_json(json, my_gradient_property, default_gradient_property),
-        property_from_json(json, my_color_vector_property, std::vector<color>{}),
+        make_property(json, my_double_property, default_double_property),
+        make_property(json, my_gradient_property, default_gradient_property),
+        make_property(json, my_color_vector_property, std::vector<color>{}),
     };
 }
 

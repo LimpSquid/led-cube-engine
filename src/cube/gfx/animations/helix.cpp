@@ -107,12 +107,12 @@ void helix::stop()
 json_or_error_t helix::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(helix_rotation_time_ms, default_rotation_time),
-        property_to_json(helix_phase_shift_cos_factor, default_phase_shift_factor),
-        property_to_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
-        property_to_json(helix_thickness, default_thickness),
-        property_to_json(helix_length, default_length),
-        property_to_json(helix_gradient, default_gradient),
+        make_json(helix_rotation_time_ms, default_rotation_time),
+        make_json(helix_phase_shift_cos_factor, default_phase_shift_factor),
+        make_json(helix_phase_shift_sin_factor, default_phase_shift_factor),
+        make_json(helix_thickness, default_thickness),
+        make_json(helix_length, default_length),
+        make_json(helix_gradient, default_gradient),
     };
 }
 
@@ -125,11 +125,11 @@ property_pairs_or_error_t helix::properties_from_json(nlohmann::json const & jso
 
     return property_pairs_t {
         make_property(helix_rotation_time_ms, std::move(rotation_time)),
-        property_from_json(json, helix_phase_shift_cos_factor, default_phase_shift_factor),
-        property_from_json(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
-        property_from_json(json, helix_thickness, default_thickness),
-        property_from_json(json, helix_length, default_length),
-        property_from_json(json, helix_gradient, default_gradient),
+        make_property(json, helix_phase_shift_cos_factor, default_phase_shift_factor),
+        make_property(json, helix_phase_shift_sin_factor, default_phase_shift_factor),
+        make_property(json, helix_thickness, default_thickness),
+        make_property(json, helix_length, default_length),
+        make_property(json, helix_gradient, default_gradient),
     };
 }
 

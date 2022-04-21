@@ -95,18 +95,18 @@ void lightning::stop()
 json_or_error_t lightning::properties_to_json() const
 {
     return nlohmann::json {
-        property_to_json(number_of_clouds, default_number_of_clouds),
-        property_to_json(cloud_radius, default_radius),
-        property_to_json(cloud_gradient, default_gradient),
+        make_json(number_of_clouds, default_number_of_clouds),
+        make_json(cloud_radius, default_radius),
+        make_json(cloud_gradient, default_gradient),
     };
 }
 
 property_pairs_or_error_t lightning::properties_from_json(nlohmann::json const & json) const
 {
     return property_pairs_t {
-        property_from_json(json, number_of_clouds, default_number_of_clouds),
-        property_from_json(json, cloud_radius, default_radius),
-        property_from_json(json, cloud_gradient, default_gradient),
+        make_property(json, number_of_clouds, default_number_of_clouds),
+        make_property(json, cloud_radius, default_radius),
+        make_property(json, cloud_gradient, default_gradient),
     };
 }
 
