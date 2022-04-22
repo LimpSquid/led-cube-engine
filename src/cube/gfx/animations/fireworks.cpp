@@ -184,12 +184,12 @@ void shell::update(std::chrono::milliseconds const & dt)
                 explode();
             break;
         case exploded: {
-            bool x = true;
+            bool done = true;
             for (auto & fragment : fragments) {
                 fragment.move(dt);
-                x &= (fragment.position.z < 0.0);
+                done &= !visible(fragment.position);
             }
-            if (x)
+            if (done)
                 state = completed;
             break;
         }
