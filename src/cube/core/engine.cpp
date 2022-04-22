@@ -13,8 +13,8 @@ namespace
 
 constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
 
-template<typename Container>
-void poll(Container & tickers)
+template<typename T>
+void poll(T & tickers)
 {
     auto const now = steady_clock::now();
 
@@ -47,17 +47,11 @@ void engine::load(std::shared_ptr<animation> animation)
 void engine::run()
 {
     std::shared_ptr<animation> animation;
+    std::once_flag shutdown_flag;
     bool new_animation = false;
-    bool shutdown = false;
+    bool run = true;
 
-    while (!shutdown || !context_.shutdown_signals.empty()) {
-        // We're requested to stop
-        if (stopping_ && !shutdown) {
-            for (auto * signal : context_.shutdown_signals)
-                (*signal)();
-            shutdown = true;
-        }
-
+    while (run) {
         // Poll tickers before the animation is rendered as it is common practice
         // that an animation is marked dirty from within a ticker handler
         poll(context_.tickers);
@@ -66,13 +60,14 @@ void engine::run()
         new_animation = (animation != animation_);
         animation = animation_;
 
-        if (!shutdown && animation) {
+        if (!stopping_ && animation) {
             if (new_animation)
                 device_->show_animation(animation);
             else
                 device_->render_animation();
         }
 
+        // Poll asio and event_poller
         assert(!context_.io_context.stopped());
         if (context_.event_poller.has_subscribers()) {
             auto [size, events] = context_.event_poller.poll_events(poll_timeout);
@@ -83,6 +78,15 @@ void engine::run()
             context_.io_context.poll(); // Run all asio ready handlers
         } else
             context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
+
+        // Finally, check if we're requested to stop
+        if (stopping_) {
+            std::call_once(shutdown_flag, [&]() {
+                for (auto * signal : context_.shutdown_signals)
+                    (*signal)();
+            });
+            run = !context_.shutdown_signals.empty();
+        }
     }
 }
 
