@@ -2,22 +2,40 @@
 
 #include <utility>
 #include <string>
+#include <chrono>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <unistd.h>
 
-#define LOG_ARG(name, value) \
-    std::make_pair(name, value)
-#define LOG_INF(...)  \
-    cube::core::log(STDOUT_FILENO, cube::core::log_prio::info, __VA_ARGS__)
-#define LOG_DBG(...)  \
-    cube::core::log(STDOUT_FILENO, cube::core::log_prio::debug, __VA_ARGS__)
-#define LOG_WRN(...)  \
-    cube::core::log(STDOUT_FILENO, cube::core::log_prio::warning, __VA_ARGS__)
-#define LOG_ERR(...)  \
-    cube::core::log(STDOUT_FILENO, cube::core::log_prio::error, __VA_ARGS__)
+#define LOG_ARG(name, value) std::make_pair(name, value)
+#define LOG(level, ...) cube::core::log(STDOUT_FILENO, level, __VA_ARGS__)
+#define LOG_INF(...) LOG(cube::core::log_prio::info, __VA_ARGS__)
+#define LOG_DBG(...) LOG(cube::core::log_prio::debug, __VA_ARGS__)
+#define LOG_WRN(...) LOG(cube::core::log_prio::warning, __VA_ARGS__)
+#define LOG_ERR(...) LOG(cube::core::log_prio::error, __VA_ARGS__)
+#define LOG_INF_IF(expr, ...) do { if (expr) { LOG_INF(__VA_ARGS__); } } while(0)
+#define LOG_DBG_IF(expr, ...) do { if (expr) { LOG_DBG(__VA_ARGS__); } } while(0)
+#define LOG_WRN_IF(expr, ...) do { if (expr) { LOG_WRN(__VA_ARGS__); } } while(0)
+#define LOG_ERR_IF(expr, ...) do { if (expr) { LOG_ERR(__VA_ARGS__); } } while(0)
+
+// Name conflicts shouldn't be a problem as described by
+// section "block scope" in https://en.cppreference.com/w/cpp/language/scope
+#define LOG_PERIODIC(level, min_interval, ...)          \
+    do {                                                \
+        using namespace std::chrono;                    \
+        thread_local steady_clock::time_point previous; \
+        auto now = steady_clock::now();                 \
+        if (now - previous >= min_interval) {           \
+            LOG(level, __VA_ARGS__);                    \
+            previous = std::move(now);                  \
+        }                                               \
+    } while (0)
+#define LOG_INF_PERIODIC(min_interval, ...) LOG_PERIODIC(cube::core::log_prio::info, min_interval, __VA_ARGS__)
+#define LOG_DBG_PERIODIC(min_interval, ...) LOG_PERIODIC(cube::core::log_prio::debug, min_interval, __VA_ARGS__)
+#define LOG_WRN_PERIODIC(min_interval, ...) LOG_PERIODIC(cube::core::log_prio::warning, min_interval, __VA_ARGS__)
+#define LOG_ERR_PERIODIC(min_interval, ...) LOG_PERIODIC(cube::core::log_prio::error, min_interval, __VA_ARGS__)
 
 namespace cube::core
 {

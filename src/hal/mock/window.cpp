@@ -235,7 +235,7 @@ void window::process_cursor_pos_change(double xpos, double ypos)
         camera_.rotation.z = std::clamp(camera_.rotation.z + rdz, z_axis_min, z_axis_max);
         camera_.rotation.x = std::clamp(camera_.rotation.x + rdx, x_axis_min, x_axis_max);
 
-        LOG_DBG("Camera rotation changed",
+        LOG_DBG_PERIODIC(250ms, "Camera rotation changed",
             LOG_ARG("x", camera_.rotation.x),
             LOG_ARG("y", camera_.rotation.y),
             LOG_ARG("z", camera_.rotation.z));
@@ -248,7 +248,7 @@ void window::process_cursor_pos_change(double xpos, double ypos)
 void window::process_scroll_change(double /* xoffset */, double yoffset)
 {
     camera_.translation.z += -yoffset * mouse_scroll_resolution * camera_.translation.z; // Increase/decrease step size based on how far we are away from the object
-    LOG_DBG("Camera translation changed",
+    LOG_DBG_PERIODIC(250ms, "Camera translation changed",
         LOG_ARG("x", camera_.translation.x),
         LOG_ARG("y", camera_.translation.y),
         LOG_ARG("z", camera_.translation.z));
@@ -260,7 +260,7 @@ void window::process_inputs()
         if (glfwGetKey(glfw_window_, key) == GLFW_PRESS) {
             handler(camera_.translation);
 
-            LOG_DBG("Camera translation changed",
+            LOG_DBG_PERIODIC(250ms, "Camera translation changed",
                 LOG_ARG("x", camera_.translation.x),
                 LOG_ARG("y", camera_.translation.y),
                 LOG_ARG("z", camera_.translation.z));
