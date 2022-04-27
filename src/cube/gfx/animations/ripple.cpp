@@ -90,10 +90,13 @@ void ripple::paint(graphics_device & device)
         };
     };
 
+    auto drift_range_x = compute_range(drift_factor_x);
+    auto drift_range_y = compute_range(drift_factor_y);
+
     for (int x = 0; x < cube::cube_size_1d; ++x) {
-        double x1 = map(x, cube_axis_range, compute_range(drift_factor_x));
+        double x1 = map(x, cube_axis_range, drift_range_x);
         for (int y = 0; y < cube::cube_size_1d; ++y) {
-            double y1 = map(y, cube_axis_range, compute_range(drift_factor_y));
+            double y1 = map(y, cube_axis_range, drift_range_y);
             double z1 = std::sin(step_ * omega_ + length_ * std::sqrt(x1 * x1 + y1 * y1));
             int z = map(z1, unit_circle_range, cube_axis_range);
 

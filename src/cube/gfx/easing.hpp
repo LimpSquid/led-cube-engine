@@ -23,24 +23,9 @@ public:
 
     basic_easing_transition(core::engine_context & context, easing_config config,
         std::optional<completion_handler_t> completion_handler = {}) :
-        timer_(context, [this, curve = EasingCurve{}, completion = std::move(completion_handler)](auto, auto) {
-            constexpr easing_range_t curve_range{0.0, 1.0};
-
-            if (++step_ < config_.resolution) {
-                double progress;
-                if constexpr(Inverse)
-                    progress = 1.0 - core::clamp(curve(1.0 - static_cast<double>(step_) / config_.resolution), curve_range);
-                else
-                    progress = core::clamp(curve(static_cast<double>(step_) / config_.resolution), curve_range);
-                value_ = config_.range.from + diff(config_.range) * progress;
-            } else {
-                value_ = config_.range.to;
-                timer_.stop();
-                if (completion)
-                    (*completion)();
-            }
-        }),
-        config_(config),
+        timer_(context, std::bind(&basic_easing_transition::operator(), this)),
+        completion_handler_(std::move(completion_handler)),
+        config_(std::move(config)),
         value_(config_.range.from)
     {
         if (config_.resolution == 0)
@@ -57,7 +42,32 @@ public:
     }
 
 private:
+    using easing_curve_t = EasingCurve;
+    using inverse = std::integral_constant<bool, Inverse>;
+
+    void operator()()
+    {
+        constexpr easing_range_t curve_range{0.0, 1.0};
+        static const easing_curve_t curve{};
+
+        if (++step_ < config_.resolution) {
+            double curve_position;
+            double const position = static_cast<double>(step_) / config_.resolution;
+            if constexpr(inverse::value)
+                curve_position = 1.0 - core::clamp(curve(1.0 - position), curve_range);
+            else
+                curve_position = core::clamp(curve(position), curve_range);
+            value_ = config_.range.from + diff(config_.range) * curve_position;
+        } else {
+            value_ = config_.range.to;
+            timer_.stop();
+            if (completion_handler_)
+                (*completion_handler_)();
+        }
+    }
+
     core::recurring_timer timer_;
+    std::optional<completion_handler_t> completion_handler_;
     easing_config const config_;
     double value_;
     unsigned int step_;

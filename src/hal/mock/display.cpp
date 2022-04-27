@@ -23,7 +23,7 @@ namespace hal::mock
 display::display(engine_context & context) :
     graphics_device(context),
     window_(window::instance(window_resolution)),
-    invoker_(context.event_poller, [this]() { update(); })
+    invoker_(context.event_poller, std::bind(&display::update, this))
 {
     invoker_.schedule();
 }
