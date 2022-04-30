@@ -208,8 +208,8 @@ void display::probe_slaves()
             }
         );
 
-        bus_comm_.send<bus_command::get_sys_version>({}, slave, sys_version_handler);
-        bus_comm_.send<bus_command::exe_dma_reset>({}, slave, dma_reset_handler);
+        bus_comm_.send<bus_command::get_sys_version>({}, slave, std::move(sys_version_handler));
+        bus_comm_.send<bus_command::exe_dma_reset>({}, slave, std::move(dma_reset_handler));
     });
 }
 

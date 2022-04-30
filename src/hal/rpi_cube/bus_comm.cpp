@@ -27,7 +27,8 @@ bus_comm::bus_comm(iodev & device) :
     device_(device),
     read_subscription_(device_.subscribe(std::bind(&bus_comm::do_read, this))),
     response_watchdog_(device.context(), std::bind(&bus_comm::do_timeout, this)),
-    state_(bus_state::idle)
+    state_(bus_state::idle),
+    job_id_(0)
 { }
 
 void bus_comm::do_read()
@@ -56,6 +57,7 @@ void bus_comm::do_read()
         if constexpr (std::is_same_v<params_t, unicast_params>) {
             if (bus_error && params.attempt < max_attempts) {
                 LOG_WRN("Bus error",
+                    LOG_ARG("job_id", job.id),
                     LOG_ARG("error", frame.error().what),
                     LOG_ARG("address", as_hex(job.frame.address)),
                     LOG_ARG("command", as_hex(job.frame.command_or_response)),
@@ -64,6 +66,7 @@ void bus_comm::do_read()
             } else if (params.handler) {
                 if (!frame)
                     LOG_DBG("Bus error response",
+                        LOG_ARG("job_id", job.id),
                         LOG_ARG("error", frame.error().what),
                         LOG_ARG("address", as_hex(job.frame.address)),
                         LOG_ARG("command", as_hex(job.frame.command_or_response)));
@@ -122,6 +125,7 @@ void bus_comm::do_timeout()
 
         if constexpr (std::is_same_v<params_t, unicast_params>) {
             LOG_DBG("Bus timeout",
+                LOG_ARG("job_id", job.id),
                 LOG_ARG("address", as_hex(job.frame.address)),
                 LOG_ARG("command", as_hex(job.frame.command_or_response)),
                 LOG_ARG("attempt", params.attempt));

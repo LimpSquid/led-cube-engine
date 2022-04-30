@@ -64,7 +64,7 @@ public:
             };
         }
 
-        add_job({std::move(frame), std::move(uparams)}, bus_request_params<C>::high_prio::value);
+        add_job({std::move(frame), job_id_++, std::move(uparams)}, bus_request_params<C>::high_prio::value);
     }
 
     template<bus_command C>
@@ -83,9 +83,7 @@ public:
         std::memcpy(frame.payload.data(), &params, sizeof(params));
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
-        add_job({std::move(frame),
-            broadcast_params{std::move(handler)}
-        }, bus_request_params<C>::high_prio::value);
+        add_job({std::move(frame), job_id_++, broadcast_params{std::move(handler)}}, bus_request_params<C>::high_prio::value);
     }
 
 private:
@@ -120,6 +118,7 @@ private:
     struct job
     {
         raw_frame frame;
+        uint64_t id;
         std::variant<
             unicast_params,
             broadcast_params
@@ -142,6 +141,7 @@ private:
     cube::core::single_shot_timer response_watchdog_;
     std::deque<job> jobs_;
     bus_state state_;
+    uint64_t job_id_;
 };
 
 } // End of namespace
