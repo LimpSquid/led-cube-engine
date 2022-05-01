@@ -121,7 +121,10 @@ $ ./led-cube-engine render --help
 > The `properties` field is optional and, if provided, must be a valid JSON object string with fields unique for the animation passed to the `animation` field. Note that the example property fields `int_expression` and `double_expression` are only allowed when the build option `LCE_EVAL_EXPRESSIONS` is enabled. If the build option is not enabled, and a string value was given to a number field (e.g. `int`, `double`), an error will be returned. If a property field is missing, the default values will be used. It is allowed to provide additional fields with a key that is not matching any of the animation's properties, those fields will simply be ignored.
 
 ## Creating a new animation
-Naturally you want to create your own animations. The process of adding an animation to the LED cube engine is a straightforward process. All the animations can be be found in the directory `<repo_root>/src/cube/gfx/animations`. To add a new one, simply create a new source file and use the template that is provided down below:
+Naturally you want to create your own animations. The process of adding an animation to the LED cube engine is a straightforward process. All the animations can be be found in the directory `<repo_root>/src/cube/gfx/animations`. To add a new one, simply create a new source file and use the template that is provided here:
+
+<details>
+<summary>Click to expand the animation template.</summary>
 
 ```c++
 #include <cube/gfx/configurable_animation.hpp>
@@ -243,6 +246,8 @@ property_pairs_or_error_t my_animation::properties_from_json(nlohmann::json cons
 
 } // End of namespace
 ```
+
+</details>
 
 If you've succesfully provisioned your animation, you can simply re-compile the application and execute the following commands:
 ```bash
