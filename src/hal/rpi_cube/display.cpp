@@ -162,7 +162,10 @@ void display::show(graphics_buffer const & buffer)
 
 void display::pixel_pump_run()
 {
-    assert(!buffer_queue_.empty());
+    if (buffer_queue_.empty()) {
+        pixel_pump_.reset();
+        return;
+    }
 
     pixel_pump_ = detail::async_pixel_pump::run(*this, std::move(buffer_queue_.back()), std::bind(&display::pixel_pump_finished, this));
     buffer_queue_.pop_back();
@@ -170,7 +173,7 @@ void display::pixel_pump_run()
 
 void display::pixel_pump_finished()
 {
-    bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() { pixel_pump_.reset(); });
+    bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, std::bind(&display::pixel_pump_run, this));
 }
 
 void display::probe_slaves()
