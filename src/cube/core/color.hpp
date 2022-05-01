@@ -12,6 +12,7 @@ using color_t = unsigned char;
 using color_vec_t = glm::dvec4;
 constexpr color_t color_min_value{std::numeric_limits<color_t>::min()};
 constexpr color_t color_max_value{std::numeric_limits<color_t>::max()};
+static_assert(std::is_unsigned_v<color_t>);
 
 struct color
 {

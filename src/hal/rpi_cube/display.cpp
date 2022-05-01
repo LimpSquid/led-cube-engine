@@ -56,6 +56,9 @@ rgb_buffer transform(graphics_buffer const & buffer)
             *g++ = static_cast<color_t>(*rgba   >> 16);
             *b++ = static_cast<color_t>(*rgba++ >>  8);
         }
+
+        assert(g == slice.end<rgb_buffer::green>());
+        assert(b == slice.end<rgb_buffer::blue>());
     }
 
     return rgbb;
@@ -72,11 +75,10 @@ namespace detail
 struct async_pixel_pump
 {
     using completion_handler_t = std::function<void()>;
-    using pointer_t = std::unique_ptr<async_pixel_pump>;
 
-    static pointer_t run(display & d, graphics_buffer const & b, completion_handler_t h)
+    static std::unique_ptr<async_pixel_pump> run(display & d, graphics_buffer const & b, completion_handler_t h)
     {
-        pointer_t pp{new async_pixel_pump(d, b, std::move(h))};
+        auto pp = std::make_unique<async_pixel_pump>(d, b, std::move(h));
         pp->run();
         return pp;
     }
@@ -126,7 +128,7 @@ display_shutdown_signal::display_shutdown_signal(display & display) :
 void display_shutdown_signal::shutdown_requested()
 {
     display_.pixel_pump_.reset(); // Immediately stop sending pixels
-    display_.send_all<bus_command::exe_layer_clear>({}, std::bind(&display_shutdown_signal::ready_for_shutdown, this));
+    display_.send_for_all<bus_command::exe_layer_clear>({}, std::bind(&display_shutdown_signal::ready_for_shutdown, this));
 }
 
 } // End of namespace
@@ -153,18 +155,19 @@ int display::map_to_offset(int x, int y, int z) const
 
 void display::show(graphics_buffer const & buffer)
 {
-    using namespace detail;
-
-    // Another pixel pump still running
+    // Another pixel pump still running, eventually queue the buffers?
     if (pixel_pump_) {
         LOG_DBG_PERIODIC(10s, "Ignoring new graphics buffer, pixel pump is still running",
             LOG_ARG("current_slice", pixel_pump_->current_slice));
         return;
     }
 
-    pixel_pump_ = async_pixel_pump::run(*this, buffer, [&]() {
-        bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() { pixel_pump_.reset(); });
-    });
+    pixel_pump_ = detail::async_pixel_pump::run(*this, buffer, std::bind(&display::pixel_pump_finished, this));
+}
+
+void display::pixel_pump_finished()
+{
+    bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, [&]() { pixel_pump_.reset(); });
 }
 
 void display::probe_slaves()

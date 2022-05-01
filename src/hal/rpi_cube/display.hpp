@@ -52,25 +52,24 @@ private:
     }
 
     template<bus_command C, typename H>
-    void send_all(bus_request_params<C> params, H handler)
+    void send_for_all(bus_request_params<C> params, H handler)
     {
         struct session
         {
             std::vector<std::pair<bus_node, bus_response_params_or_error<C>>> responses;
-            std::size_t ref;
         };
 
         auto s = std::make_shared<session>();
-        s->ref = resources_.bus_comm_slave_addresses.size();
 
         for (auto address : resources_.bus_comm_slave_addresses)
             bus_comm_.send<C>(params, bus_node{address}, [address, handler, s](auto && response) {
                 s->responses.push_back(std::make_pair(bus_node{address}, std::move(response)));
-                if (--s->ref == 0)
+                if (s.use_count() == 1)
                     handler(std::move(s->responses));
             });
     }
 
+    void pixel_pump_finished();
     void probe_slaves();
 
     cube::core::recurring_timer bus_monitor_;
