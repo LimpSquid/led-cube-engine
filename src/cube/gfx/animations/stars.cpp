@@ -38,6 +38,7 @@ struct stars :
     json_or_error_t properties_to_json() const override;
     property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
+    color galaxy_color(voxel_t voxel) const;
     star make_star();
 
     std::vector<star> stars_;
@@ -100,10 +101,9 @@ void stars::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (star const & s : stars_) {
-        double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube::cube_size_1d);
         gradient fade({
             {0.0, color_transparent},
-            {1.0, s.fade_color ? *s.fade_color : galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift))},
+            {1.0, s.fade_color ? *s.fade_color : galaxy_color(s.voxel)},
         });
 
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
@@ -136,6 +136,12 @@ property_pairs_or_error_t stars::properties_from_json(nlohmann::json const & jso
     };
 }
 
+color stars::galaxy_color(voxel_t voxel) const
+{
+    double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(voxel.z) / cube::cube_size_1d);
+    return galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift));
+}
+
 star stars::make_star()
 {
     voxel_t voxel = random_voxel();
@@ -145,10 +151,10 @@ star stars::make_star()
     if (search == stars_.end())
         return {voxel, 0, {}};
 
-    // If the new star is spawned on a location where another
-    // star already lives, make that star white and don't show
-    // the new star.
-    search->fade_color = color_white;
+    // If the new star is spawned on a location where another star
+    // already lives lock that stars color to its current value.
+    if (!search->fade_color)
+        search->fade_color = galaxy_color(voxel);
     return {voxel, 0, color_transparent};
 }
 
