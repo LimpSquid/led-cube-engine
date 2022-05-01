@@ -10,9 +10,11 @@ namespace hal::rpi_cube
 {
 
 class display;
+
 namespace detail
 {
 
+struct rgb_buffer;
 struct async_pixel_pump;
 
 class display_shutdown_signal :
@@ -69,6 +71,7 @@ private:
             });
     }
 
+    void pixel_pump_run();
     void pixel_pump_finished();
     void probe_slaves();
 
@@ -79,6 +82,7 @@ private:
     // Keep last
     bus_comm bus_comm_;
     detail::display_shutdown_signal shutdown_signal_;
+    std::deque<std::unique_ptr<detail::rgb_buffer const>> buffer_queue_;
     std::unique_ptr<detail::async_pixel_pump const> pixel_pump_;
 };
 
