@@ -16,6 +16,7 @@ struct star
 {
     voxel_t voxel;
     int fade_step;
+    std::optional<color> fade_color;
 };
 
 struct stars :
@@ -37,7 +38,7 @@ struct stars :
     json_or_error_t properties_to_json() const override;
     property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
-    star make_star() const;
+    star make_star();
 
     std::vector<star> stars_;
     gradient galaxy_gradient_;
@@ -102,7 +103,7 @@ void stars::paint(graphics_device & device)
         double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(s.voxel.z) / cube::cube_size_1d);
         gradient fade({
             {0.0, color_transparent},
-            {1.0, galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift))},
+            {1.0, s.fade_color ? *s.fade_color : galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift))},
         });
 
         p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
@@ -135,19 +136,20 @@ property_pairs_or_error_t stars::properties_from_json(nlohmann::json const & jso
     };
 }
 
-star stars::make_star() const
+star stars::make_star()
 {
-    std::vector<star>::const_iterator search;
-    voxel_t voxel;
-    unsigned tries = 10;
+    voxel_t voxel = random_voxel();
+    auto search = std::find_if(stars_.begin(), stars_.end(),
+        [&](star const & s) { return s.voxel == voxel; });
 
-    do {
-        voxel = random_voxel();
-        search = std::find_if(stars_.begin(), stars_.end(),
-            [&](star const & s) { return s.voxel == voxel; });
-    } while (--tries != 0 && search != stars_.end());
+    if (search == stars_.end())
+        return {voxel, 0, {}};
 
-    return {voxel, 0};
+    // If the new star is spawned on a location where another
+    // star already lives, make that star white and don't show
+    // the new star.
+    search->fade_color = color_white;
+    return {voxel, 0, color_transparent};
 }
 
 } // End of namespace

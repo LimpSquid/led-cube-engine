@@ -188,7 +188,7 @@ void display::probe_slaves()
         }
 
         // Slave detected, (re)initialize
-        auto [sys_version_handler, dma_reset_handler] = decompose([this, slave](
+        auto [sys_version_handler, dma_reset_handler] = decompose_function([this, slave](
             bus_response_params_or_error<bus_command::get_sys_version> version_response,
             bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
                 if (!version_response || ! reset_response) {

@@ -108,7 +108,7 @@ private:
 };
 
 template<typename F>
-auto decompose(F f)
+auto decompose_function(F f)
 {
     return composite_function<F>::decompose(std::move(f));
 }
