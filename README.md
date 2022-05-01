@@ -1,6 +1,6 @@
 # LED Cube Engine
 <p align="left">
-    <img src="resources/demo.gif" alt="OpenGL Mock Demo" width="500" height="auto"/>
+    <img src="resources/demo.gif" alt="OpenGL Mock Demo"/>
 </p>
 
 *Note: quality and frame rate are downsampled to reduce GIF size.*
