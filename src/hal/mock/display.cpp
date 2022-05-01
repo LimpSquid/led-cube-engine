@@ -35,9 +35,12 @@ void display::show(graphics_buffer const & buffer)
 
 void display::update()
 {
-    if (window_.close())
-        std::exit(0);
     window_.clear();
+
+    if (window_.close()) {
+        raise(SIGINT);
+        return;
+    }
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
