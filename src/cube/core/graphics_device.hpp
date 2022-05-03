@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cube/specs.hpp>
-#include <cube/core/animation.hpp>
 #include <cube/core/color.hpp>
 #include <cube/core/voxel.hpp>
 #include <cube/core/engine_context.hpp>
@@ -49,6 +48,7 @@ inline void scale(graphics_buffer & buffer, double scalar)
 }
 
 class engine_context;
+class animation;
 class graphics_device
 {
 public:
@@ -59,8 +59,7 @@ public:
     void draw_sphere(voxel_t const & origin, int radius);
     void fill();
 
-    void show_animation(std::shared_ptr<animation> animation);
-    void render_animation(); // Render drawn voxels to the actual display
+    void render(animation & anim);
 
 protected:
     graphics_device(engine_context & context);
@@ -79,7 +78,6 @@ private:
     graphics_buffer buffer_;
     graphics_fill_mode fill_mode_;
     color draw_color_;
-    std::shared_ptr<animation> animation_;
 };
 
 } // End of namespace

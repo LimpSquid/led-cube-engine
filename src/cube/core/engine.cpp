@@ -11,7 +11,48 @@ using namespace std::chrono;
 namespace
 {
 
-constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
+class animation_session
+{
+public:
+    animation_session()
+    { }
+
+    ~animation_session()
+    {
+        if (animation_)
+            animation_->finish();
+    }
+
+    animation_session(animation_session &) = delete;
+    animation_session(animation_session &&) = delete;
+
+    void set(std::shared_ptr<cube::core::animation> animation)
+    {
+        if (animation_)
+            animation_->finish();
+        if (animation)
+            animation->init();
+        animation_ = animation;
+    }
+
+    bool matches(std::shared_ptr<cube::core::animation> animation)
+    {
+        return animation_ == animation;
+    }
+
+    cube::core::animation & operator*()
+    {
+        return *animation_;
+    }
+
+    operator bool() const
+    {
+        return bool(animation_);
+    }
+
+private:
+    std::shared_ptr<cube::core::animation> animation_;
+};
 
 template<typename T>
 void poll(T & tickers)
@@ -28,6 +69,8 @@ void poll(T & tickers)
         }
     }
 }
+
+constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
 
 } // End of namespace
 
@@ -46,9 +89,8 @@ void engine::load(std::shared_ptr<animation> animation)
 
 void engine::run()
 {
-    std::shared_ptr<animation> animation;
+    animation_session session;
     std::once_flag shutdown_flag;
-    bool new_animation = false;
     bool run = true;
 
     while (run) {
@@ -56,15 +98,20 @@ void engine::run()
         // that an animation is marked dirty from within a ticker handler
         poll(context_.tickers);
 
-        // Service animation on graphics device
-        new_animation = (animation != animation_);
-        animation = animation_;
+        if (stopping_) {
+            std::call_once(shutdown_flag, [&]() {
+                for (auto * signal : context_.shutdown_signals)
+                    (*signal)();
+            });
+            run = !context_.shutdown_signals.empty();
+        } else {
+            // New animation
+            if (!session.matches(animation_))
+                session.set(animation_);
 
-        if (!stopping_ && animation) {
-            if (new_animation)
-                device_->show_animation(animation);
-            else
-                device_->render_animation();
+            // Render animation
+            if (session)
+                device_->render(*session);
         }
 
         // Poll asio and event_poller
@@ -78,15 +125,6 @@ void engine::run()
             context_.io_context.poll(); // Run all asio ready handlers
         } else
             context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
-
-        // Finally, check if we're requested to stop
-        if (stopping_) {
-            std::call_once(shutdown_flag, [&]() {
-                for (auto * signal : context_.shutdown_signals)
-                    (*signal)();
-            });
-            run = !context_.shutdown_signals.empty();
-        }
     }
 }
 

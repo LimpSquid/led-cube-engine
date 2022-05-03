@@ -1,4 +1,5 @@
 #include <cube/core/graphics_device.hpp>
+#include <cube/core/animation.hpp>
 #include <cube/core/math.hpp>
 #include <cube/core/parallel.hpp>
 #include <3rdparty/glm/geometric.hpp>
@@ -111,25 +112,10 @@ void graphics_device::fill()
         blend(draw_color_, data);
 }
 
-void graphics_device::show_animation(std::shared_ptr<animation> animation)
+void graphics_device::render(animation & anim)
 {
-    // Finish old animation
-    if (animation_)
-        animation_->finish();
-
-    // Init new animation
-    if (animation) {
-        animation_ = animation;
-        animation->init();
-        animation->paint_event(*this);
-        show(buffer_);
-    }
-}
-
-void graphics_device::render_animation()
-{
-    if (animation_ && animation_->dirty()) {
-        animation_->paint_event(*this);
+    if (anim.dirty()) {
+        anim.paint_event(*this);
         show(buffer_);
     }
 }
