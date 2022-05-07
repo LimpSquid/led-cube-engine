@@ -125,7 +125,6 @@ void display_shutdown_signal::shutdown_requested()
 constexpr seconds bus_monitor_interval{5};
 constexpr std::size_t max_queue_size{3};
 
-
 } // End of namespace
 
 display::display(engine_context & context) :
@@ -139,9 +138,7 @@ display::display(engine_context & context) :
 }
 
 display::~display()
-{
-
-}
+{ }
 
 int display::map_to_offset(int x, int y, int z) const
 {

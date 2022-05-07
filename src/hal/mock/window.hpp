@@ -31,7 +31,6 @@ struct window_properties
 
 class window
 {
-
 public:
     static window & instance(window_properties creation_properties = {});
     ~window();
