@@ -1,9 +1,9 @@
 #pragma once
 
+#include <hal/specs.hpp>
 #include <hal/rpi_cube/gpio.hpp>
 #include <hal/rpi_cube/rs485.hpp>
 #include <hal/rpi_cube/spi.hpp>
-#include <hal/rpi_cube/specs_fwd.hpp>
 #include <array>
 
 namespace hal::rpi_cube

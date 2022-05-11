@@ -1,9 +1,19 @@
 #pragma once
 
 #ifdef TARGET_MOCK
-#include "mock/specs_fwd.hpp"
+    #define TARGET_CUBE_SIZE            32
+    #define TARGET_ANIMATION_SCENE_FPS  60
 #elif TARGET_RPI_CUBE
-#include "rpi_cube/specs_fwd.hpp"
+    #define TARGET_CUBE_SIZE            16
+    #define TARGET_ANIMATION_SCENE_FPS  90
 #else
-#error "Oopsie, unknown target."
+    #error "Oopsie, unknown target."
 #endif
+
+namespace hal
+{
+
+constexpr int cube_size{TARGET_CUBE_SIZE};
+constexpr int animation_scene_fps{TARGET_ANIMATION_SCENE_FPS};
+
+} // End of namespace

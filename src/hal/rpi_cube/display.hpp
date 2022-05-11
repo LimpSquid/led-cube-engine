@@ -87,5 +87,3 @@ private:
 };
 
 } // End of namespace
-
-namespace hal { using graphics_device_t = rpi_cube::display; }

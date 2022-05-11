@@ -1,9 +1,18 @@
 #pragma once
 
 #ifdef TARGET_MOCK
-#include "mock/display.hpp"
+    #include "mock/display.hpp"
+    #define TARGET_GRAPHICS_DEVICE      hal::mock::display
 #elif TARGET_RPI_CUBE
-#include "rpi_cube/display.hpp"
+    #include "rpi_cube/display.hpp"
+    #define TARGET_GRAPHICS_DEVICE      hal::rpi_cube::display
 #else
-#error "Oopsie, unknown target."
+    #error "Oopsie, unknown target."
 #endif
+
+namespace hal
+{
+
+using graphics_device_t = TARGET_GRAPHICS_DEVICE;
+
+} // End of namespace
