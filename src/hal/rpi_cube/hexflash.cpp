@@ -30,10 +30,7 @@ hexflash_binding hexflash_instance()
     {
         singleton()
         {
-            sigint_handlers.push_back([&]() {
-                LOG_INF("Stopping engine");
-                engine.stop();
-            });
+            sigint_handlers.push_back([&]() { engine.stop(); });
         }
 
         engine_context context;
@@ -98,8 +95,7 @@ program const program_hexflash
     },
     []()
     {
-        for (auto const & handler : sigint_handlers)
-            handler();
+        std::for_each(sigint_handlers.begin(), sigint_handlers.end(), [](auto h) { h(); });
     }
 };
 
