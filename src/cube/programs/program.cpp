@@ -25,11 +25,11 @@ program::program(std::string name, std::string desc, program_entry_t entry, prog
 }
 
 program::program(std::string name, program_entry_t entry) :
-    program(std::move(name), "n.a.", std::move(entry), nullptr)
+    program(std::move(name), "description not available", std::move(entry), nullptr)
 { }
 
 program::program(std::string name, program_entry_t entry, program_sigint_t sigint) :
-    program(std::move(name), "n.a.", std::move(entry), std::move(sigint))
+    program(std::move(name), "description not available", std::move(entry), std::move(sigint))
 { }
 
 program::program(std::string name, std::string desc, program_entry_t entry) :
