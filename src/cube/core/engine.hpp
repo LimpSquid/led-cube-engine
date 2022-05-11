@@ -45,7 +45,7 @@ private:
     basic_engine(basic_engine &) = delete;
     basic_engine(basic_engine &&) = delete;
 
-    virtual void poll_one() = 0;
+    virtual void poll_one(bool stopping) = 0;
 
     engine_context & context_;
     bool stopping_;
@@ -78,7 +78,7 @@ private:
     render_engine(render_engine &) = delete;
     render_engine(render_engine &&) = delete;
 
-    void poll_one() override;
+    void poll_one(bool stopping) override;
 
     detail::animation_session animation_session_;
     std::unique_ptr<graphics_device> device_;
@@ -94,7 +94,7 @@ private:
     poll_engine(poll_engine &) = delete;
     poll_engine(poll_engine &&) = delete;
 
-    void poll_one() override;
+    void poll_one(bool stopping) override;
 };
 
 } // End of namespace

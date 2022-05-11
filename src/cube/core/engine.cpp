@@ -89,7 +89,7 @@ void basic_engine::run()
         poll(context_.tickers);
 
         // Poll self
-        poll_one();
+        poll_one(stopping_);
 
         // Poll asio and event_poller
         assert(!context_.io_context.stopped());
@@ -124,10 +124,10 @@ void render_engine::load(std::shared_ptr<animation> animation)
     animation_session_.set(animation);
 }
 
-void render_engine::poll_one()
+void render_engine::poll_one(bool stopping)
 {
     // Render animation
-    if (animation_session_)
+    if (!stopping && animation_session_)
         device_->render(*animation_session_);
 }
 
@@ -135,7 +135,7 @@ poll_engine::poll_engine(engine_context & context) :
     basic_engine(context)
 { }
 
-void poll_engine::poll_one()
+void poll_engine::poll_one(bool)
 { }
 
 } // End of namespace
