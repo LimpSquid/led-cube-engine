@@ -11,49 +11,6 @@ using namespace std::chrono;
 namespace
 {
 
-class animation_session
-{
-public:
-    animation_session()
-    { }
-
-    ~animation_session()
-    {
-        if (animation_)
-            animation_->finish();
-    }
-
-    animation_session(animation_session &) = delete;
-    animation_session(animation_session &&) = delete;
-
-    void set(std::shared_ptr<cube::core::animation> animation)
-    {
-        if (animation_)
-            animation_->finish();
-        if (animation)
-            animation->init();
-        animation_ = animation;
-    }
-
-    bool matches(std::shared_ptr<cube::core::animation> animation)
-    {
-        return animation_ == animation;
-    }
-
-    cube::core::animation & operator*()
-    {
-        return *animation_;
-    }
-
-    operator bool() const
-    {
-        return bool(animation_);
-    }
-
-private:
-    std::shared_ptr<cube::core::animation> animation_;
-};
-
 template<typename T>
 void poll(T & tickers)
 {
@@ -77,42 +34,62 @@ constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5
 namespace cube::core
 {
 
-engine_context & engine::context()
+namespace detail
+{
+
+animation_session::animation_session()
+{ }
+
+animation_session::~animation_session()
+{
+    if (animation_)
+        animation_->finish();
+}
+
+void animation_session::set(std::shared_ptr<cube::core::animation> animation)
+{
+    if (animation_ == animation)
+        return; // Already set
+    if (animation_)
+        animation_->finish();
+    if (animation)
+        animation->init();
+    animation_ = animation;
+}
+
+cube::core::animation & animation_session::operator*()
+{
+    return *animation_;
+}
+
+animation_session::operator bool() const
+{
+    return bool(animation_);
+}
+
+} // End of namespace
+
+basic_engine::basic_engine(engine_context & context) :
+   context_(context),
+   stopping_(false)
+{ }
+
+engine_context & basic_engine::context()
 {
     return context_;
 }
 
-void engine::load(std::shared_ptr<animation> animation)
+void basic_engine::run()
 {
-    animation_ = animation;
-}
-
-void engine::run()
-{
-    animation_session session;
     std::once_flag shutdown_flag;
     bool run = true;
 
     while (run) {
-        // Poll tickers before the animation is rendered as it is common practice
-        // that an animation is marked dirty from within a ticker handler
+        // Poll tickers
         poll(context_.tickers);
 
-        if (stopping_) {
-            std::call_once(shutdown_flag, [&]() {
-                for (auto * signal : context_.shutdown_signals)
-                    (*signal)();
-            });
-            run = !context_.shutdown_signals.empty();
-        } else {
-            // New animation
-            if (!session.matches(animation_))
-                session.set(animation_);
-
-            // Render animation
-            if (session)
-                device_->render(*session);
-        }
+        // Poll self
+        poll_one();
 
         // Poll asio and event_poller
         assert(!context_.io_context.stopped());
@@ -125,12 +102,40 @@ void engine::run()
             context_.io_context.poll(); // Run all asio ready handlers
         } else
             context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
+
+        // Finally check if we're stopping
+        if (stopping_) {
+            std::call_once(shutdown_flag, [&]() {
+                for (auto * signal : context_.shutdown_signals)
+                    (*signal)();
+            });
+            run = !context_.shutdown_signals.empty();
+        }
     }
 }
 
-void engine::stop()
+void basic_engine::stop()
 {
     stopping_ = true;
 }
+
+void render_engine::load(std::shared_ptr<animation> animation)
+{
+    animation_session_.set(animation);
+}
+
+void render_engine::poll_one()
+{
+    // Render animation
+    if (animation_session_)
+        device_->render(*animation_session_);
+}
+
+poll_engine::poll_engine(engine_context & context) :
+    basic_engine(context)
+{ }
+
+void poll_engine::poll_one()
+{ }
 
 } // End of namespace

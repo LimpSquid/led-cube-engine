@@ -1,3 +1,4 @@
+#include <cube/programs/program.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
@@ -94,31 +95,36 @@ void handle_dump_properties(std::vector<std::string> const & args)
 namespace cube::programs
 {
 
-int main_library(int ac, char const * const av[])
+program const program_library
 {
-    po::options_description desc("Available options");
-    desc.add_options()
-        ("help,h", "produce a help message")
-        ("list", po::bool_switch()
-            ->notifier(bool_switch_notifier(handle_list)), "list available animation(s)")
-        ("info", po::value<std::vector<std::string>>()
-            ->zero_tokens()
-            ->multitoken()
-            ->notifier(handle_info), "print info about one or more animations")
-        ("dump-properties", po::value<std::vector<std::string>>()
-            ->zero_tokens()
-            ->multitoken()
-            ->notifier(handle_dump_properties), "load an animation and dump its resulting properties.");
+    "library",
+    "list info about the LED cube engine's animation library",
+    [](int ac, char const * const av[]) -> int
+    {
+        po::options_description desc("Available options");
+        desc.add_options()
+            ("help,h", "produce a help message")
+            ("list", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_list)), "list available animation(s)")
+            ("info", po::value<std::vector<std::string>>()
+                ->zero_tokens()
+                ->multitoken()
+                ->notifier(handle_info), "print info about one or more animations")
+            ("dump-properties", po::value<std::vector<std::string>>()
+                ->zero_tokens()
+                ->multitoken()
+                ->notifier(handle_dump_properties), "load an animation and dump its resulting properties");
 
-    po::variables_map cli_variables;
-    po::store(po::parse_command_line(ac, av, desc), cli_variables);
-    po::notify(cli_variables);
+        po::variables_map cli_variables;
+        po::store(po::parse_command_line(ac, av, desc), cli_variables);
+        po::notify(cli_variables);
 
-    // Print help if no handler exited
-    std::cout
-        << "Usage: led-cube-engine library <option> [arg...]\n\n"
-        << desc;
-    return EXIT_FAILURE;
-}
+        // Print help if no handler exited
+        std::cout
+            << "Usage: led-cube-engine library <option> [arg...]\n\n"
+            << desc;
+        return EXIT_FAILURE;
+    }
+};
 
 } // End of namespace

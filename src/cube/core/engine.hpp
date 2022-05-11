@@ -5,9 +5,51 @@
 namespace cube::core
 {
 
-class animation;
 class engine_context;
+class animation;
 class graphics_device;
+
+namespace detail
+{
+
+class animation_session
+{
+public:
+    animation_session();
+    ~animation_session();
+
+    void set(std::shared_ptr<cube::core::animation> animation);
+    bool matches(std::shared_ptr<cube::core::animation> animation);
+    cube::core::animation & operator*();
+    operator bool() const;
+
+private:
+    animation_session(animation_session &) = delete;
+    animation_session(animation_session &&) = delete;
+
+    std::shared_ptr<cube::core::animation> animation_;
+};
+
+} // End of namespace
+
+class basic_engine
+{
+public:
+    basic_engine(engine_context & context);
+
+    engine_context & context();
+    void run();
+    void stop();
+
+private:
+    basic_engine(basic_engine &) = delete;
+    basic_engine(basic_engine &&) = delete;
+
+    virtual void poll_one() = 0;
+
+    engine_context & context_;
+    bool stopping_;
+};
 
 template<typename T>
 struct graphics_device_factory
@@ -20,30 +62,39 @@ struct graphics_device_factory
     }
 };
 
-class engine
+class render_engine :
+    public basic_engine
 {
 public:
     template<typename T>
-    engine(engine_context & context, graphics_device_factory<T> factory) :
-        context_(context),
-        animation_(nullptr),
-        device_(factory(context)),
-        stopping_(false)
+    render_engine(engine_context & context, graphics_device_factory<T> factory) :
+        basic_engine(context),
+        device_(factory(context))
     { }
 
-    engine_context & context();
     void load(std::shared_ptr<animation> animation);
-    void run();
-    void stop();
 
 private:
-    engine(engine &) = delete;
-    engine(engine &&) = delete;
+    render_engine(render_engine &) = delete;
+    render_engine(render_engine &&) = delete;
 
-    engine_context & context_;
-    std::shared_ptr<animation> animation_;
+    void poll_one() override;
+
+    detail::animation_session animation_session_;
     std::unique_ptr<graphics_device> device_;
-    bool stopping_;
+};
+
+class poll_engine :
+    public basic_engine
+{
+public:
+    poll_engine(engine_context & context);
+
+private:
+    poll_engine(poll_engine &) = delete;
+    poll_engine(poll_engine &&) = delete;
+
+    void poll_one() override;
 };
 
 } // End of namespace

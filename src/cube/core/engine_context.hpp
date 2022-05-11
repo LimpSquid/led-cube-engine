@@ -24,7 +24,7 @@ public:
 private:
     // Following classes may access the internals of the engine's context
     friend class recurring_timer;
-    friend class engine;
+    friend class basic_engine;
     friend class engine_shutdown_signal;
     friend class graphics_device;
 

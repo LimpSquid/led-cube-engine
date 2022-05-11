@@ -1,8 +1,7 @@
-#include <cube/programs/entry.hpp>
+#include <cube/programs/program.hpp>
 #include <cube/core/logging.hpp>
-#include <functional>
 #include <iostream>
-#include <map>
+#include <vector>
 #include <signal.h>
 
 using namespace cube::programs;
@@ -11,20 +10,7 @@ using std::operator""s;
 namespace
 {
 
-struct program
-{
-    std::function<int(int, char const * const [])> entry;
-    std::function<void()> sigint;
-    std::string desc;
-};
-
-std::map<std::string, program> const programs =
-{
-    {"render",  {main_render,   sigint_render,  "render animations to the LED cube engine's graphics device"}},
-    {"library", {main_library,  nullptr,        "list info about the LED cube engine's animation library"}},
-};
-
-std::optional<program> prog;
+std::optional<program_definition> prog;
 
 void exit_with_help()
 {
@@ -32,8 +18,8 @@ void exit_with_help()
         << "Usage: led-cube-engine <program> [arg...]\n\n"
         << "Available programs:\n";
 
-    for (auto const & prog : programs)
-        std::cout << "  - " << prog.first << "\t\t" << prog.second.desc << '\n';
+    for (auto const & prog : program_registry::instance().programs())
+        std::cout << "  - " << prog.name << "\t\t" << prog.desc << '\n';
     std::exit(EXIT_FAILURE);
 }
 
@@ -55,10 +41,13 @@ int main(int ac, char const * const av[])
 {
     if (ac < 2)
         exit_with_help();
-    auto const search = programs.find(av[1]);
+
+    auto const & programs = program_registry::instance().programs();
+    auto const search = std::find_if(programs.begin(), programs.end(),
+        [arg=std::string_view(av[1])](auto const & p) { return p.name == arg; });
     if (search == programs.cend())
         exit_with_help();
-    prog = search->second;
+    prog = *search;
 
     signal(SIGINT, signal_handler);
 

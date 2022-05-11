@@ -1,3 +1,4 @@
+#include <cube/programs/program.hpp>
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/timers.hpp>
@@ -19,26 +20,26 @@ namespace fs = std::filesystem;
 namespace
 {
 
-std::vector<std::function<void()>> sigint_handlers;
+std::vector<cube::programs::program_sigint_t> sigint_handlers;
 
-engine & engine_instance()
+render_engine & engine_instance()
 {
-    struct engine_singleton
+    struct singleton
     {
-        engine_singleton()
+        singleton()
         {
             sigint_handlers.push_back([&]() {
-                LOG_INF("Stopping engine");
-                instance.stop();
+                LOG_INF("Stopping rendering engine");
+                engine.stop();
             });
         }
 
         engine_context context;
-        engine instance{context, graphics_device_factory<hal::graphics_device_t>{}};
+        render_engine engine{context, graphics_device_factory<hal::graphics_device_t>{}};
     };
 
-    static engine_singleton s;
-    return s.instance;
+    static singleton s;
+    return s.engine;
 }
 
 void handle_file(std::vector<std::string> const & args)
@@ -125,35 +126,40 @@ void handle_animation(std::vector<std::string> const & args)
 namespace cube::programs
 {
 
-void sigint_render()
+program const program_render
 {
-    for (auto const & handler : sigint_handlers)
-        handler();
-}
+    "render",
+    "render animations to the LED cube engine's graphics device",
+    [](int ac, char const * const av[]) -> int
+    {
+        po::options_description desc("Available options");
+        desc.add_options()
+            ("help,h", "produce a help message")
+            ("file,f", po::value<std::vector<std::string>>()
+                ->zero_tokens()
+                ->multitoken()
+                ->notifier(handle_file), "render animations from one or multiple files")
+            ("animation,", po::value<std::vector<std::string>>()
+                ->zero_tokens()
+                ->multitoken()
+                ->notifier(handle_animation), "render an animation");
 
-int main_render(int ac, char const * const av[])
-{
-    po::options_description desc("Available options");
-    desc.add_options()
-        ("help,h", "produce a help message")
-        ("file,f", po::value<std::vector<std::string>>()
-            ->zero_tokens()
-            ->multitoken()
-            ->notifier(handle_file), "render animations from one or multiple files")
-        ("animation,", po::value<std::vector<std::string>>()
-            ->zero_tokens()
-            ->multitoken()
-            ->notifier(handle_animation), "render an animation");
+        po::variables_map cli_variables;
+        po::store(po::parse_command_line(ac, av, desc), cli_variables);
+        po::notify(cli_variables);
 
-    po::variables_map cli_variables;
-    po::store(po::parse_command_line(ac, av, desc), cli_variables);
-    po::notify(cli_variables);
+        // Print help if no handler exited
+        std::cout
+            << "Usage: led-cube-engine render <option> [arg...]\n\n"
+            << desc;
+        return EXIT_FAILURE;
+    },
+    []()
+    {
+        for (auto const & handler : sigint_handlers)
+            handler();
+    }
+};
 
-    // Print help if no handler exited
-    std::cout
-        << "Usage: led-cube-engine render <option> [arg...]\n\n"
-        << desc;
-    return EXIT_FAILURE;
-}
 
 } // End of namespace
