@@ -95,6 +95,11 @@ program const program_hexflash
             << "Usage: led-cube-engine hexflash <option> [arg...]\n\n"
             << desc;
         return EXIT_FAILURE;
+    },
+    []()
+    {
+        for (auto const & handler : sigint_handlers)
+            handler();
     }
 };
 
