@@ -74,7 +74,7 @@ namespace hal::rpi_cube
 program const program_hexflash
 {
     "hexflash",
-    "flash Intel HEX files to the LED controller boards.",
+    "flash Intel HEX files to the LED cube controller boards.",
     [](int ac, char const * const av[]) -> int
     {
         po::options_description desc("Available options");
