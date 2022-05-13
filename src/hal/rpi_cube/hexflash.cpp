@@ -58,7 +58,7 @@ void handle_detect_boards()
     bus_comm.send_for_all<bus_command::get_sys_version>({}, [&](auto responses) {
         for (auto const & [slave, response] : responses) {
             if (!response) {
-                LOG_WARN("Slave not found", LOG_ARG("address", as_hex(slave)));
+                LOG_WRN("Slave not found", LOG_ARG("address", as_hex(slave)));
                 continue;
             }
 
