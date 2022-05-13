@@ -55,12 +55,24 @@ void handle_detect_boards()
 
     auto [engine, resources, bus_comm] = hexflash_instance();
 
-    bus_comm.send<bus_command::get_sys_version>({}, bus_node{resources.bus_comm_slave_addresses.back()}, [&](auto && response)
-    {
-        if (response)
-            LOG_INF("Found slave!!!");
+    bus_comm.send_for_all<bus_command::get_sys_version>({}, [&](auto responses) {
+        for (auto const & [slave, response] : responses) {
+            if (!response) {
+                LOG_INF("Slave not found", LOG_ARG("address", as_hex(slave)));
+                return;
+            }
+
+            std::string version =
+                "v" + std::to_string(response->major) +
+                "." + std::to_string(response->minor) +
+                "." + std::to_string(response->patch);
+
+            LOG_INF("Detect slave",
+                LOG_ARG("address", as_hex(slave)),
+                LOG_ARG("version", version));
+        }
         engine.stop();
-    });
+    }, resources.bus_comm_slave_addresses);
 
     engine.run();
     std::exit(EXIT_SUCCESS);

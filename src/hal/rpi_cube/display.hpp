@@ -44,33 +44,6 @@ private:
     int map_to_offset(int x, int y, int z) const override;
     void show(cube::core::graphics_buffer const & buffer) override;
 
-    template<bus_command C, typename H>
-    void send_for_each(bus_request_params<C> params, H handler)
-    {
-        for (auto address : resources_.bus_comm_slave_addresses)
-            bus_comm_.send<C>(params, bus_node{address}, [address, handler](auto && response) {
-                handler(bus_node{address}, std::move(response));
-            });
-    }
-
-    template<bus_command C, typename H>
-    void send_for_all(bus_request_params<C> params, H handler)
-    {
-        struct session
-        {
-            std::vector<std::pair<bus_node, bus_response_params_or_error<C>>> responses;
-        };
-
-        auto s = std::make_shared<session>();
-
-        for (auto address : resources_.bus_comm_slave_addresses)
-            bus_comm_.send<C>(params, bus_node{address}, [address, handler, s](auto && response) {
-                s->responses.push_back(std::make_pair(bus_node{address}, std::move(response)));
-                if (s.use_count() == 1)
-                    handler(std::move(s->responses));
-            });
-    }
-
     void pixel_pump_run();
     void pixel_pump_finished();
     void probe_slaves();

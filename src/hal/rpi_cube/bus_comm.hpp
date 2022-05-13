@@ -67,6 +67,33 @@ public:
         add_job({std::move(frame), job_id_++, std::move(uparams)}, bus_request_params<C>::high_prio::value);
     }
 
+    template<bus_command C, typename H, typename T>
+    void send_for_each(bus_request_params<C> params, H handler, T const & targets)
+    {
+        std::for_each(targets.begin(), targets.end(), [&](auto const & t) {
+            send<C>(params, t, [t, handler](auto && response) { handler(t, std::move(response)); });
+        });
+    }
+
+    template<bus_command C, typename H, typename T>
+    void send_for_all(bus_request_params<C> params, H handler, T const & targets)
+    {
+        struct session
+        {
+            std::vector<std::pair<typename T::value_type, bus_response_params_or_error<C>>> responses;
+        };
+
+        auto s = std::make_shared<session>();
+
+        std::for_each(targets.begin(), targets.end(), [&](auto const & t) {
+            send<C>(params, t, [t, handler, s](auto && response) {
+                s->responses.push_back(std::make_pair(t, std::move(response)));
+                if (s.use_count() == 1)
+                    handler(std::move(s->responses));
+            });
+        });
+    }
+
     template<bus_command C>
     void broadcast(bus_request_params<C> params, broadcast_handler_t handler = nullptr)
     {

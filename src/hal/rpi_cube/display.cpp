@@ -119,7 +119,10 @@ display_shutdown_signal::display_shutdown_signal(display & display) :
 void display_shutdown_signal::shutdown_requested()
 {
     display_.pixel_pump_.reset(); // Immediately stop sending pixels
-    display_.send_for_all<bus_command::exe_layer_clear>({}, std::bind(&display_shutdown_signal::ready_for_shutdown, this));
+    display_.bus_comm_.send_for_all<bus_command::exe_layer_clear>({},
+        std::bind(&display_shutdown_signal::ready_for_shutdown, this),
+        display_.resources_.bus_comm_slave_addresses
+    );
 }
 
 constexpr seconds bus_monitor_interval{5};
@@ -175,22 +178,22 @@ void display::pixel_pump_finished()
 
 void display::probe_slaves()
 {
-    send_for_each<bus_command::get_status>({}, [this](auto slave, auto response) {
+    bus_comm_.send_for_each<bus_command::get_status>({}, [this](auto slave, auto response) {
         if (!response) {
-            detected_slaves_.erase(slave.address);
+            detected_slaves_.erase(slave);
 
-            LOG_WRN("Failed to probe slave", LOG_ARG("address", as_hex(slave.address)));
+            LOG_WRN("Failed to probe slave", LOG_ARG("address", as_hex(slave)));
             return;
         }
 
         // Already detected the slave, check status
-        if (detected_slaves_.count(slave.address)) {
+        if (detected_slaves_.count(slave)) {
             if (!response->layer_dma_error)
                 return;
 
             // If we add more error flags, introduce a generic log message
-            detected_slaves_.erase(slave.address);
-            LOG_WRN("DMA error, reinitializing slave", LOG_ARG("address", as_hex(slave.address)));
+            detected_slaves_.erase(slave);
+            LOG_WRN("DMA error, reinitializing slave", LOG_ARG("address", as_hex(slave)));
         }
 
         // Slave detected, (re)initialize
@@ -198,7 +201,7 @@ void display::probe_slaves()
             bus_response_params_or_error<bus_command::get_sys_version> version_response,
             bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
                 if (!version_response || ! reset_response) {
-                    LOG_WRN("Failed to initialize slave", LOG_ARG("address", as_hex(slave.address)));
+                    LOG_WRN("Failed to initialize slave", LOG_ARG("address", as_hex(slave)));
                     return;
                 }
 
@@ -208,15 +211,15 @@ void display::probe_slaves()
                     "." + std::to_string(version_response->patch);
 
                 LOG_INF("Initialized slave",
-                    LOG_ARG("address", as_hex(slave.address)),
+                    LOG_ARG("address", as_hex(slave)),
                     LOG_ARG("version", version));
-                detected_slaves_.insert(slave.address);
+                detected_slaves_.insert(slave);
             }
         );
 
         bus_comm_.send<bus_command::get_sys_version>({}, slave, std::move(sys_version_handler));
         bus_comm_.send<bus_command::exe_dma_reset>({}, slave, std::move(dma_reset_handler));
-    });
+    }, resources_.bus_comm_slave_addresses);
 }
 
 } // End of namespace
