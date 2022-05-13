@@ -67,7 +67,7 @@ void handle_detect_boards()
                 "." + std::to_string(response->minor) +
                 "." + std::to_string(response->patch);
 
-            LOG_PLAIN("Detect slave",
+            LOG_PLAIN("Detected slave",
                 LOG_ARG("address", as_hex(slave)),
                 LOG_ARG("version", version));
         }
