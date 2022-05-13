@@ -43,11 +43,12 @@ namespace cube::core
 
 enum class log_prio
 {
-    plain = 0, // No formatting
-    error,
+    error = 0,
     warning,
     info,
     debug,
+
+    plain = -1, // No special formatting except the arguments
 };
 
 inline log_prio get_runtime_log_level()
