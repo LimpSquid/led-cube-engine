@@ -59,7 +59,7 @@ void handle_detect_boards()
         for (auto const & [slave, response] : responses) {
             if (!response) {
                 LOG_INF("Slave not found", LOG_ARG("address", as_hex(slave)));
-                return;
+                continue;
             }
 
             std::string version =
