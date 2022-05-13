@@ -11,10 +11,11 @@
 
 #define LOG_ARG(name, value) std::make_pair(name, value)
 #define LOG(level, ...) cube::core::log(STDOUT_FILENO, level, __VA_ARGS__)
-#define LOG_INF(...) LOG(cube::core::log_prio::info, __VA_ARGS__)
-#define LOG_DBG(...) LOG(cube::core::log_prio::debug, __VA_ARGS__)
-#define LOG_WRN(...) LOG(cube::core::log_prio::warning, __VA_ARGS__)
-#define LOG_ERR(...) LOG(cube::core::log_prio::error, __VA_ARGS__)
+#define LOG_INF(...)    LOG(cube::core::log_prio::info, __VA_ARGS__)
+#define LOG_DBG(...)    LOG(cube::core::log_prio::debug, __VA_ARGS__)
+#define LOG_WRN(...)    LOG(cube::core::log_prio::warning, __VA_ARGS__)
+#define LOG_ERR(...)    LOG(cube::core::log_prio::error, __VA_ARGS__)
+#define LOG_PLAIN(...)  LOG(cube::core::log_prio::plain, __VA_ARGS__)
 #define LOG_INF_IF(expr, ...) do { if (expr) { LOG_INF(__VA_ARGS__); } } while(0)
 #define LOG_DBG_IF(expr, ...) do { if (expr) { LOG_DBG(__VA_ARGS__); } } while(0)
 #define LOG_WRN_IF(expr, ...) do { if (expr) { LOG_WRN(__VA_ARGS__); } } while(0)
@@ -42,7 +43,8 @@ namespace cube::core
 
 enum class log_prio
 {
-    error = 0,
+    plain = 0, // No formatting
+    error,
     warning,
     info,
     debug,
@@ -154,15 +156,18 @@ void log(int fd, log_prio prio, std::string_view msg, log_arg<T> ... args)
 
     thread_local char buffer[2048]; // Todo: handle out of bounds array access?
     thread_local std::time_t time;
+    std::size_t off = 0;
 
-    time = std::time(nullptr);
+    if (prio != log_prio::plain) {
+        time = std::time(nullptr);
+        off += write(buffer + off, std::asctime(std::localtime(&time)));
+        off += write(buffer + off, " \033[1;");
+        off += write(buffer + off, color[static_cast<std::size_t>(prio)]);
+        off += write(buffer + off, "m");
+        off += write(buffer + off, prefix[static_cast<std::size_t>(prio)]);
+        off += write(buffer + off, "\033[0m");
+    }
 
-    std::size_t off = write(buffer, std::asctime(std::localtime(&time)));
-    off += write(buffer + off, " \033[1;");
-    off += write(buffer + off, color[static_cast<std::size_t>(prio)]);
-    off += write(buffer + off, "m");
-    off += write(buffer + off, prefix[static_cast<std::size_t>(prio)]);
-    off += write(buffer + off, "\033[0m");
     off += write(buffer + off, msg);
     if constexpr (sizeof ... (args)) {
         off += write(buffer + off, " (");
