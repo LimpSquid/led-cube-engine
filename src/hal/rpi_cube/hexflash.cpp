@@ -10,6 +10,7 @@
 
 using namespace cube::core;
 using namespace cube::programs;
+using namespace std::chrono;
 namespace po = boost::program_options;
 
 namespace
@@ -78,6 +79,30 @@ void handle_detect_boards()
     std::exit(EXIT_SUCCESS);
 }
 
+void handle_reset_boards()
+{
+    constexpr milliseconds reset_delay{250}; // TODO: when led controller firmware is fixed to only reset after the bus is idle, set this to zero
+
+    using namespace hal::rpi_cube;
+
+    auto [engine, resources, bus_comm] = hexflash_instance();
+    bus_request_params<bus_command::exe_sys_cpu_reset> params;
+    params.delay_ms = reset_delay.count();
+
+    bus_comm.send_for_all(std::move(params), [&](auto responses) {
+        for (auto const & [slave, response] : responses) {
+            if (response)
+                LOG_PLAIN("Slave reset", LOG_ARG("address", as_hex(slave)));
+            else
+                LOG_PLAIN("Slave not found", LOG_ARG("address", as_hex(slave)));
+        }
+        engine.stop();
+    }, resources.bus_comm_slave_addresses);
+
+    engine.run();
+    std::exit(EXIT_SUCCESS);
+}
+
 }
 
 namespace hal::rpi_cube
@@ -93,7 +118,9 @@ program const program_hexflash
         desc.add_options()
             ("help,h", "produce a help message")
             ("detect-boards", po::bool_switch()
-                ->notifier(bool_switch_notifier(handle_detect_boards)), "detect all boards on the bus");
+                ->notifier(bool_switch_notifier(handle_detect_boards)), "detect all boards on the bus")
+            ("reset-boards", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_reset_boards)), "reset all boards on the bus");
 
         po::variables_map cli_variables;
         po::store(po::parse_command_line(ac, av, desc), cli_variables);
