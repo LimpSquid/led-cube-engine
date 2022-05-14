@@ -80,18 +80,21 @@ public:
     {
         struct session
         {
+            session(H && h) :
+                handler(std::move(h))
+            { }
+
             std::vector<std::pair<typename T::value_type, bus_response_params_or_error<C>>> responses;
+            H handler;
         };
 
-        auto s = std::make_shared<session>();
+        auto s = std::make_shared<session>(std::move(handler));
 
-        std::for_each(targets.begin(), targets.end(), [&](auto const & t) {
-            send<C>(params, t, [t, handler, s](auto && response) {
-                s->responses.push_back(std::make_pair(t, std::move(response)));
-                if (s.use_count() == 1)
-                    handler(std::move(s->responses));
-            });
-        });
+        send_for_each<C>(std::move(params), [s](auto t, auto && response) {
+            s->responses.push_back(std::make_pair(t, std::move(response)));
+            if (s.use_count() == 1)
+                s->handler(std::move(s->responses));
+        }, targets);
     }
 
     template<bus_command C>
