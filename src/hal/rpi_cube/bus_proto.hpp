@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <cstdint>
+#include <functional>
 
 namespace hal::rpi_cube
 {
@@ -21,6 +22,7 @@ enum class bus_command : unsigned char
 
     // Bootloader commands start at '128'
     bl_get_status               = 128,
+    bl_get_info                 = 129,
     bl_get_version              = 137,
 
     bl_set_boot_magic           = 131,
@@ -49,7 +51,7 @@ struct bus_node
         address(addr & max_address())
     { }
 
-    bool operator==(bus_node const & other)
+    bool operator==(bus_node const & other) const
     {
         return address == other.address;
     }
@@ -87,6 +89,12 @@ struct bus_request_params<bus_command::bl_set_boot_magic> : low_prio_request
 };
 
 template<>
+struct bus_request_params<bus_command::bl_get_info> : low_prio_request
+{
+    uint8_t query;
+};
+
+template<>
 struct bus_response_params<bus_command::app_get_version>
 {
     uint8_t major;
@@ -107,4 +115,19 @@ struct bus_response_params<bus_command::bl_get_status>
     uint8_t bootloader_ready    :1;
 };
 
+template<>
+struct bus_response_params<bus_command::bl_get_info>
+{
+    uint32_t query_result;
+};
+
 } // End of namespace
+
+template<>
+struct std::hash<hal::rpi_cube::bus_node>
+{
+    std::size_t operator()(hal::rpi_cube::bus_node const & node) const noexcept
+    {
+        return std::hash<decltype(node.address)>{}(node.address);
+    }
+};

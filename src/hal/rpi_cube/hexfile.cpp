@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/bootloader_utils.hpp>
+#include <hal/rpi_cube/hexfile.hpp>
 #include <cube/core/utils.hpp>
 #include <fstream>
 #include <charconv>
@@ -22,12 +22,12 @@ enum class data_field
 
 enum class record_type
 {
-    data = 0,
-    eof = 1,
-    extended_segment_address = 2,
-    start_segment_address = 3,
-    extended_linear_address = 4,
-    start_linear_address = 5,
+    data                        = 0,
+    eof                         = 1,
+    extended_segment_address    = 2,
+    start_segment_address       = 3,
+    extended_linear_address     = 4,
+    start_linear_address        = 5,
 };
 
 std::string_view data_view(std::string_view line)

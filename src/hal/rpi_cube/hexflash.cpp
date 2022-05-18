@@ -1,7 +1,7 @@
 #include <hal/rpi_cube/resources.hpp>
 #include <hal/rpi_cube/bus_comm.hpp>
 #include <hal/rpi_cube/bus_proto.hpp>
-#include <hal/rpi_cube/bootloader_utils.hpp>
+#include <hal/rpi_cube/bus_flasher.hpp>
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/logging.hpp>
@@ -138,87 +138,6 @@ void handle_dump_blob(std::vector<std::string> const & args)
 void handle_flash_boards()
 {
     using namespace hal::rpi_cube;
-    // TODO: eventually own files
-    class bus_flasher
-    {
-    public:
-        bus_flasher(bus_comm & comm) :
-            bus_comm_(comm)
-        { }
-
-        void run()
-        {
-            bus_request_params<bus_command::app_exe_cpu_reset> params{}; // Reset immediately
-
-            // Boards that are already in bootloader mode will ignore this command
-            bus_comm_.broadcast(std::move(params), std::bind(&bus_flasher::send_boot_magic, this));
-        }
-
-    private:
-        void send_boot_magic()
-        {
-            bus_request_params<bus_command::bl_set_boot_magic> params;
-            params.magic = 0x0B00B1E5;
-
-            // TODO: can we fill this vector at compile time?
-            std::vector<bus_node> all_slaves;
-            std::generate_n(all_slaves.begin(), bus_node::num_addresses::value, [n = bus_node::min_address::value] () mutable { return n++; });
-
-            bus_comm_.send_for_all(std::move(params), [&](auto responses) {
-                for (auto [slave, response] : responses) {
-                    if (response)
-                        bus_slaves_.push_back(slave);
-                }
-                do_erase();
-            }, all_slaves);
-        }
-
-        void do_erase()
-        {
-            bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [&](auto responses) {
-                for (auto [slave, response] : responses) {
-                    if (!response)
-                        mark_failed(slave);
-                }
-
-                when_ready(std::bind(&bus_flasher::do_push_word, this));
-            }, bus_slaves_);
-        }
-
-        void do_push_word()
-        {
-
-        }
-
-        void when_ready(std::function<void()> handler)
-        {
-            // TODO: eventually with timeout?
-            bus_comm_.send_for_all<bus_command::bl_get_status>({}, [&, h = std::move(handler)](auto responses) {
-                for (auto [slave, response] : responses) {
-                    if (!response)
-                        mark_failed(slave);
-                    else if (!response->bootloader_ready)
-                        return when_ready(std::move(h));
-                }
-
-                h();
-            }, bus_slaves_);
-        }
-
-        void mark_failed(bus_node slave)
-        {
-            auto search = std::find(bus_slaves_.begin(), bus_slaves_.end(), slave);
-
-            if (search != bus_slaves_.end()) {
-                bus_slaves_.erase(search);
-                bus_slaves_failed_.push_back(slave);
-            }
-        }
-
-        bus_comm & bus_comm_;
-        std::vector<bus_node> bus_slaves_;
-        std::vector<bus_node> bus_slaves_failed_;
-    };
 
     auto [engine, resources, bus_comm] = hexflash_instance();
 }
