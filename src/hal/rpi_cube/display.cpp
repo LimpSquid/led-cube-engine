@@ -119,7 +119,7 @@ display_shutdown_signal::display_shutdown_signal(display & display) :
 void display_shutdown_signal::shutdown_requested()
 {
     display_.pixel_pump_.reset(); // Immediately stop sending pixels
-    display_.bus_comm_.send_for_all<bus_command::exe_layer_clear>({},
+    display_.bus_comm_.send_for_all<bus_command::app_exe_clear>({},
         std::bind(&display_shutdown_signal::ready_for_shutdown, this),
         display_.resources_.bus_comm_slave_addresses
     );
@@ -173,12 +173,12 @@ void display::pixel_pump_run()
 
 void display::pixel_pump_finished()
 {
-    bus_comm_.broadcast<bus_command::exe_dma_swap_buffers>({}, std::bind(&display::pixel_pump_run, this));
+    bus_comm_.broadcast<bus_command::app_exe_dma_reset>({}, std::bind(&display::pixel_pump_run, this));
 }
 
 void display::probe_slaves()
 {
-    bus_comm_.send_for_each<bus_command::get_status>({}, [this](auto slave, auto response) {
+    bus_comm_.send_for_each<bus_command::app_get_status>({}, [this](auto slave, auto response) {
         if (!response) {
             detected_slaves_.erase(slave);
 
@@ -198,8 +198,8 @@ void display::probe_slaves()
 
         // Slave detected, (re)initialize
         auto [sys_version_handler, dma_reset_handler] = decompose_function([this, slave](
-            bus_response_params_or_error<bus_command::get_sys_version> version_response,
-            bus_response_params_or_error<bus_command::exe_dma_reset> reset_response) {
+            bus_response_params_or_error<bus_command::app_get_version> version_response,
+            bus_response_params_or_error<bus_command::app_exe_dma_reset> reset_response) {
                 if (!version_response || ! reset_response) {
                     LOG_WRN("Failed to initialize slave", LOG_ARG("address", as_hex(slave)));
                     return;
@@ -217,8 +217,8 @@ void display::probe_slaves()
             }
         );
 
-        bus_comm_.send<bus_command::get_sys_version>({}, slave, std::move(sys_version_handler));
-        bus_comm_.send<bus_command::exe_dma_reset>({}, slave, std::move(dma_reset_handler));
+        bus_comm_.send<bus_command::app_get_version>({}, slave, std::move(sys_version_handler));
+        bus_comm_.send<bus_command::app_exe_dma_reset>({}, slave, std::move(dma_reset_handler));
     }, resources_.bus_comm_slave_addresses);
 }
 

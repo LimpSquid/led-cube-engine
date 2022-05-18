@@ -90,7 +90,7 @@ void handle_file(std::vector<std::string> const & args)
     }
 
     std::cout
-        << "Usage: led-cube-engine render --file <file> [file...]\n\n"
+        << "Usage: led-cube-engine render --file <filepath> [filepath...]\n\n"
         << "Examples:\n"
         << "  led-cube-engine render --file  animations.json\n"
         << "  led-cube-engine render --file ../relative/path/to/animations.json /absolute/path/to/animations.json\n";

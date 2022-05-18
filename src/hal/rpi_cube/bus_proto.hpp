@@ -6,17 +6,26 @@
 namespace hal::rpi_cube
 {
 
-// See: https://github.com/LimpSquid/led-controller/blob/master/led-controller.X/source/bus_func_impl.c
+// See: https://github.com/LimpSquid/led-controller/blob/master/led-controller.X/source/[app|bootloader]/bus_func_impl.c
 enum class bus_command : unsigned char
 {
-    get_status              = 3,
-    get_sys_version         = 5,
+    // Application commands start at '0'
+    app_get_status              = 3,
+    app_get_version             = 5,
 
-    exe_led_open_detection  = 1,
-    exe_dma_reset           = 2,
-    exe_dma_swap_buffers    = 4,
-    exe_sys_cpu_reset       = 6, // TODO (in led controller firmware): the board should send out the reply before resetting!
-    exe_layer_clear         = 7,
+    app_exe_led_open_detection  = 1,
+    app_exe_dma_reset           = 2,
+    app_exe_dma_swap_buffers    = 4,
+    app_exe_cpu_reset           = 6, // TODO (in led controller firmware): the board should send out the reply before resetting!
+    app_exe_clear               = 7,
+
+    // Bootloader commands start at '128'
+    bl_get_status               = 128,
+    bl_get_version              = 137,
+
+    bl_set_boot_magic           = 131,
+
+    bl_exe_erase                = 130,
 };
 
 enum class bus_response_code : unsigned char
@@ -32,11 +41,18 @@ static_assert(sizeof(bus_command) == sizeof(bus_response_code));
 
 struct bus_node
 {
+    using min_address = std::integral_constant<unsigned char, 0>;
     using max_address = std::integral_constant<unsigned char, 31>;
+    using num_addresses = std::integral_constant<unsigned char, max_address::value - min_address::value>;
 
     bus_node(unsigned char addr) :
         address(addr & max_address())
     { }
+
+    bool operator==(bus_node const & other)
+    {
+        return address == other.address;
+    }
 
     unsigned char address   :5;
     unsigned char           :3;
@@ -57,15 +73,21 @@ template<bus_command>
 struct bus_response_params { };
 
 template<>
-struct bus_request_params<bus_command::exe_dma_swap_buffers> : high_prio_request { };
+struct bus_request_params<bus_command::app_exe_dma_swap_buffers> : high_prio_request { };
 template<>
-struct bus_request_params<bus_command::exe_sys_cpu_reset> : low_prio_request
+struct bus_request_params<bus_command::app_exe_cpu_reset> : low_prio_request
 {
     int32_t delay_ms;
 };
 
 template<>
-struct bus_response_params<bus_command::get_sys_version>
+struct bus_request_params<bus_command::bl_set_boot_magic> : low_prio_request
+{
+    uint32_t magic;
+};
+
+template<>
+struct bus_response_params<bus_command::app_get_version>
 {
     uint8_t major;
     uint8_t minor;
@@ -73,10 +95,16 @@ struct bus_response_params<bus_command::get_sys_version>
 };
 
 template<>
-struct bus_response_params<bus_command::get_status>
+struct bus_response_params<bus_command::app_get_status>
 {
     uint8_t layer_ready     :1;
     uint8_t layer_dma_error :1;
+};
+
+template<>
+struct bus_response_params<bus_command::bl_get_status>
+{
+    uint8_t bootloader_ready    :1;
 };
 
 } // End of namespace
