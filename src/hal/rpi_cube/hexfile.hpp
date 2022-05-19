@@ -39,6 +39,15 @@ struct memory_layout
         end_address(1024 * 1024 * 4)
     { }
 
+    bool operator==(memory_layout const & other) const
+    {
+        return start_address == other.start_address
+            && end_address == other.start_address
+            && word_size == other.word_size
+            && row_size == other.row_size
+            && page_size == other.page_size;
+    }
+
     uint32_t start_address; // Inclusive
     uint32_t end_address; // Exclusive
     std::optional<uint32_t> word_size;

@@ -21,6 +21,36 @@ enum class bootloader_query : uint8_t
     mem_page_size   = 5,
 };
 
+template<typename T>
+struct view
+{
+    view(std::vector<T> s) :
+        stream(s)
+    { }
+
+    std::vector<T> & get() { return stream; }
+    std::vector<T> const & get() const { return stream; }
+    operator std::vector<T> & () { return stream; }
+    operator std::vector<T> const & () const { return stream; }
+
+    template<typename F>
+    view & filter(F predicate)
+    {
+        std::remove_if(stream.begin(), stream.end(), std::move(predicate));
+        return *this;
+    }
+
+    template<typename F, typename R = decltype(std::declval<F>()(std::declval<T>()))>
+    view<R> transform(F predicate) const
+    {
+        std::vector<R> transformed;
+        std::transform(stream.begin(), stream.end(), std::back_inserter(transformed), std::move(predicate));
+        return transformed;
+    }
+
+    std::vector<T> stream;
+};
+
 } // End of namespace
 
 namespace hal::rpi_cube
@@ -49,7 +79,7 @@ void bus_flasher::set_boot_magic()
     bus_comm_.send_for_all(std::move(params), [&](auto responses) {
         for (auto [slave, response] : responses) {
             if (response)
-                bus_slaves_.push_back(slave);
+                nodes_.push_back({slave, flashing_busy, memory_layout{}});
         }
 
         get_memory_layout();
@@ -58,11 +88,7 @@ void bus_flasher::set_boot_magic()
 
 void bus_flasher::get_memory_layout()
 {
-    struct session
-    {
-        std::unordered_map<bus_node, memory_layout> memory_layouts;
-    };
-
+    struct session {};
     auto s = std::make_shared<session>();
 
     auto const query_for_all = [&](bootloader_query query, auto memory_layout::*field) {
@@ -72,19 +98,16 @@ void bus_flasher::get_memory_layout()
         bus_comm_.send_for_all(std::move(params), [this, s, field](auto responses) {
             for (auto [slave, response] : responses) {
                 if (response)
-                    s->memory_layouts[slave].*field = response->query_result;
+                    std::get<memory_layout>(find_or_throw(slave)).*field = response->query_result;
                 else
                     mark_failed(slave);
             }
 
-            if (s.use_count() == 1) {
-                std::for_each(bus_slaves_failed_.begin(), bus_slaves_failed_.end(),
-                    [&](auto const & node) { s->memory_layouts.erase(node); });
-                memory_layouts_ = std::move(s->memory_layouts);
-
-                do_erase();
-            }
-        }, bus_slaves_);
+            if (s.use_count() == 1)
+                flash_erase();
+        }, view(nodes_).filter(state_filter<flashing_busy>{})
+                       .transform(extract_member<bus_node>{})
+                       .get());
     };
 
     query_for_all(bootloader_query::mem_phy_start, &memory_layout::start_address);
@@ -94,7 +117,7 @@ void bus_flasher::get_memory_layout()
     query_for_all(bootloader_query::mem_page_size, &memory_layout::page_size);
 }
 
-void bus_flasher::do_erase()
+void bus_flasher::flash_erase()
 {
     bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [&](auto responses) {
         for (auto [slave, response] : responses) {
@@ -102,11 +125,13 @@ void bus_flasher::do_erase()
                 mark_failed(slave);
         }
 
-        when_ready(std::bind(&bus_flasher::do_push_word, this));
-    }, bus_slaves_);
+        when_ready(std::bind(&bus_flasher::flash_next_group, this));
+    }, view(nodes_).filter(state_filter<flashing_busy>{})
+                   .transform(extract_member<bus_node>{})
+                   .get());
 }
 
-void bus_flasher::do_push_word()
+void bus_flasher::flash_next_group()
 {
 
 }
@@ -123,18 +148,29 @@ void bus_flasher::when_ready(std::function<void()> handler)
         }
 
         h();
-    }, bus_slaves_);
+    }, view(nodes_).filter(state_filter<flashing_busy>{})
+                   .transform(extract_member<bus_node>{})
+                   .get());
+}
+
+bus_flasher::node_t & bus_flasher::find_or_throw(bus_node slave)
+{
+    auto search = std::find_if(nodes_.begin(), nodes_.end(),
+        [&](node_t const & node) { return std::get<bus_node>(node) == slave; });
+
+    if (search == nodes_.cend())
+        throw std::runtime_error("Unable to find node with address: " + std::to_string(slave.address));
+    return *search;
 }
 
 void bus_flasher::mark_failed(bus_node slave)
 {
-    auto search = std::find(bus_slaves_.begin(), bus_slaves_.end(), slave);
+    std::get<flashing_state>(find_or_throw(slave)) = flashing_failed;
+}
 
-    if (search != bus_slaves_.end()) {
-        bus_slaves_.erase(search);
-        memory_layouts_.erase(slave);
-        bus_slaves_failed_.push_back(slave);
-    }
+void bus_flasher::mark_succeeded(bus_node slave)
+{
+    std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
 }
 
 } // End of namespace
