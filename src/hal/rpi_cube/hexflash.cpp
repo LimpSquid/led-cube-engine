@@ -5,6 +5,7 @@
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/logging.hpp>
+#include <cube/core/composite_function.hpp>
 #include <cube/programs/program.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -12,6 +13,7 @@
 using namespace cube::core;
 using namespace cube::programs;
 using namespace std::chrono;
+using std::operator""s;
 namespace po = boost::program_options;
 
 namespace
@@ -24,6 +26,16 @@ struct hexflash_binding
     poll_engine & engine;
     hal::rpi_cube::resources & resources;
     hal::rpi_cube::bus_comm & bus_comm;
+};
+
+struct bus_transferring
+{
+    hal::rpi_cube::bus_comm & bus;
+
+    bool operator()()
+    {
+        return bus.state() == hal::rpi_cube::bus_state::transfer;
+    }
 };
 
 hexflash_binding hexflash_instance()
@@ -57,28 +69,34 @@ void handle_detect_boards()
 
     auto [engine, resources, bus_comm] = hexflash_instance();
 
-    // TODO: eventually also detect boards that are already in bootloader mode
-    bus_comm.send_for_all<bus_command::app_get_version>({}, [&](auto responses) {
-        for (auto const & [slave, response] : responses) {
-            if (!response) {
-                LOG_PLAIN("Slave not found", LOG_ARG("address", as_hex(slave)));
-                continue;
+    for (auto const & slave : resources.bus_comm_slave_addresses) {
+        auto [bl_handler, app_handler] = decompose_function([slave](
+            bus_response_params_or_error<bus_command::bl_get_version> bl_response,
+            bus_response_params_or_error<bus_command::app_get_version> app_response) {
+                if (!bl_response && !app_response) {
+                    LOG_PLAIN("Slave not found", LOG_ARG("address", as_hex(slave)));
+                    return;
+                }
+
+                std::string version =
+                    "v" + std::to_string(app_response ? app_response->major : bl_response->major) +
+                    "." + std::to_string(app_response ? app_response->minor : bl_response->minor) +
+                    "." + std::to_string(app_response ? app_response->patch : bl_response->minor);
+
+                LOG_PLAIN("Detected slave in "s + (app_response ? "app" : "bootload") + " mode",
+                    LOG_ARG("address", as_hex(slave)),
+                    LOG_ARG("version", version));
             }
+        );
 
-            std::string version =
-                "v" + std::to_string(response->major) +
-                "." + std::to_string(response->minor) +
-                "." + std::to_string(response->patch);
+        bus_comm.send<bus_command::bl_get_version>({}, slave, std::move(bl_handler));
+        bus_comm.send<bus_command::app_get_version>({}, slave, std::move(app_handler));
+    }
 
-            LOG_PLAIN("Detected slave",
-                LOG_ARG("address", as_hex(slave)),
-                LOG_ARG("version", version));
-        }
-        engine.stop();
-    }, resources.bus_comm_slave_addresses);
-
-    engine.run();
-    std::exit(EXIT_SUCCESS);
+    engine.run_while(bus_transferring{bus_comm});
+    std::exit(bus_comm.state() == bus_state::idle
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE);
 }
 
 void handle_reset_boards()
@@ -98,11 +116,12 @@ void handle_reset_boards()
             else
                 LOG_PLAIN("Slave not found", LOG_ARG("address", as_hex(slave)));
         }
-        engine.stop();
     }, resources.bus_comm_slave_addresses);
 
-    engine.run();
-    std::exit(EXIT_SUCCESS);
+    engine.run_while(bus_transferring{bus_comm});
+    std::exit(bus_comm.state() == bus_state::idle
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE);
 }
 
 void handle_dump_blob(std::vector<std::string> const & args)

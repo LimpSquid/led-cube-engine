@@ -121,6 +121,14 @@ struct bus_response_params<bus_command::bl_get_info>
     uint32_t query_result;
 };
 
+template<>
+struct bus_response_params<bus_command::bl_get_version>
+{
+    uint8_t major;
+    uint8_t minor;
+    uint8_t patch;
+};
+
 } // End of namespace
 
 template<>

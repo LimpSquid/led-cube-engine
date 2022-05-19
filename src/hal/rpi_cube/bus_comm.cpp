@@ -31,6 +31,11 @@ bus_comm::bus_comm(iodev & device) :
     job_id_(0)
 { }
 
+bus_state bus_comm::state() const
+{
+    return state_;
+}
+
 void bus_comm::do_read()
 {
     // Unexpected data from device, bus error

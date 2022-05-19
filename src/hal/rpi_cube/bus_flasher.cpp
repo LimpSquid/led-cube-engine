@@ -1,7 +1,6 @@
 #include <hal/rpi_cube/bus_flasher.hpp>
 #include <hal/rpi_cube/bus_comm.hpp>
 #include <hal/rpi_cube/hexfile.hpp>
-#include <cube/core/composite_function.hpp>
 
 using namespace cube::core;
 namespace fs = std::filesystem;
@@ -66,7 +65,7 @@ void bus_flasher::get_memory_layout()
 
     auto s = std::make_shared<session>();
 
-    auto const query_all = [&](bootloader_query query, auto memory_layout::*field) {
+    auto const query_for_all = [&](bootloader_query query, auto memory_layout::*field) {
         bus_request_params<bus_command::bl_get_info> params;
         params.query = static_cast<uint8_t>(query);
 
@@ -88,11 +87,11 @@ void bus_flasher::get_memory_layout()
         }, bus_slaves_);
     };
 
-    query_all(bootloader_query::mem_phy_start, &memory_layout::start_address);
-    query_all(bootloader_query::mem_phy_end, &memory_layout::end_address);
-    query_all(bootloader_query::mem_word_size, &memory_layout::word_size);
-    query_all(bootloader_query::mem_row_size, &memory_layout::row_size);
-    query_all(bootloader_query::mem_page_size, &memory_layout::page_size);
+    query_for_all(bootloader_query::mem_phy_start, &memory_layout::start_address);
+    query_for_all(bootloader_query::mem_phy_end, &memory_layout::end_address);
+    query_for_all(bootloader_query::mem_word_size, &memory_layout::word_size);
+    query_for_all(bootloader_query::mem_row_size, &memory_layout::row_size);
+    query_for_all(bootloader_query::mem_page_size, &memory_layout::page_size);
 }
 
 void bus_flasher::do_erase()
@@ -114,7 +113,7 @@ void bus_flasher::do_push_word()
 
 void bus_flasher::when_ready(std::function<void()> handler)
 {
-    // TODO: eventually with timeout?
+    // TODO: eventually with timeout? Mark slave failed if it never became ready
     bus_comm_.send_for_all<bus_command::bl_get_status>({}, [&, h = std::move(handler)](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)

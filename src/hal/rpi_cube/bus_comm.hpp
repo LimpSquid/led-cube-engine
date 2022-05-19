@@ -37,6 +37,8 @@ public:
 
     bus_comm(iodev & device);
 
+    bus_state state() const;
+
     template<bus_command C>
     void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler = nullptr)
     {

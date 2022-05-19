@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 namespace cube::core
 {
@@ -35,10 +36,13 @@ private:
 class basic_engine
 {
 public:
+    using predicate_t = std::function<bool(void)>;
+
     basic_engine(engine_context & context);
 
     engine_context & context();
     void run();
+    void run_while(predicate_t predicate);
     void stop();
 
 private:
@@ -46,6 +50,9 @@ private:
     basic_engine(basic_engine &&) = delete;
 
     virtual void poll_one(bool stopping) = 0;
+
+    template<typename ... F>
+    void do_run(F ... extra);
 
     engine_context & context_;
     bool stopping_;

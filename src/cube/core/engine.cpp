@@ -27,6 +27,15 @@ void poll(T & tickers)
     }
 }
 
+template<typename T = void>
+void call_all() {}
+template<typename T, typename ... O>
+void call_all(T const & callable, O const & ... others)
+{
+    callable();
+    call_all(others ...);
+}
+
 constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
 
 } // End of namespace
@@ -81,10 +90,33 @@ engine_context & basic_engine::context()
 
 void basic_engine::run()
 {
+    do_run();
+}
+
+void basic_engine::run_while(predicate_t predicate)
+{
+    do_run([&]() {
+        if (!predicate())
+            stop();
+    });
+}
+
+void basic_engine::stop()
+{
+    stopping_ = true;
+}
+
+template<typename ... F>
+void basic_engine::do_run(F ... extras)
+{
     std::once_flag shutdown_flag;
     bool run = true;
+    stopping_ = false;
 
     while (run) {
+        // Poll extras, if any
+        call_all(extras ...);
+
         // Poll tickers
         poll(context_.tickers);
 
@@ -112,11 +144,6 @@ void basic_engine::run()
             run = !context_.shutdown_signals.empty();
         }
     }
-}
-
-void basic_engine::stop()
-{
-    stopping_ = true;
 }
 
 void render_engine::load(std::shared_ptr<animation> animation)
