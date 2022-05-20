@@ -26,6 +26,7 @@ public:
     unsigned char const * begin() const { return data_.get(); }
     unsigned char * end() { return begin() + size_; }
     unsigned char const * end() const { return begin() + size_; }
+    uint32_t size() const { return size_; }
 
 private:
     uint32_t size_;
@@ -55,6 +56,7 @@ struct memory_layout
     std::optional<uint32_t> page_size;
 };
 
+cube::core::void_or_error verify(memory_layout const & layout);
 cube::core::expected_or_error<memory_blob> parse_hex_file(std::filesystem::path const & filepath, memory_layout layout = {});
 
 } // End of namespace

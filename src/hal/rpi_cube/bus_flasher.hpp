@@ -24,6 +24,9 @@ private:
     };
 
     using node_t = std::tuple<bus_node, flashing_state, memory_layout>;
+    // Nodes in a group all have the same memory layout, thus the blob can
+    // be pushed to the nodes via broadcasts instead of point-to-point
+    using group_t = std::tuple<memory_blob, std::vector<node_t>>;
 
     template<typename T>
     struct extract_member { T operator()(node_t const & node) const { return std::get<T>(node); } };
@@ -39,10 +42,15 @@ private:
     bus_flasher(bus_flasher &) = delete;
     bus_flasher(bus_flasher &&) = delete;
 
+    void reset_nodes();
     void set_boot_magic();
     void get_memory_layout();
+
     void flash_erase();
     void flash_next_group();
+    void push_blob(std::shared_ptr<group_t const> group);
+    void push_row(std::shared_ptr<group_t const> group, uint32_t row);
+    void verify_row(std::shared_ptr<group_t const> group, uint32_t row);
 
     void when_ready(std::function<void()> handler);
     node_t & find_or_throw(bus_node slave);
@@ -51,6 +59,7 @@ private:
 
     bus_comm & bus_comm_;
     std::vector<node_t> nodes_;
+    std::filesystem::path hex_filepath_;
 };
 
 } // End of namespace

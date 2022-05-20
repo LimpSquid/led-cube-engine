@@ -73,7 +73,7 @@ public:
     void send_for_each(bus_request_params<C> params, H handler, T const & targets)
     {
         std::for_each(targets.begin(), targets.end(), [&](auto const & t) {
-            send<C>(params, t, [t, handler](auto && response) { handler(t, std::move(response)); });
+            send<C>(params, t, [t, handler](auto && response) { handler(t, std::forward<decltype(response)>(response)); });
         });
     }
 
@@ -93,7 +93,7 @@ public:
         auto s = std::make_shared<session>(std::move(handler));
 
         send_for_each<C>(std::move(params), [s](auto t, auto && response) {
-            s->responses.push_back(std::make_pair(t, std::move(response)));
+            s->responses.push_back(std::make_pair(t, std::forward<decltype(response)>(response)));
             if (s.use_count() == 1)
                 s->handler(std::move(s->responses));
         }, targets);

@@ -2,6 +2,7 @@
 #include <cube/core/utils.hpp>
 #include <fstream>
 #include <charconv>
+#include <cassert>
 
 using namespace cube::core;
 using std::operator""s;
@@ -51,8 +52,11 @@ expected_or_error<uint32_t> parse(std::string_view line)
         result = std::from_chars(line.data() + 7, line.data() + 9, out, 16);
     else if constexpr (F == data_field::extended_address)
         result = std::from_chars(line.data() + 9, line.data() + 13, out, 16);
-    else
+    else {
+        // Just die already :'-)
+        assert(!"Invalid data field type");
         throw std::runtime_error("Invalid data field type");
+    }
 
     if (result.ec == std::errc{})
         return out;
@@ -93,15 +97,6 @@ void_or_error verify_line(std::string_view line)
     return {};
 }
 
-void_or_error verify_memory_layout(hal::rpi_cube::memory_layout const & layout)
-{
-    if (layout.start_address >= layout.end_address)
-        return unexpected_error{"start address is greater than or equal to end address"};
-    if (layout.end_address - layout.start_address > (1024 * 1024 * 4))
-        return unexpected_error{"size cannot exceed 4MiB"};
-    return {};
-}
-
 unsigned char * safe_zero_alloc(std::size_t size)
 {
     // It looks like calloc is quicker than new + memset
@@ -116,9 +111,39 @@ unsigned char * safe_zero_alloc(std::size_t size)
 namespace hal::rpi_cube
 {
 
+void_or_error verify(memory_layout const & layout)
+{
+    if (layout.start_address >= layout.end_address)
+        return unexpected_error{"start address is greater than or equal to end address"};
+    auto const size = layout.end_address - layout.start_address;
+    if (size > (1024 * 1024 * 4))
+        return unexpected_error{"size cannot exceed 4MiB"};
+    if (layout.word_size) {
+        if (*layout.word_size != 1 && *layout.word_size != 2 && *layout.word_size != 4)
+            return unexpected_error{"word size must be either 1, 2 or 4"};
+        if (size % *layout.word_size != 0)
+            return unexpected_error{"size not divisible by word size"};
+    }
+    if (layout.row_size) {
+        if (*layout.row_size < 4)
+            return unexpected_error{"row size cannot be smaller than 4"};
+        if (size % *layout.row_size != 0)
+            return unexpected_error{"size not divisible by row size"};
+    }
+    if (layout.page_size) {
+        if (*layout.page_size < 4)
+            return unexpected_error{"page size cannot be smaller than 4"};
+        if (layout.row_size && *layout.page_size < *layout.row_size)
+            return unexpected_error{"page size cannot be smaller than row size"};
+        if (size % *layout.page_size != 0)
+            return unexpected_error{"size not divisible by page size"};
+    }
+    return {};
+}
+
 expected_or_error<memory_blob> parse_hex_file(fs::path const & filepath, memory_layout layout)
 {
-    auto ok = verify_memory_layout(layout);
+    auto ok = verify(layout);
     if (!ok)
         return unexpected_error{"Invalid memory layout: " + ok.error().what};
     if (!fs::exists(filepath))

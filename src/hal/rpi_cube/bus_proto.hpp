@@ -28,6 +28,8 @@ enum class bus_command : unsigned char
     bl_set_boot_magic           = 131,
 
     bl_exe_erase                = 130,
+    bl_exe_row_reset            = 133,
+    bl_exe_push_word            = 134,
 };
 
 enum class bus_response_code : unsigned char
@@ -92,6 +94,12 @@ template<>
 struct bus_request_params<bus_command::bl_get_info> : low_prio_request
 {
     uint8_t query;
+};
+
+template<>
+struct bus_request_params<bus_command::bl_exe_push_word> : low_prio_request
+{
+    uint8_t data[4];
 };
 
 template<>
