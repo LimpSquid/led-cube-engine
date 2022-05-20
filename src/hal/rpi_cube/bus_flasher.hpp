@@ -53,9 +53,9 @@ private:
     void verify_row(std::shared_ptr<group_t const> group, uint32_t row);
 
     void when_ready(std::function<void()> handler);
-    node_t & find_or_throw(bus_node slave);
-    void mark_failed(bus_node slave);
-    void mark_succeeded(bus_node slave);
+    node_t & find_or_throw(bus_node const & slave);
+    void mark_failed(bus_node const & slave);
+    void mark_succeeded(bus_node const & slave);
 
     bus_comm & bus_comm_;
     std::vector<node_t> nodes_;

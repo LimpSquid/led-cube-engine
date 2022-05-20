@@ -226,7 +226,7 @@ void bus_flasher::when_ready(std::function<void()> handler)
                    .get());
 }
 
-bus_flasher::node_t & bus_flasher::find_or_throw(bus_node slave)
+bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
 {
     auto search = std::find_if(nodes_.begin(), nodes_.end(),
         [&](node_t const & node) { return std::get<bus_node>(node) == slave; });
@@ -236,12 +236,12 @@ bus_flasher::node_t & bus_flasher::find_or_throw(bus_node slave)
     return *search;
 }
 
-void bus_flasher::mark_failed(bus_node slave)
+void bus_flasher::mark_failed(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_failed;
 }
 
-void bus_flasher::mark_succeeded(bus_node slave)
+void bus_flasher::mark_succeeded(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
 }
