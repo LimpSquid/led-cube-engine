@@ -173,7 +173,7 @@ void display::pixel_pump_run()
 
 void display::pixel_pump_finished()
 {
-    bus_comm_.broadcast<bus_command::app_exe_dma_reset>({}, std::bind(&display::pixel_pump_run, this));
+    bus_comm_.broadcast<bus_command::app_exe_dma_swap_buffers>({}, std::bind(&display::pixel_pump_run, this));
 }
 
 void display::probe_slaves()
