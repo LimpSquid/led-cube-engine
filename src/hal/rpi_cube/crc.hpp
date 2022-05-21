@@ -37,6 +37,11 @@ public:
         return crc_;
     }
 
+    value_type get() const
+    {
+        return value_type{*this};
+    }
+
     void reset()
     {
         crc_ = seed::value;

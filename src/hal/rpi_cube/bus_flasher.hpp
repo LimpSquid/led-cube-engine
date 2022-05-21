@@ -50,7 +50,8 @@ private:
     void flash_next_group();
     void push_blob(std::shared_ptr<group_t const> group);
     void push_row(std::shared_ptr<group_t const> group, uint32_t row);
-    void verify_row(std::shared_ptr<group_t const> group, uint32_t row);
+    void verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc);
+    void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
 
     void when_ready(std::function<void()> handler);
     node_t & find_or_throw(bus_node const & slave);

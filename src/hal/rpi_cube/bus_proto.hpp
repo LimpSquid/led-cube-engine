@@ -24,6 +24,7 @@ enum class bus_command : unsigned char
     bl_get_status               = 128,
     bl_get_info                 = 129,
     bl_get_version              = 137,
+    bl_get_row_crc              = 136,
 
     bl_set_boot_magic           = 131,
 
@@ -135,6 +136,12 @@ struct bus_response_params<bus_command::bl_get_version>
     uint8_t major;
     uint8_t minor;
     uint8_t patch;
+};
+
+template<>
+struct bus_response_params<bus_command::bl_get_row_crc>
+{
+    uint16_t crc;
 };
 
 } // End of namespace

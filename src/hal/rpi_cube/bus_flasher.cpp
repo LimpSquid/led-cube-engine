@@ -1,6 +1,7 @@
 #include <hal/rpi_cube/bus_flasher.hpp>
 #include <hal/rpi_cube/bus_comm.hpp>
 #include <hal/rpi_cube/hexfile.hpp>
+#include <hal/rpi_cube/crc.hpp>
 #include <cassert>
 
 using namespace cube::core;
@@ -54,6 +55,12 @@ struct view
 
 } // End of namespace
 
+// TODO list:
+// - We need to fix ALL the handlers, its possible that the bus_flasher is destroyed while a request from
+//   the bus_comm is still holding a reference to the destroyed class (e.g. the function that will be
+//   ran on completion of a request). I think we should be able to wrap each handler which then makes use
+//   of `make_parent_tracker()` from cube/core/utils.hpp.
+
 namespace hal::rpi_cube
 {
 
@@ -83,13 +90,13 @@ void bus_flasher::set_boot_magic()
     std::vector<bus_node> all_slaves;
     std::generate_n(all_slaves.begin(), bus_node::num_addresses::value, [n = bus_node::min_address::value] () mutable { return n++; });
 
-    bus_comm_.send_for_all(std::move(params), [&](auto responses) {
+    bus_comm_.send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (response)
                 nodes_.push_back({slave, flashing_busy, memory_layout{}});
         }
 
-        get_memory_layout();
+        when_ready(std::bind(&bus_flasher::get_memory_layout, this));
     }, all_slaves);
 }
 
@@ -126,7 +133,7 @@ void bus_flasher::get_memory_layout()
 
 void bus_flasher::flash_erase()
 {
-    bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [&](auto responses) {
+    bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave);
@@ -179,12 +186,14 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     if (row >= n_rows)
         return; // TODO: this group is done
 
+    crc16_generator crc;
     auto data = blob.begin() + row * row_size;
     auto advance_word = [&]()
     {
         bus_request_params<bus_command::bl_exe_push_word> params;
         for (uint32_t i = 0; i < word_size; ++i)
             params.data[i] = *data++; // Little-endian
+        crc(params.data, word_size);
         return params;
     };
 
@@ -200,11 +209,26 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     // is executed, we can be sure that previous broadcasts have all been sent out.
     for (uint32_t i = 0; i < (row_size - word_size); i += word_size)
         bus_comm_.broadcast(advance_word());
-    bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row));
+    bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
     assert(std::distance(blob.begin(), data) == row_size);
 }
 
-void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row)
+void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc)
+{
+    assert(group);
+    auto const & [_, nodes] = *group;
+
+    bus_comm_.send_for_all<bus_command::bl_get_row_crc>({}, [this, group, row, crc](auto responses) {
+        for (auto [slave, response] : responses) {
+            if (!response || response->crc != crc) // TODO: eventually we could retry this specific row for the slaves that have an incorrect CRC?
+                mark_failed(slave);
+        }
+
+        burn_row(group, row);
+    }, view(nodes).transform(extract_member<bus_node>{}).get()); // No need to filter, since we didn't remove any node in the previous steps
+}
+
+void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
 {
 
 }
