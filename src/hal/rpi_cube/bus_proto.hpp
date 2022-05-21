@@ -114,14 +114,15 @@ struct bus_response_params<bus_command::app_get_version>
 template<>
 struct bus_response_params<bus_command::app_get_status>
 {
-    uint8_t layer_ready     :1;
-    uint8_t layer_dma_error :1;
+    bool layer_ready        :1;
+    bool layer_dma_error    :1;
 };
 
 template<>
 struct bus_response_params<bus_command::bl_get_status>
 {
-    uint8_t bootloader_ready    :1;
+    bool bootloader_ready   :1;
+    bool bootloader_error   :1;
 };
 
 template<>

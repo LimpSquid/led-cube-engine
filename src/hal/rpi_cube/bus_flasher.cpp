@@ -238,7 +238,7 @@ void bus_flasher::when_ready(std::function<void()> handler)
     // TODO: eventually with timeout? Mark slave failed if it never became ready
     bus_comm_.send_for_all<bus_command::bl_get_status>({}, [&, h = std::move(handler)](auto responses) {
         for (auto [slave, response] : responses) {
-            if (!response)
+            if (!response || response->bootloader_error)
                 mark_failed(slave);
             else if (!response->bootloader_ready)
                 return when_ready(std::move(h));

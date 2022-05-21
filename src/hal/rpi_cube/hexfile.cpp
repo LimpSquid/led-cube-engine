@@ -79,9 +79,9 @@ void_or_error verify_line(std::string_view line)
     // the LSB of the sum is zero.
     //
     // For example, the record :042ffc00ffffff7f55 the checksum can be verified as follows:
-    // - Sum decoded bytes:    LSB(04 + 2f + fc + 00 + ff + ff + ff + 7f) = ab
-    // - Take two's of LSB:    twocomplement(ab) = ~ab + 1 = 54 + 1 = 55
-    // - Or, simplified:       LSB(04 + 2f + fc + 00 + ff + ff + ff + 7f + 55) = 00
+    // - Sum decoded bytes and take LSB:    LSB(04 + 2f + fc + 00 + ff + ff + ff + 7f) = ab
+    // - Take two's complement of LSB:      twocomplement(ab) = ~ab + 1 = 54 + 1 = 55
+    // - Or, via the simplified method:     LSB(04 + 2f + fc + 00 + ff + ff + ff + 7f + 55) = 00
 
     unsigned char checksum = 0;
     unsigned char byte;
