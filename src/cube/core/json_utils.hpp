@@ -8,21 +8,38 @@
 
 namespace cube::core
 {
+template<typename T, typename = void>
+struct is_json_convertible : std::false_type {};
+template<typename T>
+struct is_json_convertible<T,
+    std::void_t<
+        decltype(to_json(std::declval<typename T::value_type>(), std::declval<nlohmann::json &>())),
+        decltype(from_json(std::declval<nlohmann::json>(), std::declval<typename T::value_type &>()))>
+    > : std::true_type {};
+template<typename T>
+constexpr bool is_json_convertible_v = is_json_convertible<T>::value;
 
 template<typename T, typename = void>
 struct is_json_iterable : std::false_type {};
 template<typename T>
 struct is_json_iterable<T,
     std::void_t<
-        // Iterators must be present
         decltype(std::begin(std::declval<T>())),
-        decltype(std::end(std::declval<T>())),
-        // The object type of the container must be convertable to/from JSON
-        decltype(to_json(std::declval<typename T::value_type>(), std::declval<nlohmann::json&>())),
-        decltype(from_json(std::declval<nlohmann::json>(), std::declval<typename T::value_type&>()))>
-    > : std::true_type {};
+        decltype(std::end(std::declval<T>()))>
+    > : is_json_convertible<T> {};
 template<typename T>
 constexpr bool is_json_iterable_v = is_json_iterable<T>::value;
+
+template<typename T, typename = void>
+struct is_json_insertable : std::false_type {};
+template<typename T>
+struct is_json_insertable<T,
+    std::void_t<
+        decltype(std::end(std::declval<T>())),
+        decltype(std::declval<T>().insert(std::end(std::declval<T>()), std::declval<typename T::value_type>()))>
+    > : is_json_convertible<T> {};
+template<typename T>
+constexpr bool is_json_insertable_v = is_json_insertable<T>::value;
 
 inline void to_json(nlohmann::json const & json, nlohmann::json & out) { out = json; }
 inline void from_json(nlohmann::json const & json, nlohmann::json & out) { out = json; }
@@ -44,7 +61,7 @@ void to_json(T const & value, nlohmann::json & out)
 template<typename T>
 void from_json(nlohmann::json const & json, T & out)
 {
-    if constexpr (is_json_iterable_v<T> && !std::is_same_v<T, std::string>) {
+    if constexpr (is_json_insertable_v<T> && !std::is_same_v<T, std::string>) {
         using std::operator""s;
 
         if (!json.is_array())
@@ -53,7 +70,7 @@ void from_json(nlohmann::json const & json, T & out)
         typename T::value_type element_out;
         for (auto const & element : json) {
             from_json(element, element_out);
-            out.push_back(std::move(element_out));
+            out.insert(std::end(out), std::move(element_out));
         }
     } else {
 #ifdef EVAL_EXPRESSION
