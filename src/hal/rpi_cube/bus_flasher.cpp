@@ -27,7 +27,7 @@ template<typename T>
 struct view
 {
     view(std::vector<T> s) :
-        stream(s)
+        stream(std::move(s))
     { }
 
     std::vector<T> & get() { return stream; }
@@ -160,24 +160,34 @@ void bus_flasher::flash_next_group()
 
     auto group = std::make_shared<group_t const>(
         std::move(*blob),
-        view(nodes_).filter(state_filter<flashing_busy>{})
-                    .filter(memory_layout_filter{layout})
-                    .get());
+        view<node_cref_t>({nodes_.begin(), nodes_.end()})
+            .filter(state_filter<flashing_busy>{})
+            .filter(memory_layout_filter{layout})
+            .get());
     push_blob(std::move(group));
 }
 
 void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
 {
     assert(group);
-    bus_comm_.broadcast<bus_command::bl_exe_row_reset>({}, std::bind(&bus_flasher::push_row, this, group, 0));
+    auto const & [_, nodes] = *group;
+
+    bus_comm_.send_for_all<bus_command::bl_exe_row_reset>({}, [this, group](auto responses) {
+        for (auto [slave, response] : responses) {
+            if (!response)
+                mark_failed(slave);
+        }
+
+        push_row(group, 0);
+    }, view(nodes).transform(extract_member<bus_node>{}).get());
 }
 
 void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
 {
     assert(group);
     auto const & [blob, nodes] = *group;
-    uint32_t const word_size = *std::get<memory_layout>(nodes.front()).word_size;
-    uint32_t const row_size = *std::get<memory_layout>(nodes.front()).row_size;
+    uint32_t const word_size = *std::get<memory_layout>(nodes.front().get()).word_size;
+    uint32_t const row_size = *std::get<memory_layout>(nodes.front().get()).row_size;
     uint32_t const n_rows = blob.size() / row_size;
 
     if (word_size > sizeof(bus_request_params<bus_command::bl_exe_push_word>))
@@ -225,12 +235,26 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
         }
 
         burn_row(group, row);
-    }, view(nodes).transform(extract_member<bus_node>{}).get()); // No need to filter, since we didn't remove any node in the previous steps
+    }, view(nodes).filter(state_filter<flashing_busy>{})
+                  .transform(extract_member<bus_node>{})
+                  .get());
 }
 
 void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
 {
+    assert(group);
+    auto const & [_, nodes] = *group;
 
+    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>({}, [this, group, row](auto responses) {
+        for (auto [slave, response] : responses) {
+            if (!response)
+                mark_failed(slave);
+        }
+
+        when_ready(std::bind(&bus_flasher::burn_row, this, group, row + 1));
+    }, view(nodes).filter(state_filter<flashing_busy>{})
+                  .transform(extract_member<bus_node>{})
+                  .get());
 }
 
 void bus_flasher::when_ready(std::function<void()> handler)

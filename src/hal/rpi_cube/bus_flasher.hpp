@@ -24,9 +24,10 @@ private:
     };
 
     using node_t = std::tuple<bus_node, flashing_state, memory_layout>;
+    using node_cref_t = std::reference_wrapper<node_t const>;
     // Nodes in a group all have the same memory layout, thus the blob can
-    // be pushed to the nodes via broadcasts instead of point-to-point
-    using group_t = std::tuple<memory_blob, std::vector<node_t>>;
+    // be pushed to the nodes via broadcasts instead of point-to-point.
+    using group_t = std::tuple<memory_blob, std::vector<node_cref_t>>;
 
     template<typename T>
     struct extract_member { T operator()(node_t const & node) const { return std::get<T>(node); } };
