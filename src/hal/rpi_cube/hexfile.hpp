@@ -56,6 +56,7 @@ struct memory_layout
     std::optional<uint32_t> page_size;
 };
 
+std::string to_string(memory_layout const & layout);
 cube::core::void_or_error verify(memory_layout const & layout);
 cube::core::expected_or_error<memory_blob> parse_hex_file(std::filesystem::path const & filepath, memory_layout layout = {});
 

@@ -9,17 +9,17 @@
 #include <ctime>
 #include <unistd.h>
 
-#define LOG_ARG(name, value) std::make_pair(name, value)
-#define LOG(level, ...) cube::core::log(STDOUT_FILENO, level, __VA_ARGS__)
-#define LOG_INF(...)    LOG(cube::core::log_prio::info, __VA_ARGS__)
-#define LOG_DBG(...)    LOG(cube::core::log_prio::debug, __VA_ARGS__)
-#define LOG_WRN(...)    LOG(cube::core::log_prio::warning, __VA_ARGS__)
-#define LOG_ERR(...)    LOG(cube::core::log_prio::error, __VA_ARGS__)
-#define LOG_PLAIN(...)  LOG(cube::core::log_prio::plain, __VA_ARGS__)
-#define LOG_INF_IF(expr, ...) do { if (expr) { LOG_INF(__VA_ARGS__); } } while(0)
-#define LOG_DBG_IF(expr, ...) do { if (expr) { LOG_DBG(__VA_ARGS__); } } while(0)
-#define LOG_WRN_IF(expr, ...) do { if (expr) { LOG_WRN(__VA_ARGS__); } } while(0)
-#define LOG_ERR_IF(expr, ...) do { if (expr) { LOG_ERR(__VA_ARGS__); } } while(0)
+#define LOG_ARG(name, value)    std::make_pair(name, value)
+#define LOG(level, ...)         cube::core::log(STDOUT_FILENO, level, __VA_ARGS__)
+#define LOG_INF(...)            LOG(cube::core::log_prio::info, __VA_ARGS__)
+#define LOG_DBG(...)            LOG(cube::core::log_prio::debug, __VA_ARGS__)
+#define LOG_WRN(...)            LOG(cube::core::log_prio::warning, __VA_ARGS__)
+#define LOG_ERR(...)            LOG(cube::core::log_prio::error, __VA_ARGS__)
+#define LOG_PLAIN(...)          LOG(cube::core::log_prio::plain, __VA_ARGS__)
+#define LOG_INF_IF(expr, ...)   do { if (expr) { LOG_INF(__VA_ARGS__); } } while(0)
+#define LOG_DBG_IF(expr, ...)   do { if (expr) { LOG_DBG(__VA_ARGS__); } } while(0)
+#define LOG_WRN_IF(expr, ...)   do { if (expr) { LOG_WRN(__VA_ARGS__); } } while(0)
+#define LOG_ERR_IF(expr, ...)   do { if (expr) { LOG_ERR(__VA_ARGS__); } } while(0)
 
 // Name conflicts shouldn't be a problem as described by
 // section "block scope" in https://en.cppreference.com/w/cpp/language/scope

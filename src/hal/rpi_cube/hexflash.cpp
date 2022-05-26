@@ -21,13 +21,6 @@ namespace
 
 std::vector<program_sigint_t> sigint_handlers;
 
-struct hexflash_binding
-{
-    poll_engine & engine;
-    hal::rpi_cube::resources & resources;
-    hal::rpi_cube::bus_comm & bus_comm;
-};
-
 struct bus_transferring
 {
     hal::rpi_cube::bus_comm & bus;
@@ -38,7 +31,14 @@ struct bus_transferring
     }
 };
 
-hexflash_binding hexflash_instance()
+struct binding
+{
+    poll_engine & engine;
+    hal::rpi_cube::resources & resources;
+    hal::rpi_cube::bus_comm & bus_comm;
+};
+
+binding instance()
 {
     struct singleton
     {
@@ -54,7 +54,7 @@ hexflash_binding hexflash_instance()
     };
 
     static singleton s;
-    return hexflash_binding{s.engine, s.resources, s.bus_comm};
+    return binding{s.engine, s.resources, s.bus_comm};
 }
 
 template<typename H>
@@ -67,7 +67,7 @@ void handle_detect_boards()
 {
     using namespace hal::rpi_cube;
 
-    auto [engine, resources, bus_comm] = hexflash_instance();
+    auto [engine, resources, bus_comm] = instance();
 
     for (auto const & slave : resources.bus_comm_slave_addresses) {
         auto [bl_handler, app_handler] = decompose_function([slave](
@@ -105,7 +105,7 @@ void handle_reset_boards()
 
     using namespace hal::rpi_cube;
 
-    auto [engine, resources, bus_comm] = hexflash_instance();
+    auto [engine, resources, bus_comm] = instance();
     bus_request_params<bus_command::app_exe_cpu_reset> params;
     params.delay_ms = reset_delay.count();
 
@@ -154,11 +154,26 @@ void handle_dump_blob(std::vector<std::string> const & args)
     std::exit(EXIT_FAILURE);
 }
 
-void handle_flash_boards()
+void handle_flash_boards(std::vector<std::string> const & args)
 {
     using namespace hal::rpi_cube;
 
-    auto [engine, resources, bus_comm] = hexflash_instance();
+    if (args.size() == 1) {
+        auto [engine, _, bus_comm] = instance();
+        bus_flasher flasher{bus_comm};
+
+        flasher.flash_hex_file(args[0]);
+        engine.run_while(bus_transferring{bus_comm});
+        std::exit(bus_comm.state() == bus_state::idle
+            ? EXIT_SUCCESS
+            : EXIT_FAILURE);
+    }
+
+    std::cout
+        << "Usage: led-cube-engine hexflash --flash-boards <filepath>\n\n"
+        << "Examples:\n"
+        << "  led-cube-engine hexflash --flash-boards /tmp/board.hex\n";
+    std::exit(EXIT_FAILURE);
 }
 
 } // End of namespace
@@ -183,8 +198,10 @@ program const program_hexflash
                 ->zero_tokens()
                 ->multitoken()
                 ->notifier(handle_dump_blob), "parse the hex file and dump the blob to stdout")
-            ("flash-boards", po::bool_switch() // TODO: args
-                ->notifier(bool_switch_notifier(handle_flash_boards)), "flash all available boards on the bus");
+            ("flash-boards", po::value<std::vector<std::string>>()
+                ->zero_tokens()
+                ->multitoken()
+                ->notifier(handle_flash_boards), "flash all available boards on the bus");
 
         po::variables_map cli_variables;
         po::store(po::parse_command_line(ac, av, desc), cli_variables);

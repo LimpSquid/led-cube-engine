@@ -2,6 +2,7 @@
 #include <hal/rpi_cube/bus_comm.hpp>
 #include <hal/rpi_cube/hexfile.hpp>
 #include <hal/rpi_cube/crc.hpp>
+#include <cube/core/logging.hpp>
 #include <cassert>
 
 using namespace cube::core;
@@ -72,6 +73,8 @@ void bus_flasher::flash_hex_file(fs::path const & filepath)
 {
     hex_filepath_ = filepath; // TODO: check existence?
     reset_nodes();
+
+    LOG_DBG("Flashing hex file", LOG_ARG("filepath", filepath.c_str()));
 }
 
 void bus_flasher::reset_nodes()
@@ -80,6 +83,8 @@ void bus_flasher::reset_nodes()
 
     // Nodes that are already in bootloader mode will ignore this command
     bus_comm_.broadcast(std::move(params), std::bind(&bus_flasher::set_boot_magic, this));
+
+    LOG_DBG("Broadcasting CPU reset");
 }
 
 void bus_flasher::set_boot_magic()
@@ -92,12 +97,16 @@ void bus_flasher::set_boot_magic()
 
     bus_comm_.send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
-            if (response)
+            if (response) {
                 nodes_.push_back({slave, flashing_busy, memory_layout{}});
+                LOG_DBG("Boot magic provided", LOG_ARG("address", as_hex(slave.address)));
+            }
         }
 
         when_ready(std::bind(&bus_flasher::get_memory_layout, this));
     }, all_slaves);
+
+    LOG_DBG("Sending boot magic to lock-in bootloader mode");
 }
 
 void bus_flasher::get_memory_layout()
@@ -129,6 +138,8 @@ void bus_flasher::get_memory_layout()
     query_for_all(bootloader_query::mem_word_size, &memory_layout::word_size);
     query_for_all(bootloader_query::mem_row_size, &memory_layout::row_size);
     query_for_all(bootloader_query::mem_page_size, &memory_layout::page_size);
+
+    LOG_DBG("Querying memory layout");
 }
 
 void bus_flasher::flash_erase()
@@ -143,6 +154,8 @@ void bus_flasher::flash_erase()
     }, view(nodes_).filter(state_filter<flashing_busy>{})
                    .transform(extract_member<bus_node>{})
                    .get());
+
+    LOG_DBG("Erasing application flash region");
 }
 
 void bus_flasher::flash_next_group()
@@ -151,12 +164,24 @@ void bus_flasher::flash_next_group()
                                    .transform(extract_member<memory_layout>{})
                                    .get();
     if (mem_layouts.empty())
-        return; // TODO: done, run completion handler?
+        return; // TODO: done, now boot all boards!
 
     auto layout = mem_layouts.front();
     auto blob = parse_hex_file(hex_filepath_, layout); // Also checks if the memory layout is valid
-    if (!blob)
-        return; // TODO: failed, run completion handler?
+    if (!blob) {
+        LOG_DBG("Unable to prepare HEX file for group", LOG_ARG("memory_layout", to_string(layout)));
+
+        auto nodes = view(nodes_).filter(state_filter<flashing_busy>{})
+                                 .filter(memory_layout_filter{layout})
+                                 .transform(extract_member<bus_node>{})
+                                 .get();
+        std::for_each(nodes.begin(), nodes.end(), std::bind(&bus_flasher::mark_failed, this, std::placeholders::_1));
+        return flash_next_group();
+    }
+
+    LOG_DBG("Prepared HEX file for group",
+        LOG_ARG("memory_layout", to_string(layout)),
+        LOG_ARG("blob_size", blob->size()));
 
     auto group = std::make_shared<group_t const>(
         std::move(*blob),
@@ -180,6 +205,8 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
 
         push_row(group, 0);
     }, view(nodes).transform(extract_member<bus_node>{}).get());
+
+    LOG_DBG("Pushing blob to group", LOG_ARG("group_size", nodes.size()));
 }
 
 void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
@@ -194,7 +221,7 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
         throw std::runtime_error("Unable to handle word size: " + std::to_string(word_size));
 
     if (row >= n_rows)
-        return; // TODO: this group is done
+        return flash_next_group();
 
     crc16_generator crc;
     auto data = blob.begin() + row * row_size;
@@ -221,6 +248,11 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
         bus_comm_.broadcast(advance_word());
     bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
     assert(std::distance(blob.begin(), data) == row_size);
+
+    LOG_DBG("Pushing row to group",
+        LOG_ARG("group_size", nodes.size()),
+        LOG_ARG("row", row),
+        LOG_ARG("n_rows", n_rows));
 }
 
 void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc)
@@ -238,6 +270,10 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
     }, view(nodes).filter(state_filter<flashing_busy>{})
                   .transform(extract_member<bus_node>{})
                   .get());
+
+    LOG_DBG("Verifying row CRC",
+        LOG_ARG("group_size", nodes.size()),
+        LOG_ARG("row", row));
 }
 
 void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
@@ -251,10 +287,14 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
                 mark_failed(slave);
         }
 
-        when_ready(std::bind(&bus_flasher::burn_row, this, group, row + 1));
+        when_ready(std::bind(&bus_flasher::push_row, this, group, row + 1));
     }, view(nodes).filter(state_filter<flashing_busy>{})
                   .transform(extract_member<bus_node>{})
                   .get());
+
+    LOG_DBG("Burning row to flash",
+        LOG_ARG("group_size", nodes.size()),
+        LOG_ARG("row", row));
 }
 
 void bus_flasher::when_ready(std::function<void()> handler)
@@ -287,11 +327,13 @@ bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
 void bus_flasher::mark_failed(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_failed;
+    LOG_DBG("Node marked 'failed'", LOG_ARG("address", as_hex(slave.address)));
 }
 
 void bus_flasher::mark_succeeded(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
+    LOG_DBG("Node marked 'succeeded'", LOG_ARG("address", as_hex(slave.address)));
 }
 
 } // End of namespace
