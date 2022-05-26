@@ -11,8 +11,6 @@ namespace fs = std::filesystem;
 namespace
 {
 
-constexpr uint32_t boot_magic = 0x0b00b1e5;
-
 // See: https://github.com/LimpSquid/led-controller/blob/5-make-a-bootloader/led-controller.X/include/bootloader/bootloader.h#L6
 enum class bootloader_query : uint8_t
 {
@@ -90,7 +88,7 @@ void bus_flasher::reset_nodes()
 void bus_flasher::set_boot_magic()
 {
     bus_request_params<bus_command::bl_set_boot_magic> params;
-    params.magic = boot_magic;
+    params.magic = 0x0b00b1e5;
 
     std::vector<bus_node> all_slaves;
     std::generate_n(all_slaves.begin(), bus_node::num_addresses::value, [n = bus_node::min_address::value] () mutable { return n++; });
@@ -98,7 +96,7 @@ void bus_flasher::set_boot_magic()
     bus_comm_.send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (response) {
-                nodes_.push_back({slave, flashing_busy, memory_layout{}});
+                nodes_.push_back({slave, flashing_in_progress, {}, {}});
                 LOG_DBG("Boot magic provided", LOG_ARG("address", as_hex(slave.address)));
             }
         }
@@ -123,12 +121,12 @@ void bus_flasher::get_memory_layout()
                 if (response)
                     std::get<memory_layout>(find_or_throw(slave)).*field = response->query_result;
                 else
-                    mark_failed(slave);
+                    mark_failed(slave, response.error().what);
             }
 
             if (s.use_count() == 1)
                 flash_erase();
-        }, view(nodes_).filter(state_filter<flashing_busy>{})
+        }, view(nodes_).filter(state_filter<flashing_in_progress>{})
                        .transform(extract_member<bus_node>{})
                        .get());
     };
@@ -147,11 +145,11 @@ void bus_flasher::flash_erase()
     bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
-                mark_failed(slave);
+                mark_failed(slave, response.error().what);
         }
 
         when_ready(std::bind(&bus_flasher::flash_next_group, this));
-    }, view(nodes_).filter(state_filter<flashing_busy>{})
+    }, view(nodes_).filter(state_filter<flashing_in_progress>{})
                    .transform(extract_member<bus_node>{})
                    .get());
 
@@ -160,7 +158,7 @@ void bus_flasher::flash_erase()
 
 void bus_flasher::flash_next_group()
 {
-    auto mem_layouts = view(nodes_).filter(state_filter<flashing_busy>{})
+    auto mem_layouts = view(nodes_).filter(state_filter<flashing_in_progress>{})
                                    .transform(extract_member<memory_layout>{})
                                    .get();
     if (mem_layouts.empty())
@@ -171,11 +169,11 @@ void bus_flasher::flash_next_group()
     if (!blob) {
         LOG_DBG("Unable to prepare HEX file for group", LOG_ARG("memory_layout", to_string(layout)));
 
-        auto nodes = view(nodes_).filter(state_filter<flashing_busy>{})
+        auto nodes = view(nodes_).filter(state_filter<flashing_in_progress>{})
                                  .filter(memory_layout_filter{layout})
                                  .transform(extract_member<bus_node>{})
                                  .get();
-        std::for_each(nodes.begin(), nodes.end(), std::bind(&bus_flasher::mark_failed, this, std::placeholders::_1));
+        std::for_each(nodes.begin(), nodes.end(), std::bind(&bus_flasher::mark_failed, this, std::placeholders::_1, blob.error().what));
         return flash_next_group();
     }
 
@@ -186,7 +184,7 @@ void bus_flasher::flash_next_group()
     auto group = std::make_shared<group_t const>(
         std::move(*blob),
         view<node_cref_t>({nodes_.begin(), nodes_.end()})
-            .filter(state_filter<flashing_busy>{})
+            .filter(state_filter<flashing_in_progress>{})
             .filter(memory_layout_filter{layout})
             .get());
     push_blob(std::move(group));
@@ -200,7 +198,7 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
     bus_comm_.send_for_all<bus_command::bl_exe_row_reset>({}, [this, group](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
-                mark_failed(slave);
+                mark_failed(slave, response.error().what);
         }
 
         push_row(group, 0);
@@ -262,12 +260,14 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
 
     bus_comm_.send_for_all<bus_command::bl_get_row_crc>({}, [this, group, row, crc](auto responses) {
         for (auto [slave, response] : responses) {
-            if (!response || response->crc != crc) // TODO: eventually we could retry this specific row for the slaves that have an incorrect CRC?
-                mark_failed(slave);
+            if (!response) // TODO: eventually we could retry this specific row for the slaves that have an incorrect CRC?
+                mark_failed(slave, response.error().what);
+            else if (response->crc != crc)
+                mark_failed(slave, "Row CRC did not match");
         }
 
         burn_row(group, row);
-    }, view(nodes).filter(state_filter<flashing_busy>{})
+    }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
 
@@ -284,11 +284,11 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
     bus_comm_.send_for_all<bus_command::bl_exe_row_burn>({}, [this, group, row](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
-                mark_failed(slave);
+                mark_failed(slave, response.error().what);
         }
 
         when_ready(std::bind(&bus_flasher::push_row, this, group, row + 1));
-    }, view(nodes).filter(state_filter<flashing_busy>{})
+    }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
 
@@ -302,14 +302,16 @@ void bus_flasher::when_ready(std::function<void()> handler)
     // TODO: eventually with timeout? Mark slave failed if it never became ready
     bus_comm_.send_for_all<bus_command::bl_get_status>({}, [&, h = std::move(handler)](auto responses) {
         for (auto [slave, response] : responses) {
-            if (!response || response->bootloader_error)
-                mark_failed(slave);
+            if (!response)
+                mark_failed(slave, response.error().what);
+            else if (response->bootloader_error)
+                mark_failed(slave, "Bootloader error");
             else if (!response->bootloader_ready)
                 return when_ready(std::move(h));
         }
 
         h();
-    }, view(nodes_).filter(state_filter<flashing_busy>{})
+    }, view(nodes_).filter(state_filter<flashing_in_progress>{})
                    .transform(extract_member<bus_node>{})
                    .get());
 }
@@ -324,16 +326,20 @@ bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
     return *search;
 }
 
-void bus_flasher::mark_failed(bus_node const & slave)
+void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
 {
-    std::get<flashing_state>(find_or_throw(slave)) = flashing_failed;
-    LOG_DBG("Node marked 'failed'", LOG_ARG("address", as_hex(slave.address)));
+    node_t & node = find_or_throw(slave);
+    std::get<flashing_state>(node) = flashing_failed;
+    std::get<std::string>(node) = desc;
+    LOG_DBG("Flashing failed for node",
+        LOG_ARG("address", as_hex(slave.address)),
+        LOG_ARG("description", desc));
 }
 
 void bus_flasher::mark_succeeded(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
-    LOG_DBG("Node marked 'succeeded'", LOG_ARG("address", as_hex(slave.address)));
+    LOG_DBG("Flashing succeeded for node", LOG_ARG("address", as_hex(slave.address)));
 }
 
 } // End of namespace

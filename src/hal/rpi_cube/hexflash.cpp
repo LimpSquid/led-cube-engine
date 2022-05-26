@@ -161,8 +161,8 @@ void handle_flash_boards(std::vector<std::string> const & args)
     if (args.size() == 1) {
         auto [engine, _, bus_comm] = instance();
         bus_flasher flasher{bus_comm};
-
         flasher.flash_hex_file(args[0]);
+
         engine.run_while(bus_transferring{bus_comm});
         std::exit(bus_comm.state() == bus_state::idle
             ? EXIT_SUCCESS

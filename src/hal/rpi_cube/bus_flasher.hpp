@@ -18,12 +18,12 @@ public:
 private:
     enum flashing_state
     {
-        flashing_busy,
+        flashing_in_progress,
         flashing_failed,
         flashing_succeeded
     };
 
-    using node_t = std::tuple<bus_node, flashing_state, memory_layout>;
+    using node_t = std::tuple<bus_node, flashing_state, memory_layout, std::string /* reason of failure */>;
     using node_cref_t = std::reference_wrapper<node_t const>;
     // Nodes in a group all have the same memory layout, thus the blob can
     // be pushed to the nodes via broadcasts instead of point-to-point.
@@ -56,7 +56,7 @@ private:
 
     void when_ready(std::function<void()> handler);
     node_t & find_or_throw(bus_node const & slave);
-    void mark_failed(bus_node const & slave);
+    void mark_failed(bus_node const & slave, std::string const & desc = "Unknown error");
     void mark_succeeded(bus_node const & slave);
 
     bus_comm & bus_comm_;
