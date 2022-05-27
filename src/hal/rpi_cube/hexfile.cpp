@@ -113,11 +113,12 @@ namespace hal::rpi_cube
 
 std::string to_string(memory_layout const & layout)
 {
-    return "sa: "s + std::to_string(layout.start_address) + ", "
-         + "ea: "  + std::to_string(layout.end_address) + ", "
-         + "ws: "  + (layout.word_size ? std::to_string(*layout.word_size) : "-") + ", "
-         + "rs: "  + (layout.row_size  ? std::to_string(*layout.row_size)  : "-") + ", "
-         + "ps: "  + (layout.page_size ? std::to_string(*layout.page_size) : "-");
+    return "["s
+         + "sa: " + std::to_string(layout.start_address) + ", "
+         + "ea: " + std::to_string(layout.end_address) + ", "
+         + "ws: " + (layout.word_size ? std::to_string(*layout.word_size) : "-") + ", "
+         + "rs: " + (layout.row_size  ? std::to_string(*layout.row_size)  : "-") + ", "
+         + "ps: " + (layout.page_size ? std::to_string(*layout.page_size) : "-") + "]";
 }
 
 void_or_error verify(memory_layout const & layout)

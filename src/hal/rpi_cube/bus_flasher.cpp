@@ -245,7 +245,7 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     for (uint32_t i = 0; i < (row_size - word_size); i += word_size)
         bus_comm_.broadcast(advance_word());
     bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
-    assert(std::distance(blob.begin(), data) == row_size);
+    assert(std::distance(blob.begin() + row * row_size, data) == row_size);
 
     LOG_DBG("Pushing row to group",
         LOG_ARG("group_size", nodes.size()),
@@ -297,23 +297,31 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
         LOG_ARG("row", row));
 }
 
-void bus_flasher::when_ready(std::function<void()> handler)
+void bus_flasher::when_ready(std::function<void()> handler, std::optional<std::vector<node_cref_t>> opt_nodes)
 {
     // TODO: eventually with timeout? Mark slave failed if it never became ready
-    bus_comm_.send_for_all<bus_command::bl_get_status>({}, [&, h = std::move(handler)](auto responses) {
+    auto nodes = opt_nodes
+        ? std::move(opt_nodes.value())
+        : std::vector<node_cref_t>{nodes_.begin(), nodes_.end()};
+
+    bus_comm_.send_for_all<bus_command::bl_get_status>({}, [this, h = std::move(handler), nodes](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
             else if (response->bootloader_error)
                 mark_failed(slave, "Bootloader error");
-            else if (!response->bootloader_ready)
-                return when_ready(std::move(h));
+            else if (!response->bootloader_ready) {
+                LOG_DBG_PERIODIC(100ms, "Node not ready", LOG_ARG("address", as_hex(slave.address)));
+                return when_ready(std::move(h), std::move(nodes));
+            }
         }
 
+        LOG_DBG("Nodes ready", LOG_ARG("size", nodes.size()));
         h();
-    }, view(nodes_).filter(state_filter<flashing_in_progress>{})
-                   .transform(extract_member<bus_node>{})
-                   .get());
+    }, view(std::move(nodes))
+        .filter(state_filter<flashing_in_progress>{})
+        .transform(extract_member<bus_node>{})
+        .get());
 }
 
 bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)

@@ -53,6 +53,6 @@ private:
     value_type crc_{seed::value};
 };
 
-using crc16_generator = basic_crc_generator<uint16_t, 0x1021, 0xffff>;
+using crc16_generator = basic_crc_generator<uint16_t, 0x1021, 0xffff>; // CRC-16-CCITT-FALSE
 
 } // End of namespace
