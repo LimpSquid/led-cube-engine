@@ -53,6 +53,7 @@ private:
     void push_row(std::shared_ptr<group_t const> group, uint32_t row);
     void verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc);
     void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
+    void boot(std::shared_ptr<group_t const> group);
 
     void when_ready(std::function<void()> handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
     node_t & find_or_throw(bus_node const & slave);

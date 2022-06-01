@@ -162,7 +162,7 @@ void bus_flasher::flash_next_group()
                                    .transform(extract_member<memory_layout>{})
                                    .get();
     if (mem_layouts.empty())
-        return; // TODO: done, now boot all boards!
+        return; // TODO: done, now call completion handler?
 
     auto layout = mem_layouts.front();
     auto blob = parse_hex_file(hex_filepath_, layout); // Also checks if the memory layout is valid
@@ -219,7 +219,7 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
         throw std::runtime_error("Unable to handle word size: " + std::to_string(word_size));
 
     if (row >= n_rows)
-        return flash_next_group();
+        return boot(std::move(group));
 
     crc16_generator crc;
     auto data = blob.begin() + row * row_size;
@@ -248,7 +248,6 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     assert(std::distance(blob.begin() + row * row_size, data) == row_size);
 
     LOG_DBG("Pushing row to group",
-        LOG_ARG("group_size", nodes.size()),
         LOG_ARG("row", row),
         LOG_ARG("n_rows", n_rows));
 }
@@ -271,9 +270,7 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
                   .transform(extract_member<bus_node>{})
                   .get());
 
-    LOG_DBG("Verifying row CRC",
-        LOG_ARG("group_size", nodes.size()),
-        LOG_ARG("row", row));
+    LOG_DBG("Verifying row CRC", LOG_ARG("row", row));
 }
 
 void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
@@ -292,9 +289,30 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
                   .transform(extract_member<bus_node>{})
                   .get());
 
-    LOG_DBG("Burning row to flash",
-        LOG_ARG("group_size", nodes.size()),
-        LOG_ARG("row", row));
+    LOG_DBG("Burning row to flash", LOG_ARG("row", row));
+}
+
+void bus_flasher::boot(std::shared_ptr<group_t const> group)
+{
+    assert(group);
+    auto const & [blob, nodes] = *group;
+    bus_request_params<bus_command::bl_exe_boot> params{};
+    params.crc = crc16_generator{}(blob.begin(), blob.end());
+
+    bus_comm_.send_for_all(std::move(params), [this](auto responses) {
+        for (auto [slave, response] : responses) {
+            if (response)
+                mark_succeeded(slave); // TODO: maybe we should check if it actually succeeded
+            else
+                mark_failed(slave, response.error().what);
+        }
+
+        flash_next_group();
+    }, view(nodes).filter(state_filter<flashing_in_progress>{})
+                  .transform(extract_member<bus_node>{})
+                  .get());
+
+    LOG_DBG("Booting boards");
 }
 
 void bus_flasher::when_ready(std::function<void()> handler, std::optional<std::vector<node_cref_t>> opt_nodes)
@@ -318,10 +336,9 @@ void bus_flasher::when_ready(std::function<void()> handler, std::optional<std::v
 
         LOG_DBG("Nodes ready", LOG_ARG("size", nodes.size()));
         h();
-    }, view(std::move(nodes))
-        .filter(state_filter<flashing_in_progress>{})
-        .transform(extract_member<bus_node>{})
-        .get());
+    }, view(std::move(nodes)).filter(state_filter<flashing_in_progress>{})
+                             .transform(extract_member<bus_node>{})
+                             .get());
 }
 
 bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
@@ -339,6 +356,7 @@ void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
     node_t & node = find_or_throw(slave);
     std::get<flashing_state>(node) = flashing_failed;
     std::get<std::string>(node) = desc;
+
     LOG_DBG("Flashing failed for node",
         LOG_ARG("address", as_hex(slave.address)),
         LOG_ARG("description", desc));
@@ -347,6 +365,7 @@ void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
 void bus_flasher::mark_succeeded(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
+
     LOG_DBG("Flashing succeeded for node", LOG_ARG("address", as_hex(slave.address)));
 }
 

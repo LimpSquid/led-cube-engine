@@ -32,6 +32,7 @@ enum class bus_command : unsigned char
     bl_exe_row_reset            = 133,
     bl_exe_push_word            = 134,
     bl_exe_row_burn             = 135,
+    bl_exe_boot                 = 132,
 };
 
 enum class bus_response_code : unsigned char
@@ -102,6 +103,12 @@ template<>
 struct bus_request_params<bus_command::bl_exe_push_word> : low_prio_request
 {
     uint8_t data[4];
+};
+
+template<>
+struct bus_request_params<bus_command::bl_exe_boot> : low_prio_request
+{
+    uint16_t crc;
 };
 
 template<>

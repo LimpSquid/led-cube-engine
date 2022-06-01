@@ -32,6 +32,17 @@ public:
         return *this;
     }
 
+    template<typename I>
+    basic_crc_generator & operator()(I begin, I end)
+    {
+        std::for_each(begin, end, [this](auto const & element)  {
+            using type = typename std::remove_cv_t<std::remove_reference_t<decltype(element)>>;
+            static_assert(std::is_trivial_v<type>);
+            operator()(&element, sizeof(type));
+        });
+        return *this;
+    }
+
     operator value_type() const
     {
         return crc_;
