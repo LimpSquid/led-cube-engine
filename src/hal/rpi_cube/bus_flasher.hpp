@@ -32,7 +32,7 @@ private:
     template<typename T>
     struct extract_member { T operator()(node_t const & node) const { return std::get<T>(node); } };
     template<flashing_state S>
-    struct state_filter { bool operator()(node_t const & node) const { return std::get<flashing_state>(node) == S; } };
+    struct state_filter { bool operator()(node_t const & node) const { return std::get<flashing_state>(node) != S; } };
     struct memory_layout_filter
     {
         bool operator()(node_t const & node) const { return std::get<memory_layout>(node) == layout; }
@@ -55,7 +55,10 @@ private:
     void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
     void boot(std::shared_ptr<group_t const> group);
 
-    void when_ready(std::function<void()> handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
+    template<typename H>
+    void do_next(H handler) const;
+    template<typename H>
+    void when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
     node_t & find_or_throw(bus_node const & slave);
     void mark_failed(bus_node const & slave, std::string const & desc = "Unknown error");
     void mark_succeeded(bus_node const & slave);

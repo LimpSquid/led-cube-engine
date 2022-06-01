@@ -3,6 +3,7 @@
 #include <hal/rpi_cube/hexfile.hpp>
 #include <hal/rpi_cube/crc.hpp>
 #include <cube/core/logging.hpp>
+#include <numeric>
 #include <cassert>
 
 using namespace cube::core;
@@ -37,7 +38,7 @@ struct view
     template<typename F>
     view & filter(F predicate)
     {
-        std::remove_if(stream.begin(), stream.end(), std::move(predicate));
+        stream.erase(std::remove_if(stream.begin(), stream.end(), std::move(predicate)), stream.end());
         return *this;
     }
 
@@ -59,6 +60,8 @@ struct view
 //   the bus_comm is still holding a reference to the destroyed class (e.g. the function that will be
 //   ran on completion of a request). I think we should be able to wrap each handler which then makes use
 //   of `make_parent_tracker()` from cube/core/utils.hpp.
+// - We need to check in each handler if we still have nodes left that are in the flashing_in_progress state.
+//   If there are no nodes left we should LOG and eventually run the completion handler.
 
 namespace hal::rpi_cube
 {
@@ -69,29 +72,31 @@ bus_flasher::bus_flasher(bus_comm & comm) :
 
 void bus_flasher::flash_hex_file(fs::path const & filepath)
 {
+    LOG_DBG("Flashing hex file", LOG_ARG("filepath", filepath.c_str()));
+
     hex_filepath_ = filepath; // TODO: check existence?
     reset_nodes();
-
-    LOG_DBG("Flashing hex file", LOG_ARG("filepath", filepath.c_str()));
 }
 
 void bus_flasher::reset_nodes()
 {
+    LOG_DBG("Broadcasting CPU reset");
+
     bus_request_params<bus_command::app_exe_cpu_reset> params{}; // Reset immediately
 
     // Nodes that are already in bootloader mode will ignore this command
     bus_comm_.broadcast(std::move(params), std::bind(&bus_flasher::set_boot_magic, this));
-
-    LOG_DBG("Broadcasting CPU reset");
 }
 
 void bus_flasher::set_boot_magic()
 {
+    LOG_DBG("Sending boot magic to lock-in bootloader mode");
+
     bus_request_params<bus_command::bl_set_boot_magic> params;
     params.magic = 0x0b00b1e5;
 
-    std::vector<bus_node> all_slaves;
-    std::generate_n(all_slaves.begin(), bus_node::num_addresses::value, [n = bus_node::min_address::value] () mutable { return n++; });
+    std::vector<bus_node> all_slaves(bus_node::num_addresses::value);
+    std::iota(all_slaves.begin(), all_slaves.end(), bus_node::min_address::value);
 
     bus_comm_.send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
@@ -103,12 +108,12 @@ void bus_flasher::set_boot_magic()
 
         when_ready(std::bind(&bus_flasher::get_memory_layout, this));
     }, all_slaves);
-
-    LOG_DBG("Sending boot magic to lock-in bootloader mode");
 }
 
 void bus_flasher::get_memory_layout()
 {
+    LOG_DBG("Querying memory layout");
+
     struct session {};
     auto s = std::make_shared<session>();
 
@@ -136,12 +141,12 @@ void bus_flasher::get_memory_layout()
     query_for_all(bootloader_query::mem_word_size, &memory_layout::word_size);
     query_for_all(bootloader_query::mem_row_size, &memory_layout::row_size);
     query_for_all(bootloader_query::mem_page_size, &memory_layout::page_size);
-
-    LOG_DBG("Querying memory layout");
 }
 
 void bus_flasher::flash_erase()
 {
+    LOG_DBG("Erasing application flash region");
+
     bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
@@ -152,8 +157,6 @@ void bus_flasher::flash_erase()
     }, view(nodes_).filter(state_filter<flashing_in_progress>{})
                    .transform(extract_member<bus_node>{})
                    .get());
-
-    LOG_DBG("Erasing application flash region");
 }
 
 void bus_flasher::flash_next_group()
@@ -195,6 +198,8 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
     assert(group);
     auto const & [_, nodes] = *group;
 
+    LOG_DBG("Pushing blob to group", LOG_ARG("group_size", nodes.size()));
+
     bus_comm_.send_for_all<bus_command::bl_exe_row_reset>({}, [this, group](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
@@ -204,7 +209,6 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
         push_row(group, 0);
     }, view(nodes).transform(extract_member<bus_node>{}).get());
 
-    LOG_DBG("Pushing blob to group", LOG_ARG("group_size", nodes.size()));
 }
 
 void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
@@ -217,6 +221,10 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
 
     if (word_size > sizeof(bus_request_params<bus_command::bl_exe_push_word>))
         throw std::runtime_error("Unable to handle word size: " + std::to_string(word_size));
+
+    LOG_DBG("Pushing row to group",
+        LOG_ARG("row", row),
+        LOG_ARG("n_rows", n_rows));
 
     if (row >= n_rows)
         return boot(std::move(group));
@@ -246,10 +254,6 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
         bus_comm_.broadcast(advance_word());
     bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
     assert(std::distance(blob.begin() + row * row_size, data) == row_size);
-
-    LOG_DBG("Pushing row to group",
-        LOG_ARG("row", row),
-        LOG_ARG("n_rows", n_rows));
 }
 
 void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc)
@@ -278,13 +282,13 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
     assert(group);
     auto const & [_, nodes] = *group;
 
-    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>({}, [this, group, row](auto responses) {
+    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>({}, [this, group, row, nodes](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
         }
 
-        when_ready(std::bind(&bus_flasher::push_row, this, group, row + 1));
+        when_ready(std::bind(&bus_flasher::push_row, this, group, row + 1), std::move(nodes));
     }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
@@ -315,8 +319,11 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
     LOG_DBG("Booting boards");
 }
 
-void bus_flasher::when_ready(std::function<void()> handler, std::optional<std::vector<node_cref_t>> opt_nodes)
+template<typename H>
+void bus_flasher::when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes)
 {
+    LOG_DBG("Waiting for nodes to become ready");
+
     // TODO: eventually with timeout? Mark slave failed if it never became ready
     auto nodes = opt_nodes
         ? std::move(opt_nodes.value())
@@ -334,7 +341,7 @@ void bus_flasher::when_ready(std::function<void()> handler, std::optional<std::v
             }
         }
 
-        LOG_DBG("Nodes ready", LOG_ARG("size", nodes.size()));
+        LOG_DBG("Nodes ready");
         h();
     }, view(std::move(nodes)).filter(state_filter<flashing_in_progress>{})
                              .transform(extract_member<bus_node>{})

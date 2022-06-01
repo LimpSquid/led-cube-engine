@@ -52,6 +52,10 @@ struct bus_node
     using max_address = std::integral_constant<unsigned char, 31>;
     using num_addresses = std::integral_constant<unsigned char, max_address::value - min_address::value>;
 
+    bus_node() :
+        address(0)
+    { }
+
     bus_node(unsigned char addr) :
         address(addr & max_address())
     { }
