@@ -297,7 +297,7 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
     assert(group);
     auto const & [blob, nodes] = *group;
     bus_request_params<bus_command::bl_exe_boot> params{};
-    params.crc = crc16_generator{}(blob.begin(), blob.end());
+    params.crc = crc16_generator{}(blob.begin(), blob.size());
 
     bus_comm_.send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
