@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 namespace
 {
 
+
+
 // See: https://github.com/LimpSquid/led-controller/blob/5-make-a-bootloader/led-controller.X/include/bootloader/bootloader.h#L6
 enum class bootloader_query : uint8_t
 {
@@ -24,21 +26,22 @@ enum class bootloader_query : uint8_t
 };
 
 template<typename T>
-struct view
+class view
 {
-    view(std::vector<T> s) :
-        stream(std::move(s))
+public:
+    view(std::vector<T> stream) :
+        stream_(std::move(stream))
     { }
 
-    std::vector<T> & get() { return stream; }
-    std::vector<T> const & get() const { return stream; }
-    operator std::vector<T> & () { return stream; }
-    operator std::vector<T> const & () const { return stream; }
+    std::vector<T> & get() { return stream_; }
+    std::vector<T> const & get() const { return stream_; }
+    operator std::vector<T> & () { return stream_; }
+    operator std::vector<T> const & () const { return stream_; }
 
     template<typename F>
     view & filter(F predicate)
     {
-        stream.erase(std::remove_if(stream.begin(), stream.end(), std::move(predicate)), stream.end());
+        stream_.erase(std::remove_if(stream_.begin(), stream_.end(), std::move(predicate)), stream_.end());
         return *this;
     }
 
@@ -46,11 +49,12 @@ struct view
     view<R> transform(F predicate) const
     {
         std::vector<R> transformed;
-        std::transform(stream.begin(), stream.end(), std::back_inserter(transformed), std::move(predicate));
+        std::transform(stream_.begin(), stream_.end(), std::back_inserter(transformed), std::move(predicate));
         return transformed;
     }
 
-    std::vector<T> stream;
+private:
+    std::vector<T> stream_;
 };
 
 } // End of namespace
@@ -76,6 +80,63 @@ void bus_flasher::flash_hex_file(fs::path const & filepath)
 
     hex_filepath_ = filepath; // TODO: check existence?
     reset_nodes();
+}
+
+template<typename H>
+void bus_flasher::when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes)
+{
+    LOG_DBG("Waiting for nodes to become ready");
+
+    // TODO: eventually with timeout? Mark slave failed if it never became ready
+    auto nodes = opt_nodes
+        ? std::move(opt_nodes.value())
+        : std::vector<node_cref_t>{nodes_.begin(), nodes_.end()};
+
+    bus_comm_.send_for_all<bus_command::bl_get_status>({}, [this, h = std::move(handler), nodes](auto responses) {
+        for (auto [slave, response] : responses) {
+            if (!response)
+                mark_failed(slave, response.error().what);
+            else if (response->bootloader_error)
+                mark_failed(slave, "Bootloader error");
+            else if (!response->bootloader_ready) {
+                LOG_DBG_PERIODIC(100ms, "Node not ready", LOG_ARG("address", as_hex(slave.address)));
+                return when_ready(std::move(h), std::move(nodes));
+            }
+        }
+
+        LOG_DBG("Nodes ready");
+        h();
+    }, view(std::move(nodes)).filter(state_filter<flashing_in_progress>{})
+                             .transform(extract_member<bus_node>{})
+                             .get());
+}
+
+bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
+{
+    auto search = std::find_if(nodes_.begin(), nodes_.end(),
+        [&](node_t const & node) { return std::get<bus_node>(node) == slave; });
+
+    if (search == nodes_.cend())
+        throw std::runtime_error("Unable to find node with address: " + std::to_string(slave.address));
+    return *search;
+}
+
+void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
+{
+    node_t & node = find_or_throw(slave);
+    std::get<flashing_state>(node) = flashing_failed;
+    std::get<std::string>(node) = desc;
+
+    LOG_DBG("Flashing failed for node",
+        LOG_ARG("address", as_hex(slave.address)),
+        LOG_ARG("description", desc));
+}
+
+void bus_flasher::mark_succeeded(bus_node const & slave)
+{
+    std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
+
+    LOG_DBG("Flashing succeeded for node", LOG_ARG("address", as_hex(slave.address)));
 }
 
 void bus_flasher::reset_nodes()
@@ -317,63 +378,6 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
                   .get());
 
     LOG_DBG("Booting boards");
-}
-
-template<typename H>
-void bus_flasher::when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes)
-{
-    LOG_DBG("Waiting for nodes to become ready");
-
-    // TODO: eventually with timeout? Mark slave failed if it never became ready
-    auto nodes = opt_nodes
-        ? std::move(opt_nodes.value())
-        : std::vector<node_cref_t>{nodes_.begin(), nodes_.end()};
-
-    bus_comm_.send_for_all<bus_command::bl_get_status>({}, [this, h = std::move(handler), nodes](auto responses) {
-        for (auto [slave, response] : responses) {
-            if (!response)
-                mark_failed(slave, response.error().what);
-            else if (response->bootloader_error)
-                mark_failed(slave, "Bootloader error");
-            else if (!response->bootloader_ready) {
-                LOG_DBG_PERIODIC(100ms, "Node not ready", LOG_ARG("address", as_hex(slave.address)));
-                return when_ready(std::move(h), std::move(nodes));
-            }
-        }
-
-        LOG_DBG("Nodes ready");
-        h();
-    }, view(std::move(nodes)).filter(state_filter<flashing_in_progress>{})
-                             .transform(extract_member<bus_node>{})
-                             .get());
-}
-
-bus_flasher::node_t & bus_flasher::find_or_throw(bus_node const & slave)
-{
-    auto search = std::find_if(nodes_.begin(), nodes_.end(),
-        [&](node_t const & node) { return std::get<bus_node>(node) == slave; });
-
-    if (search == nodes_.cend())
-        throw std::runtime_error("Unable to find node with address: " + std::to_string(slave.address));
-    return *search;
-}
-
-void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
-{
-    node_t & node = find_or_throw(slave);
-    std::get<flashing_state>(node) = flashing_failed;
-    std::get<std::string>(node) = desc;
-
-    LOG_DBG("Flashing failed for node",
-        LOG_ARG("address", as_hex(slave.address)),
-        LOG_ARG("description", desc));
-}
-
-void bus_flasher::mark_succeeded(bus_node const & slave)
-{
-    std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
-
-    LOG_DBG("Flashing succeeded for node", LOG_ARG("address", as_hex(slave.address)));
 }
 
 } // End of namespace

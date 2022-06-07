@@ -81,7 +81,7 @@ void handle_detect_boards()
                 std::string version =
                     "v" + std::to_string(app_response ? app_response->major : bl_response->major) +
                     "." + std::to_string(app_response ? app_response->minor : bl_response->minor) +
-                    "." + std::to_string(app_response ? app_response->patch : bl_response->minor);
+                    "." + std::to_string(app_response ? app_response->patch : bl_response->patch);
 
                 LOG_PLAIN("Detected slave in "s + (app_response ? "app" : "bootload") + " mode",
                     LOG_ARG("address", as_hex(slave)),

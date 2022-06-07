@@ -10,7 +10,7 @@ namespace
 
 safe_fd open_or_throw(hal::rpi_cube::spi_config const & config)
 {
-    safe_fd fd = ::open(config.device , O_WRONLY); // Todo: not sure if it accepts O_WRONLY, otherwise use O_RDWR
+    safe_fd fd = ::open(config.device , O_WRONLY);
     if (fd < 0)
         throw std::runtime_error("Unable to open device: "s + config.device);
 

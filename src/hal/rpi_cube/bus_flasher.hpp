@@ -43,6 +43,12 @@ private:
     bus_flasher(bus_flasher &) = delete;
     bus_flasher(bus_flasher &&) = delete;
 
+    template<typename H>
+    void when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
+    node_t & find_or_throw(bus_node const & slave);
+    void mark_failed(bus_node const & slave, std::string const & desc = "Unknown error");
+    void mark_succeeded(bus_node const & slave);
+
     void reset_nodes();
     void set_boot_magic();
     void get_memory_layout();
@@ -54,14 +60,6 @@ private:
     void verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc);
     void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
     void boot(std::shared_ptr<group_t const> group);
-
-    template<typename H>
-    void do_next(H handler) const;
-    template<typename H>
-    void when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
-    node_t & find_or_throw(bus_node const & slave);
-    void mark_failed(bus_node const & slave, std::string const & desc = "Unknown error");
-    void mark_succeeded(bus_node const & slave);
 
     bus_comm & bus_comm_;
     std::vector<node_t> nodes_;
