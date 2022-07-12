@@ -75,7 +75,7 @@ private:
     virtual void show(graphics_buffer const & buffer) = 0;
 
     engine_context & context_;
-    graphics_buffer buffer_;
+    graphics_buffer buffer_; // FIXME: allocate on heap instead of stack?
     graphics_fill_mode fill_mode_;
     color draw_color_;
 };

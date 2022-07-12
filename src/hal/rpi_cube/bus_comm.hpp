@@ -3,6 +3,7 @@
 #include <hal/rpi_cube/bus_proto.hpp>
 #include <hal/rpi_cube/iodev.hpp>
 #include <hal/rpi_cube/crc.hpp>
+#include <cube/core/events.hpp>
 #include <cube/core/expected.hpp>
 #include <cube/core/timers.hpp>
 #include <cube/core/enum.hpp>
@@ -171,6 +172,7 @@ private:
     iodev_subscription read_subscription_;
 
     cube::core::single_shot_timer response_watchdog_;
+    cube::core::function_invoker job_writer_;
     std::deque<job> jobs_;
     bus_state state_;
     uint64_t job_id_;

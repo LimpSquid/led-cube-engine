@@ -164,6 +164,10 @@ void bus_comm::switch_state(bus_state state)
     switch (state) {
         default:;
     }
+
+    LOG_DBG("Bus switched state",
+        LOG_ARG("from", to_string(state_)),
+        LOG_ARG("to", to_string(state)));
     state_ = state;
 }
 
@@ -203,6 +207,8 @@ bus_comm::frame_or_error bus_comm::read_frame()
 
 void bus_comm::add_job(job && j, bool high_prio)
 {
+    // TODO: we might want to keep the relative order of high prio messages
+
     if (high_prio && !jobs_.empty()) // A job is being handled
         jobs_.insert(jobs_.end() - 1, std::move(j));
     else

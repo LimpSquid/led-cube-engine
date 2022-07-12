@@ -12,8 +12,6 @@ namespace fs = std::filesystem;
 namespace
 {
 
-
-
 // See: https://github.com/LimpSquid/led-controller/blob/5-make-a-bootloader/led-controller.X/include/bootloader/bootloader.h#L6
 enum class bootloader_query : uint8_t
 {

@@ -78,7 +78,7 @@ struct async_pixel_pump
     async_pixel_pump(display & d, std::unique_ptr<rgb_buffer const> b, completion_handler_t h) :
         disp(d),
         completion_handler(std::move(h)),
-        invoker(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
+        slice_pixel_pump(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
         buffer(std::move(b)),
         current_slice(0)
     { }
@@ -101,12 +101,12 @@ struct async_pixel_pump
         if (++current_slice == cube::cube_size_1d)
             completion_handler();
         else
-            invoker.schedule();
+            slice_pixel_pump.schedule();
     }
 
     display & disp;
     completion_handler_t completion_handler;
-    function_invoker invoker;
+    function_invoker slice_pixel_pump;
     std::unique_ptr<rgb_buffer const> buffer;
     int current_slice;
 };
