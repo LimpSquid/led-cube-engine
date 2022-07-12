@@ -71,10 +71,10 @@ void iodev::clear(direction dir)
         clear_output();
 }
 
-iodev_subscription iodev::subscribe(iodev_read_handler_t handler)
+iodev_subscription iodev::subscribe(subscription type, subscription_handler_t handler)
 {
     int id = next_subscription();
-    read_handlers_[id] = std::move(handler);
+    subscriptions_[id] = {type, std::move(handler)};
     return {*this, id};
 }
 
@@ -86,8 +86,20 @@ iodev::iodev(engine_context & context, char const * const name) :
 
 void iodev::notify_readable() const
 {
-    for (auto const & [_, handler] : read_handlers_)
-        handler();
+    for (auto const & [_, sub] : subscriptions_) {
+        auto const & [type, handler] = sub;
+        if (type == ready_read)
+            handler();
+    }
+}
+
+void iodev::notify_transfer_complete() const
+{
+    for (auto const & [_, sub] : subscriptions_) {
+        auto const & [type, handler] = sub;
+        if (type == transfer_complete)
+            handler();
+    }
 }
 
 int iodev::next_subscription()
@@ -97,7 +109,7 @@ int iodev::next_subscription()
 
 void iodev::unsubscribe(int id)
 {
-    read_handlers_.erase(id);
+    subscriptions_.erase(id);
 }
 
 } // End of namespace

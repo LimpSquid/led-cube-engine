@@ -53,10 +53,11 @@ private:
     std::size_t bytes_read_;
 };
 
-using iodev_read_handler_t = std::function<void()>;
 class iodev
 {
 public:
+    using subscription_handler_t = std::function<void()>;
+
     enum direction
     {
         input,
@@ -64,9 +65,15 @@ public:
         all_directions
     };
 
+    enum subscription
+    {
+        ready_read,
+        transfer_complete
+    };
+
     cube::core::engine_context & context();
     void clear(direction dir);
-    iodev_subscription subscribe(iodev_read_handler_t handler);
+    iodev_subscription subscribe(subscription type, subscription_handler_t handler);
 
     template<typename T>
     bool is_readable() const
@@ -109,10 +116,18 @@ public:
 protected:
     iodev(cube::core::engine_context & context, char const * const name);
 
-    void notify_readable() const; // For now this **MUST** always be called, eventually we could fallback on polling
+    // For now this **MUST** always be called, eventually we could fallback on polling
+    void notify_readable() const;
+    void notify_transfer_complete() const;
 
 private:
     friend class iodev_subscription;
+
+    struct subscription_info
+    {
+        subscription type;
+        subscription_handler_t handler;
+    };
 
     virtual std::size_t bytes_avail_for_reading() const = 0;
     virtual std::size_t bytes_avail_for_writing() const = 0;
@@ -125,7 +140,7 @@ private:
     void unsubscribe(int id);
 
     cube::core::engine_context & context_;
-    std::unordered_map<int, iodev_read_handler_t> read_handlers_;
+    std::unordered_map<int, subscription_info> subscriptions_;
     iodev_metrics_logger metrics_logger_;
     int subscription_id_;
 };

@@ -160,6 +160,7 @@ private:
     };
 
     void do_read();
+    void do_transfer_complete();
     void do_write();
     void do_write_one();
     void do_timeout();
@@ -170,7 +171,7 @@ private:
     void add_job(job && j, bool high_prio = false);
 
     iodev & device_;
-    iodev_subscription read_subscription_;
+    iodev_subscription subscriptions_[2];
 
     cube::core::single_shot_timer response_watchdog_;
     std::deque<job> jobs_;

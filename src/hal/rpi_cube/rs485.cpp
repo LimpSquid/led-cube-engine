@@ -4,6 +4,7 @@
 #include <sys/file.h>
 #include <thread>
 #include <sched.h>
+#include <iostream>
 
 using namespace cube::core;
 using namespace std::chrono;
@@ -237,7 +238,8 @@ void rs485::write_from_buffer()
     // solution doesn't suffice, and that is to patch the serial driver and do the RS485
     // direction toggling over there.
 
-    bool const can_transfer = synchronize(lock_, [this, empty = tx_buffer_.empty()]() { // User must write data to the buffer first
+    bool const empty = tx_buffer_.empty();
+    bool const can_transfer = synchronize(lock_, [this, empty]() { // User must write data to the buffer first
         if (empty || draining_) {
             event_notifier_.clr_events(fd_event_notifier::write);
             return false;
@@ -245,8 +247,11 @@ void rs485::write_from_buffer()
         return true;
     });
 
-    if (!can_transfer)
+    if (!can_transfer) {
+        if (empty)
+            notify_transfer_complete();
         return;
+    }
 
     // At this point no locks are necessary as we are sure that the drain thread is not running
 

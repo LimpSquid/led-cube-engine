@@ -25,7 +25,11 @@ namespace hal::rpi_cube
 
 bus_comm::bus_comm(iodev & device) :
     device_(device),
-    read_subscription_(device_.subscribe(std::bind(&bus_comm::do_read, this))),
+    subscriptions_
+    ({
+        device_.subscribe(iodev::ready_read, std::bind(&bus_comm::do_read, this)),
+        device_.subscribe(iodev::transfer_complete, std::bind(&bus_comm::do_transfer_complete, this))
+    }),
     response_watchdog_(device.context(), std::bind(&bus_comm::do_timeout, this)),
     state_(bus_state::idle),
     job_id_(0)
@@ -83,6 +87,24 @@ void bus_comm::do_read()
     }, job.params);
 }
 
+void bus_comm::do_transfer_complete()
+{
+    // Unexpected transfer completion from device, bus error
+    if (state_ != bus_state::transfer)
+        return switch_state(bus_state::error);
+
+    auto & job = jobs_.back();
+    std::visit([&](auto & params) {
+        using params_t = std::remove_reference_t<decltype(params)>;
+
+        if constexpr (std::is_same_v<params_t, broadcast_params>) {
+            if (params.handler)
+                params.handler();
+            do_finish();
+        }
+    }, job.params);
+}
+
 void bus_comm::do_write()
 {
     throw_if_ne(bus_state::idle, state_); // Should never happen
@@ -108,10 +130,6 @@ void bus_comm::do_write_one()
             if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
                 response_watchdog_.start(response_timeout);
-            } else if constexpr (std::is_same_v<params_t, broadcast_params>) {
-                if (params.handler)
-                    params.handler();
-                do_finish();
             } else
                 throw std::runtime_error("Unexpected write for current job");
         }, job.params);
