@@ -235,7 +235,8 @@ void bus_flasher::flash_next_group()
                                  .filter(memory_layout_filter{layout})
                                  .transform(extract_member<bus_node>{})
                                  .get();
-        std::for_each(nodes.begin(), nodes.end(), std::bind(&bus_flasher::mark_failed, this, std::placeholders::_1, blob.error().what));
+        for (auto && node : nodes)
+            mark_failed(node, blob.error().what);
         return flash_next_group();
     }
 

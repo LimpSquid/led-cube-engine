@@ -215,7 +215,8 @@ program const program_hexflash
     },
     []()
     {
-        std::for_each(sigint_handlers.begin(), sigint_handlers.end(), [](auto h) { h(); });
+        for (auto && handler : sigint_handlers)
+            handler();
     }
 };
 

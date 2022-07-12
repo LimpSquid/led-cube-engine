@@ -160,15 +160,16 @@ void bus_comm::switch_state(bus_state state)
     if (state_ == state)
         throw std::runtime_error("Already switched to state: "s + to_string(state));
 
-    // Todo: error handling
-    switch (state) {
-        default:;
-    }
-
     LOG_DBG("Bus switched state",
         LOG_ARG("from", to_string(state_)),
         LOG_ARG("to", to_string(state)));
     state_ = state;
+
+    // TODO: proper error handling
+    switch (state) {
+        case bus_state::error:  throw std::runtime_error("Bus error");
+        default:;
+    }
 }
 
 bus_comm::frame_or_error bus_comm::read_frame()

@@ -156,7 +156,8 @@ program const program_render
     },
     []()
     {
-        std::for_each(sigint_handlers.begin(), sigint_handlers.end(), [](auto h) { h(); });
+        for (auto && handler : sigint_handlers)
+            handler();
     }
 };
 

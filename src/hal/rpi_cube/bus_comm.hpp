@@ -73,9 +73,10 @@ public:
     template<bus_command C, typename H, typename T>
     void send_for_each(bus_request_params<C> params, H handler, T const & targets)
     {
-        std::for_each(targets.begin(), targets.end(), [&](auto const & t) {
-            send<C>(params, t, [t, handler](auto && response) { handler(t, std::forward<decltype(response)>(response)); });
-        });
+        for (auto && target : targets)
+            send<C>(params, target, [target, handler](auto && response) {
+                handler(target, std::forward<decltype(response)>(response));
+            });
     }
 
     template<bus_command C, typename H, typename T>
@@ -172,7 +173,6 @@ private:
     iodev_subscription read_subscription_;
 
     cube::core::single_shot_timer response_watchdog_;
-    cube::core::function_invoker job_writer_;
     std::deque<job> jobs_;
     bus_state state_;
     uint64_t job_id_;
