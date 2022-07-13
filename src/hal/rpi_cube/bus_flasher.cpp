@@ -341,8 +341,13 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
 {
     assert(group);
     auto const & [_, nodes] = *group;
+    uint32_t const start_address = std::get<memory_layout>(nodes.front().get()).start_address;
+    uint32_t const row_size = *std::get<memory_layout>(nodes.front().get()).row_size;
 
-    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>({}, [this, group, row, nodes](auto responses) {
+    bus_request_params<bus_command::bl_exe_row_burn> params;
+    params.phy_address = start_address + row * row_size;
+
+    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>(std::move(params), [this, group, row, nodes](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);

@@ -238,22 +238,22 @@ void rs485::write_from_buffer()
     // solution doesn't suffice, and that is to patch the serial driver and do the RS485
     // direction toggling over there.
 
-    bool const empty = tx_buffer_.empty();
-    bool const can_transfer = synchronize(lock_, [this, empty]() { // User must write data to the buffer first
-        if (empty || draining_) {
+    // Check if we're busy doing a transfer, this must be synchronized since the
+    // drain thread might be running.
+    bool const busy = synchronize(lock_, [this]() {
+        if (draining_)
             event_notifier_.clr_events(fd_event_notifier::write);
-            return false;
-        }
-        return true;
+        return draining_;
     });
-
-    if (!can_transfer) {
-        if (empty)
-            notify_transfer_complete();
+    if (busy)
         return;
-    }
 
-    // At this point no locks are necessary as we are sure that the drain thread is not running
+    // At this point no synchronization is necessary as we are sure that
+    // the drain thread is not running
+    if (tx_buffer_.empty()) {
+        event_notifier_.clr_events(fd_event_notifier::write);
+        return notify_transfer_complete();
+    }
 
     termios tty;
     if (::tcgetattr(fd_, &tty) < 0)

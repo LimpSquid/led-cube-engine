@@ -116,6 +116,12 @@ struct bus_request_params<bus_command::bl_exe_boot> : low_prio_request
 };
 
 template<>
+struct bus_request_params<bus_command::bl_exe_row_burn> : low_prio_request
+{
+    uint32_t phy_address;
+};
+
+template<>
 struct bus_response_params<bus_command::app_get_version>
 {
     uint8_t major;
