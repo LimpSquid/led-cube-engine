@@ -56,6 +56,7 @@ public:
         frame.crc = crc16_generator{}(&frame, sizeof(frame) - sizeof(frame.crc));
 
         unicast_params uparams{};
+        uparams.response_timeout = std::chrono::milliseconds{bus_request_params<C>::response_timeout::value};
         if (response_handler) {
             uparams.handler = [h = std::move(response_handler)](frame_or_error frame) {
                 if (!frame)
@@ -141,6 +142,7 @@ private:
     struct unicast_params
     {
         std::function<void(frame_or_error)> handler;
+        std::chrono::milliseconds response_timeout;
         unsigned int attempt;
     };
 

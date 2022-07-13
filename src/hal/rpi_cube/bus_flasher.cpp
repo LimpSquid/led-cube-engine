@@ -83,7 +83,7 @@ void bus_flasher::flash_hex_file(fs::path const & filepath)
 template<typename H>
 void bus_flasher::when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes)
 {
-    LOG_DBG("Waiting for nodes to become ready");
+    LOG_DBG_PERIODIC(100ms, "Waiting for nodes to become ready");
 
     // TODO: eventually with timeout? Mark slave failed if it never became ready
     auto nodes = opt_nodes
@@ -318,6 +318,8 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
 
 void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc)
 {
+    LOG_DBG("Verifying row CRC", LOG_ARG("row", row));
+
     assert(group);
     auto const & [_, nodes] = *group;
 
@@ -333,12 +335,12 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
     }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
-
-    LOG_DBG("Verifying row CRC", LOG_ARG("row", row));
 }
 
 void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
 {
+    LOG_DBG("Burning row to flash", LOG_ARG("row", row));
+
     assert(group);
     auto const & [_, nodes] = *group;
     uint32_t const start_address = std::get<memory_layout>(nodes.front().get()).start_address;
@@ -357,8 +359,6 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
     }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
-
-    LOG_DBG("Burning row to flash", LOG_ARG("row", row));
 }
 
 void bus_flasher::boot(std::shared_ptr<group_t const> group)

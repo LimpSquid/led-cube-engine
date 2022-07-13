@@ -9,7 +9,6 @@ using std::operator""s;
 namespace
 {
 
-constexpr milliseconds response_timeout{10};
 constexpr unsigned int max_attempts{3};
 
 void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
@@ -129,7 +128,7 @@ void bus_comm::do_write_one()
 
             if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
-                response_watchdog_.start(response_timeout);
+                response_watchdog_.start(params.response_timeout);
             } else if constexpr (std::is_same_v<params_t, broadcast_params>) {
                 // TODO: here we could peek for the next job and see if this is also a broadcast.
                 // If it is we can already send that to the device. This should speed up sending

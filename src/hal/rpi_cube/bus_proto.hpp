@@ -69,54 +69,64 @@ struct bus_node
     unsigned char           :3;
 };
 
-template<bool HighPrio>
-struct basic_request_opt
+struct low_prio_request
 {
-    using high_prio = std::integral_constant<bool, HighPrio>;
+    using high_prio = std::integral_constant<bool, false>;
+    using response_timeout = std::integral_constant<std::size_t, 10>; // In milliseconds
 };
 
-using low_prio_request = basic_request_opt<false>;
-using high_prio_request = basic_request_opt<true>; // Only on the first attempt
+struct high_prio_request
+{
+    using high_prio = std::integral_constant<bool, true>;
+    using response_timeout = std::integral_constant<std::size_t, 10>; // In milliseconds
+};
+
+struct bootloader_request
+{
+    using high_prio = std::integral_constant<bool, false>;
+    using response_timeout = std::integral_constant<std::size_t, 50>; // In milliseconds
+};
 
 template<bus_command>
 struct bus_request_params : low_prio_request { };
 template<bus_command>
 struct bus_response_params { };
 
-template<>
-struct bus_request_params<bus_command::app_exe_dma_swap_buffers> : high_prio_request { };
+template<> struct bus_request_params<bus_command::app_exe_dma_swap_buffers> : high_prio_request { };
 template<>
 struct bus_request_params<bus_command::app_exe_cpu_reset> : low_prio_request
 {
     int32_t delay_ms;
 };
 
+
+template<> struct bus_request_params<bus_command::bl_get_status> : bootloader_request { };
+template<> struct bus_request_params<bus_command::bl_get_version> : bootloader_request { };
+template<> struct bus_request_params<bus_command::bl_get_row_crc> : bootloader_request { };
+template<> struct bus_request_params<bus_command::bl_exe_erase> : bootloader_request { };
+template<> struct bus_request_params<bus_command::bl_exe_row_reset> : bootloader_request { };
 template<>
-struct bus_request_params<bus_command::bl_set_boot_magic> : low_prio_request
+struct bus_request_params<bus_command::bl_set_boot_magic> : bootloader_request
 {
     uint32_t magic;
 };
-
 template<>
-struct bus_request_params<bus_command::bl_get_info> : low_prio_request
+struct bus_request_params<bus_command::bl_get_info> : bootloader_request
 {
     uint8_t query;
 };
-
 template<>
-struct bus_request_params<bus_command::bl_exe_push_word> : low_prio_request
+struct bus_request_params<bus_command::bl_exe_push_word> : bootloader_request
 {
     uint8_t data[4];
 };
-
 template<>
-struct bus_request_params<bus_command::bl_exe_boot> : low_prio_request
+struct bus_request_params<bus_command::bl_exe_boot> : bootloader_request
 {
     uint16_t crc;
 };
-
 template<>
-struct bus_request_params<bus_command::bl_exe_row_burn> : low_prio_request
+struct bus_request_params<bus_command::bl_exe_row_burn> : bootloader_request
 {
     uint32_t phy_address;
 };
@@ -128,7 +138,6 @@ struct bus_response_params<bus_command::app_get_version>
     uint8_t minor;
     uint8_t patch;
 };
-
 template<>
 struct bus_response_params<bus_command::app_get_status>
 {
@@ -142,13 +151,10 @@ struct bus_response_params<bus_command::bl_get_status>
     bool bootloader_ready   :1;
     bool bootloader_error   :1;
 };
-
-template<>
-struct bus_response_params<bus_command::bl_get_info>
+template<> struct bus_response_params<bus_command::bl_get_info>
 {
     uint32_t query_result;
 };
-
 template<>
 struct bus_response_params<bus_command::bl_get_version>
 {
@@ -156,7 +162,6 @@ struct bus_response_params<bus_command::bl_get_version>
     uint8_t minor;
     uint8_t patch;
 };
-
 template<>
 struct bus_response_params<bus_command::bl_get_row_crc>
 {
