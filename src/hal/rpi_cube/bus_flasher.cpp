@@ -325,9 +325,9 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
 
     bus_comm_.send_for_all<bus_command::bl_get_row_crc>({}, [this, group, row, crc](auto responses) {
         for (auto [slave, response] : responses) {
-            if (!response) // TODO: eventually we could retry this specific row for the slaves that have an incorrect CRC?
+            if (!response)
                 mark_failed(slave, response.error().what);
-            else if (response->crc != crc)
+            else if (response->crc != crc) // TODO: eventually we could retry this specific row for the slaves that have an incorrect CRC?
                 mark_failed(slave, "Row CRC did not match");
         }
 
@@ -363,12 +363,12 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
 
 void bus_flasher::boot(std::shared_ptr<group_t const> group)
 {
+    LOG_DBG("Booting boards");
+
     assert(group);
     auto const & [blob, nodes] = *group;
-    bus_request_params<bus_command::bl_exe_boot> params{};
-    params.crc = crc16_generator{}(blob.begin(), blob.size());
 
-    bus_comm_.send_for_all(std::move(params), [this](auto responses) {
+    bus_comm_.send_for_all<bus_command::bl_exe_boot>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (response)
                 mark_succeeded(slave); // TODO: maybe we should check if it actually succeeded
@@ -380,8 +380,6 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
     }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
-
-    LOG_DBG("Booting boards");
 }
 
 } // End of namespace

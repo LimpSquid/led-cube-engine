@@ -105,6 +105,7 @@ template<> struct bus_request_params<bus_command::bl_get_version> : bootloader_r
 template<> struct bus_request_params<bus_command::bl_get_row_crc> : bootloader_request { };
 template<> struct bus_request_params<bus_command::bl_exe_erase> : bootloader_request { };
 template<> struct bus_request_params<bus_command::bl_exe_row_reset> : bootloader_request { };
+template<> struct bus_request_params<bus_command::bl_exe_boot> : bootloader_request { };
 template<>
 struct bus_request_params<bus_command::bl_set_boot_magic> : bootloader_request
 {
@@ -119,11 +120,6 @@ template<>
 struct bus_request_params<bus_command::bl_exe_push_word> : bootloader_request
 {
     uint8_t data[4];
-};
-template<>
-struct bus_request_params<bus_command::bl_exe_boot> : bootloader_request
-{
-    uint16_t crc;
 };
 template<>
 struct bus_request_params<bus_command::bl_exe_row_burn> : bootloader_request
