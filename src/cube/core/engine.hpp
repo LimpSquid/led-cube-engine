@@ -20,7 +20,6 @@ public:
     ~animation_session();
 
     void set(std::shared_ptr<cube::core::animation> animation);
-    bool matches(std::shared_ptr<cube::core::animation> animation);
     cube::core::animation & operator*();
     operator bool() const;
 

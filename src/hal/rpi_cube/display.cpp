@@ -78,7 +78,7 @@ struct async_pixel_pump
     async_pixel_pump(display & d, std::unique_ptr<rgb_buffer const> b, completion_handler_t h) :
         disp(d),
         completion_handler(std::move(h)),
-        slice_pixel_pump(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
+        run_one(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
         buffer(std::move(b)),
         current_slice(0)
     { }
@@ -86,7 +86,7 @@ struct async_pixel_pump
     void run()
     {
         // Writing pixels is a blocking operation, write one slice
-        // at the time and allow the event to run in between.
+        // at the time and allow the event loop to run in between.
 
         assert(current_slice < cube::cube_size_1d);
         auto const slave_select = disp.resources_.pixel_comm_ss.begin() + current_slice;
@@ -101,12 +101,12 @@ struct async_pixel_pump
         if (++current_slice == cube::cube_size_1d)
             completion_handler();
         else
-            slice_pixel_pump.schedule();
+            run_one.schedule();
     }
 
     display & disp;
     completion_handler_t completion_handler;
-    function_invoker slice_pixel_pump;
+    function_invoker run_one;
     std::unique_ptr<rgb_buffer const> buffer;
     int current_slice;
 };

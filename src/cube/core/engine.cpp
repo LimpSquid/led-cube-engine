@@ -95,9 +95,10 @@ void basic_engine::run()
 
 void basic_engine::run_while(predicate_t predicate)
 {
+    std::once_flag stop_flag;
     do_run([&]() {
         if (!predicate())
-            stop();
+            std::call_once(stop_flag, std::bind(&basic_engine::stop, this));
     });
 }
 
