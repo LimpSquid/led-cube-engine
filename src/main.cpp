@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <signal.h>
+#include <execinfo.h>
 
 using namespace cube::programs;
 using std::operator""s;
@@ -23,6 +24,20 @@ void exit_with_help()
     std::exit(EXIT_FAILURE);
 }
 
+void handle_segfault()
+{
+    void * entries[64];
+    int const size = backtrace(entries, 64);
+
+    std::cerr << "\n================ BACKTRACE ================\n\n";
+    backtrace_symbols_fd(entries, size, STDERR_FILENO);
+    std::cerr << "\n";
+
+    // Assign default handler and forward segfault signal
+    signal(SIGSEGV, SIG_DFL);
+    kill(getpid(), SIGSEGV);
+}
+
 void signal_handler(int signal)
 {
     auto exec = [](auto handler) {
@@ -32,6 +47,9 @@ void signal_handler(int signal)
 
     if (signal == SIGINT)
         return exec(prog->sigint);
+    if (signal == SIGSEGV)
+        return handle_segfault();
+
     throw std::runtime_error("Unhandled signal: "s + std::to_string(signal));
 }
 
@@ -50,6 +68,7 @@ int main(int ac, char const * const av[])
     prog = *search;
 
     signal(SIGINT, signal_handler);
+    signal(SIGSEGV, signal_handler);
 
     try {
         return prog->entry(ac - 1, &av[1]);

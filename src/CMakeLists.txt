@@ -38,3 +38,10 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE stdc++fs) # Apparently need for some systems
 target_compile_options(${PROJECT_NAME}
     PRIVATE -Wall -Wextra -Wconversion -Wpedantic -Wstrict-aliasing -O3)
+
+if (LCE_BACKTRACE_SYMBOLS)
+    target_compile_options(${PROJECT_NAME}
+        PRIVATE -g)
+    target_link_options(${PROJECT_NAME}
+        PRIVATE -rdynamic)
+endif ()

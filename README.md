@@ -56,6 +56,7 @@ option|type|description|default
 -|-|-|-
 `LCE_TARGET`|string|Select the LED cube engine's target graphics device. See the [*target dependencies*](#target-dependencies) section for more information.|`mock`
 `LCE_EVAL_EXPRESSIONS`|bool|Enable string expressions for JSON number fields. See the [*evaluate animation property expressions*](#evaluate-animation-property-expressions) section for more information. **Note: enabling this option will significantly increase the compile time when you build the application for the first time.**|`off`
+`LCE_BACKTRACE_SYMBOLS`|bool|Enable human readable backtrace symbols.|`on`
 
 ## Programs
 The application is divided into multiple programs for easy access to core functionalities of the LED cube engine. The following sub-sections will describe each program in detail to get a overview of all the capabilities of a program. To list all the available programs, execute the following command:
