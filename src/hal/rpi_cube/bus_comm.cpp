@@ -186,14 +186,15 @@ void bus_comm::switch_state(bus_state state)
     if (state_ == state)
         throw std::runtime_error("Already switched to state: "s + to_string(state));
 
-    LOG_DBG("Bus switched state",
-        LOG_ARG("from", to_string(state_)),
-        LOG_ARG("to", to_string(state)));
     state_ = state;
 
     // TODO: proper error handling
     switch (state) {
-        case bus_state::error:  throw std::runtime_error("Bus error");
+        case bus_state::error:
+            LOG_ERR("Bus switched state",
+                LOG_ARG("from", to_string(state_)),
+                LOG_ARG("to", to_string(state)));
+            throw std::runtime_error("Bus error");
         default:;
     }
 }
