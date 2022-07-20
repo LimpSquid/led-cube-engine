@@ -144,8 +144,9 @@ struct bus_response_params<bus_command::app_get_status>
 template<>
 struct bus_response_params<bus_command::bl_get_status>
 {
-    bool bootloader_ready   :1;
-    bool bootloader_error   :1;
+    bool bootloader_ready               :1;
+    bool bootloader_error               :1;
+    bool bootloader_waiting_for_magic   :1;
 };
 template<> struct bus_response_params<bus_command::bl_get_info>
 {
