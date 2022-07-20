@@ -101,15 +101,12 @@ void handle_detect_boards()
 
 void handle_reset_boards()
 {
-    constexpr milliseconds reset_delay{250}; // TODO: when led controller firmware is fixed to only reset after the bus is idle, set this to zero
-
     using namespace hal::rpi_cube;
 
     auto [engine, resources, bus_comm] = instance();
-    bus_request_params<bus_command::app_exe_cpu_reset> params;
-    params.delay_ms = reset_delay.count();
 
-    bus_comm.send_for_all(std::move(params), [&](auto responses) {
+    // Reset Immediately
+    bus_comm.send_for_all<bus_command::app_exe_cpu_reset>({}, [&](auto responses) {
         for (auto const & [slave, response] : responses) {
             if (response)
                 LOG_PLAIN("Slave reset", LOG_ARG("address", as_hex(slave)));
