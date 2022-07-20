@@ -2,20 +2,20 @@
 # Executable config #
 #####################
 
-set(HAL_TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/hal/${LCE_TARGET}")
-if (NOT EXISTS "${HAL_TARGET_DIR}")
-    message(FATAL_ERROR "Unable to find target: ${LCE_TARGET}")
+set(DRIVER_TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/driver/${LCE_TARGET}")
+if (NOT EXISTS "${DRIVER_TARGET_DIR}")
+    message(FATAL_ERROR "Unable to find target driver: ${LCE_TARGET}")
 endif ()
-message(NOTICE "Found target: ${LCE_TARGET}")
+message(NOTICE "Found target driver: ${LCE_TARGET}")
 
 file(GLOB_RECURSE CUBE_SOURCES "cube/*.cpp")
-file(GLOB_RECURSE HAL_SOURCES "${HAL_TARGET_DIR}/*.cpp")
+file(GLOB_RECURSE DRIVER_SOURCES "${DRIVER_TARGET_DIR}/*.cpp")
 add_executable(${PROJECT_NAME}
     "main.cpp"
     ${CUBE_SOURCES}
-    ${HAL_SOURCES})
+    ${DRIVER_SOURCES})
 
-add_subdirectory(${HAL_TARGET_DIR}) # Allow for target to configure and link in additional libraries
+add_subdirectory(${DRIVER_TARGET_DIR}) # Allow for target to configure and link in additional libraries
 string(TOUPPER "TARGET_${LCE_TARGET}" TARGET_DEFINITION)
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE ${TARGET_DEFINITION})

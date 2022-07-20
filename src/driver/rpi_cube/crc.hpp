@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 template<typename T, T Polynomial, T Seed>

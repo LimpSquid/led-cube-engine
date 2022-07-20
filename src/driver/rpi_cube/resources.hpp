@@ -1,12 +1,12 @@
 #pragma once
 
-#include <hal/specs.hpp>
-#include <hal/rpi_cube/gpio.hpp>
-#include <hal/rpi_cube/rs485.hpp>
-#include <hal/rpi_cube/spi.hpp>
+#include <driver/specs.hpp>
+#include <driver/rpi_cube/gpio.hpp>
+#include <driver/rpi_cube/rs485.hpp>
+#include <driver/rpi_cube/spi.hpp>
 #include <array>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 constexpr rs485_config bus_comm_config

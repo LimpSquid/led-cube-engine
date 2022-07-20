@@ -1,10 +1,10 @@
-#include <hal/rpi_cube/iodev.hpp>
+#include <driver/rpi_cube/iodev.hpp>
 #include <cube/core/logging.hpp>
 
 using namespace cube::core;
 using namespace std::chrono;
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 iodev_subscription::iodev_subscription(iodev_subscription && other) :

@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/spi.hpp>
+#include <driver/rpi_cube/spi.hpp>
 #include <sys/file.h>
 #include <sys/ioctl.h>
 
@@ -8,7 +8,7 @@ using std::operator""s;
 namespace
 {
 
-safe_fd open_or_throw(hal::rpi_cube::spi_config const & config)
+safe_fd open_or_throw(driver::rpi_cube::spi_config const & config)
 {
     safe_fd fd = ::open(config.device , O_WRONLY);
     if (fd < 0)
@@ -32,7 +32,7 @@ safe_fd open_or_throw(hal::rpi_cube::spi_config const & config)
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 spi::spi(spi_config config, engine_context & context) :

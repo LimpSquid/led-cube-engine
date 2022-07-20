@@ -1,14 +1,14 @@
 #pragma once
 
-#include <hal/rpi_cube/iodev.hpp>
-#include <hal/rpi_cube/gpio.hpp>
+#include <driver/rpi_cube/iodev.hpp>
+#include <driver/rpi_cube/gpio.hpp>
 #include <cube/core/events.hpp>
 #include <boost/circular_buffer.hpp>
 #include <termios.h>
 #include <mutex>
 #include <thread>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 struct rs485_config

@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/hexfile.hpp>
+#include <driver/rpi_cube/hexfile.hpp>
 #include <cube/core/utils.hpp>
 #include <fstream>
 #include <charconv>
@@ -108,7 +108,7 @@ unsigned char * safe_zero_alloc(std::size_t size)
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 std::string to_string(memory_layout const & layout)

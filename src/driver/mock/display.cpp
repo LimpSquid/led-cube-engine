@@ -1,5 +1,5 @@
-#include <hal/mock/display.hpp>
-#include <hal/mock/window.hpp>
+#include <driver/mock/display.hpp>
+#include <driver/mock/window.hpp>
 #include <GL/glew.h>
 #include <boost/asio/post.hpp>
 #include <cstring>
@@ -13,11 +13,11 @@ namespace
 
 constexpr double point_size{std::max(1.75, 80.0 / cube_size_1d)};
 constexpr double cube_off_brightness{0.75 / cube_size_1d};
-constexpr hal::mock::window_properties window_resolution{960, 720};
+constexpr driver::mock::window_properties window_resolution{960, 720};
 
 } // End of namespace
 
-namespace hal::mock
+namespace driver::mock
 {
 
 display::display(engine_context & context) :

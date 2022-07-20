@@ -1,7 +1,7 @@
-#include <hal/rpi_cube/bus_flasher.hpp>
-#include <hal/rpi_cube/bus_comm.hpp>
-#include <hal/rpi_cube/hexfile.hpp>
-#include <hal/rpi_cube/crc.hpp>
+#include <driver/rpi_cube/bus_flasher.hpp>
+#include <driver/rpi_cube/bus_comm.hpp>
+#include <driver/rpi_cube/hexfile.hpp>
+#include <driver/rpi_cube/crc.hpp>
 #include <cube/core/logging.hpp>
 #include <numeric>
 #include <cassert>
@@ -65,7 +65,7 @@ private:
 // - We need to check in each handler if we still have nodes left that are in the flashing_in_progress state.
 //   If there are no nodes left we should LOG and eventually run the completion handler.
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 bus_flasher::bus_flasher(bus_comm & comm) :

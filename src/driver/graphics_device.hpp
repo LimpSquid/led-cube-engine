@@ -10,7 +10,7 @@
     #error "Oopsie, unknown target."
 #endif
 
-namespace hal
+namespace driver
 {
 
 using graphics_device_t = TARGET_GRAPHICS_DEVICE;

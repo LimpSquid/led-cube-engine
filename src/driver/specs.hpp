@@ -10,7 +10,7 @@
     #error "Oopsie, unknown target."
 #endif
 
-namespace hal
+namespace driver
 {
 
 constexpr int cube_size{TARGET_CUBE_SIZE};

@@ -1,7 +1,7 @@
-#include <hal/rpi_cube/resources.hpp>
-#include <hal/rpi_cube/bus_comm.hpp>
-#include <hal/rpi_cube/bus_proto.hpp>
-#include <hal/rpi_cube/bus_flasher.hpp>
+#include <driver/rpi_cube/resources.hpp>
+#include <driver/rpi_cube/bus_comm.hpp>
+#include <driver/rpi_cube/bus_proto.hpp>
+#include <driver/rpi_cube/bus_flasher.hpp>
 #include <cube/core/engine.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/logging.hpp>
@@ -23,19 +23,19 @@ std::vector<program_sigint_t> sigint_handlers;
 
 struct bus_transferring
 {
-    hal::rpi_cube::bus_comm & bus;
+    driver::rpi_cube::bus_comm & bus;
 
     bool operator()()
     {
-        return bus.state() == hal::rpi_cube::bus_state::transfer;
+        return bus.state() == driver::rpi_cube::bus_state::transfer;
     }
 };
 
 struct binding
 {
     poll_engine & engine;
-    hal::rpi_cube::resources & resources;
-    hal::rpi_cube::bus_comm & bus_comm;
+    driver::rpi_cube::resources & resources;
+    driver::rpi_cube::bus_comm & bus_comm;
 };
 
 binding instance()
@@ -49,8 +49,8 @@ binding instance()
 
         engine_context context;
         poll_engine engine{context};
-        hal::rpi_cube::resources resources{context};
-        hal::rpi_cube::bus_comm bus_comm{resources.bus_comm_device};
+        driver::rpi_cube::resources resources{context};
+        driver::rpi_cube::bus_comm bus_comm{resources.bus_comm_device};
     };
 
     static singleton s;
@@ -65,7 +65,7 @@ auto bool_switch_notifier(H handler)
 
 void handle_detect_boards()
 {
-    using namespace hal::rpi_cube;
+    using namespace driver::rpi_cube;
 
     auto [engine, resources, bus_comm] = instance();
 
@@ -101,7 +101,7 @@ void handle_detect_boards()
 
 void handle_reset_boards()
 {
-    using namespace hal::rpi_cube;
+    using namespace driver::rpi_cube;
 
     auto [engine, resources, bus_comm] = instance();
 
@@ -123,7 +123,7 @@ void handle_reset_boards()
 
 void handle_dump_blob(std::vector<std::string> const & args)
 {
-    using namespace hal::rpi_cube;
+    using namespace driver::rpi_cube;
 
     if (args.size() == 3) {
         memory_layout layout;
@@ -153,7 +153,7 @@ void handle_dump_blob(std::vector<std::string> const & args)
 
 void handle_flash_boards(std::vector<std::string> const & args)
 {
-    using namespace hal::rpi_cube;
+    using namespace driver::rpi_cube;
 
     if (args.size() == 1) {
         auto [engine, _, bus_comm] = instance();
@@ -175,7 +175,7 @@ void handle_flash_boards(std::vector<std::string> const & args)
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 program const program_hexflash

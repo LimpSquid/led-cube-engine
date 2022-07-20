@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 class gpio

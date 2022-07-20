@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 // See: https://github.com/LimpSquid/led-controller/blob/master/led-controller.X/source/[app|bootloader]/bus_func_impl.c
@@ -167,9 +167,9 @@ struct bus_response_params<bus_command::bl_get_row_crc>
 } // End of namespace
 
 template<>
-struct std::hash<hal::rpi_cube::bus_node>
+struct std::hash<driver::rpi_cube::bus_node>
 {
-    std::size_t operator()(hal::rpi_cube::bus_node const & node) const noexcept
+    std::size_t operator()(driver::rpi_cube::bus_node const & node) const noexcept
     {
         return std::hash<decltype(node.address)>{}(node.address);
     }

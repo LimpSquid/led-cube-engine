@@ -1,11 +1,11 @@
 #pragma once
 
-#include <hal/rpi_cube/iodev.hpp>
+#include <driver/rpi_cube/iodev.hpp>
 #include <cube/core/utils.hpp>
 #include <cstdint>
 #include <linux/spi/spidev.h>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 struct spi_config

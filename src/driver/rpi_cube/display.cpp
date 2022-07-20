@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/display.hpp>
+#include <driver/rpi_cube/display.hpp>
 #include <cube/core/composite_function.hpp>
 #include <cube/core/events.hpp>
 #include <cube/core/logging.hpp>
@@ -8,7 +8,7 @@
 using namespace cube::core;
 using namespace std::chrono;
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 namespace detail
@@ -94,7 +94,7 @@ struct async_pixel_pump
 
         auto const search = disp.detected_slaves_.find(*slave_address);
         if (search != disp.detected_slaves_.end()) {
-            hal::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
+            driver::rpi_cube::gpio_lo_guard gpio_guard{*slave_select};
             disp.resources_.pixel_comm_device.write_from(buffer->slices[current_slice]);
         }
 

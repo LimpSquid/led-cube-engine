@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/gpio.hpp>
+#include <driver/rpi_cube/gpio.hpp>
 #include <filesystem>
 #include <cstdio>
 #include <chrono>
@@ -60,7 +60,7 @@ bool export_gpio(unsigned int pin)
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 gpio::gpio(unsigned int pin, direction dir) :

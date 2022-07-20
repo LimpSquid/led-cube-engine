@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 struct byte_array_deleter

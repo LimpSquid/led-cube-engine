@@ -5,7 +5,7 @@
 
 struct GLFWwindow;
 
-namespace hal::mock
+namespace driver::mock
 {
 
 struct window_properties

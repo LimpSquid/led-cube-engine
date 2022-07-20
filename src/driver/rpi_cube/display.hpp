@@ -1,12 +1,12 @@
 #pragma once
 
-#include <hal/rpi_cube/resources.hpp>
-#include <hal/rpi_cube/bus_comm.hpp>
+#include <driver/rpi_cube/resources.hpp>
+#include <driver/rpi_cube/bus_comm.hpp>
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/timers.hpp>
 #include <unordered_set>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 class display;

@@ -5,7 +5,7 @@
 #include <functional>
 #include <unordered_map>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 class iodev;

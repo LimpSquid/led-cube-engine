@@ -1,4 +1,4 @@
-#include <hal/mock/window.hpp>
+#include <driver/mock/window.hpp>
 #include <cube/core/logging.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -28,7 +28,7 @@ void glfw_error_callback(int, const char * const desc)
 
 } // End of namespace
 
-namespace hal::mock
+namespace driver::mock
 {
 
 window & window::instance(window_properties creation_properties)

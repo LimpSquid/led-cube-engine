@@ -1,8 +1,8 @@
 #pragma once
 
-#include <hal/rpi_cube/bus_proto.hpp>
-#include <hal/rpi_cube/iodev.hpp>
-#include <hal/rpi_cube/crc.hpp>
+#include <driver/rpi_cube/bus_proto.hpp>
+#include <driver/rpi_cube/iodev.hpp>
+#include <driver/rpi_cube/crc.hpp>
 #include <cube/core/events.hpp>
 #include <cube/core/expected.hpp>
 #include <cube/core/timers.hpp>
@@ -11,7 +11,7 @@
 #include <cstring>
 #include <variant>
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 SIMPLE_NS_ENUM(bus_state,

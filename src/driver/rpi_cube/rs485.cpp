@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/rs485.hpp>
+#include <driver/rpi_cube/rs485.hpp>
 #include <cube/core/engine_context.hpp>
 #include <cube/core/utils.hpp>
 #include <sys/file.h>
@@ -45,7 +45,7 @@ void critical_section(F func)
     func();
 }
 
-safe_fd open_or_throw(hal::rpi_cube::rs485_config const & config)
+safe_fd open_or_throw(driver::rpi_cube::rs485_config const & config)
 {
     safe_fd fd = ::open(config.device , O_RDWR);
     if (fd < 0)
@@ -122,7 +122,7 @@ void safe_start(std::thread & t, H && h)
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 rs485::rs485(rs485_config config, engine_context & context) :

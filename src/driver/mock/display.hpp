@@ -3,7 +3,7 @@
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/events.hpp>
 
-namespace hal::mock
+namespace driver::mock
 {
 
 class window;

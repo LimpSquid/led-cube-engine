@@ -1,4 +1,4 @@
-#include <hal/rpi_cube/bus_comm.hpp>
+#include <driver/rpi_cube/bus_comm.hpp>
 #include <cube/core/logging.hpp>
 #include <cassert>
 
@@ -11,7 +11,7 @@ namespace
 
 constexpr unsigned int max_attempts{3};
 
-void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state actual)
+void throw_if_ne(driver::rpi_cube::bus_state expected, driver::rpi_cube::bus_state actual)
 {
     if (expected != actual)
         std::runtime_error("Expected bus state: "s + to_string(expected) + ", got: " + to_string(actual));
@@ -19,7 +19,7 @@ void throw_if_ne(hal::rpi_cube::bus_state expected, hal::rpi_cube::bus_state act
 
 } // End of namespace
 
-namespace hal::rpi_cube
+namespace driver::rpi_cube
 {
 
 bus_comm::bus_comm(iodev & device) :

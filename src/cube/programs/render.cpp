@@ -5,7 +5,7 @@
 #include <cube/core/logging.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
-#include <hal/graphics_device.hpp>
+#include <driver/graphics_device.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <filesystem>
@@ -35,7 +35,7 @@ render_engine & engine_instance()
         }
 
         engine_context context;
-        render_engine engine{context, graphics_device_factory<hal::graphics_device_t>{}};
+        render_engine engine{context, graphics_device_factory<driver::graphics_device_t>{}};
     };
 
     static singleton s;
