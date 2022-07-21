@@ -22,7 +22,7 @@ public:
     using completion_handler_t = std::function<void()>;
 
     basic_easing_transition(core::engine_context & context, easing_config config,
-        std::optional<completion_handler_t> completion_handler = {}) :
+        completion_handler_t completion_handler = {}) :
         timer_(context, std::bind(&basic_easing_transition::operator(), this)),
         completion_handler_(std::move(completion_handler)),
         config_(std::move(config)),
@@ -62,12 +62,12 @@ private:
             value_ = config_.range.to;
             timer_.stop();
             if (completion_handler_)
-                (*completion_handler_)();
+                completion_handler_();
         }
     }
 
     core::recurring_timer timer_;
-    std::optional<completion_handler_t> completion_handler_;
+    completion_handler_t completion_handler_;
     easing_config const config_;
     double value_;
     unsigned int step_;

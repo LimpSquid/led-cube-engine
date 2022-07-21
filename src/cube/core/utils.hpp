@@ -35,10 +35,10 @@ private:
     int fd;
 };
 
-using parent_tracker_t = std::shared_ptr<void *>;
-inline parent_tracker_t make_parent_tracker() { return std::make_shared<void *>(nullptr); }
-inline parent_tracker_t::weak_type weak(parent_tracker_t tracker) { return {tracker}; }
-inline bool parent_in_scope(parent_tracker_t::weak_type weak) { return weak.lock() != nullptr; }
+using scope_tracker_t = std::shared_ptr<void *>;
+inline scope_tracker_t make_scope_tracker() { return std::make_shared<void *>(nullptr); }
+inline scope_tracker_t::weak_type make_weak_ref(scope_tracker_t tracker) { return {tracker}; }
+inline bool is_valid(scope_tracker_t::weak_type weak) { return weak.lock() != nullptr; }
 
 inline void throw_errno(char const * const op = nullptr)
 {

@@ -41,7 +41,7 @@ public:
     bus_state state() const;
 
     template<bus_command C>
-    void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler = nullptr)
+    void send(bus_request_params<C> params, bus_node const & target, response_handler_t<C> response_handler = {})
     {
         static_assert(std::is_trivially_copyable_v<bus_request_params<C>>);
         static_assert(std::is_trivially_copyable_v<bus_response_params<C>>);
@@ -103,7 +103,7 @@ public:
     }
 
     template<bus_command C>
-    void broadcast(bus_request_params<C> params, broadcast_handler_t handler = nullptr)
+    void broadcast(bus_request_params<C> params, broadcast_handler_t handler = {})
     {
         constexpr unsigned char broadcast_address{32};
         static_assert(std::is_trivially_copyable_v<bus_request_params<C>>);

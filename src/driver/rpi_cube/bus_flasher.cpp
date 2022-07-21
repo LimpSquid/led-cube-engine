@@ -8,6 +8,7 @@
 
 using namespace cube::core;
 namespace fs = std::filesystem;
+using std::operator""s;
 
 namespace
 {
@@ -57,19 +58,13 @@ private:
 
 } // End of namespace
 
-// TODO list:
-// - We need to fix ALL the handlers, its possible that the bus_flasher is destroyed while a request from
-//   the bus_comm is still holding a reference to the destroyed class (e.g. the function that will be
-//   ran on completion of a request). I think we should be able to wrap each handler which then makes use
-//   of `make_parent_tracker()` from cube/core/utils.hpp.
-// - We need to check in each handler if we still have nodes left that are in the flashing_in_progress state.
-//   If there are no nodes left we should LOG and eventually run the completion handler.
-
 namespace driver::rpi_cube
 {
 
-bus_flasher::bus_flasher(bus_comm & comm) :
-    bus_comm_(comm)
+bus_flasher::bus_flasher(bus_comm & comm, completion_handler_t handler) :
+    bus_comm_(comm),
+    completion_handler_(std::move(handler)),
+    scope_tracker_(make_scope_tracker())
 { }
 
 void bus_flasher::flash_hex_file(fs::path const & filepath)
@@ -90,7 +85,7 @@ void bus_flasher::when_ready(H handler, std::optional<std::vector<node_cref_t>> 
         ? std::move(opt_nodes.value())
         : std::vector<node_cref_t>{nodes_.begin(), nodes_.end()};
 
-    bus_comm_.send_for_all<bus_command::bl_get_status>({}, [this, h = std::move(handler), nodes](auto responses) {
+    send_for_all<bus_command::bl_get_status>({}, [this, h = std::move(handler), nodes](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
@@ -144,7 +139,7 @@ void bus_flasher::reset_nodes()
     bus_request_params<bus_command::app_exe_cpu_reset> params{}; // Reset immediately
 
     // Nodes that are already in bootloader mode will ignore this command
-    bus_comm_.broadcast(std::move(params), std::bind(&bus_flasher::set_boot_magic, this));
+    broadcast(std::move(params), std::bind(&bus_flasher::set_boot_magic, this));
 }
 
 void bus_flasher::set_boot_magic()
@@ -157,7 +152,7 @@ void bus_flasher::set_boot_magic()
     std::vector<bus_node> all_slaves(bus_node::num_addresses::value);
     std::iota(all_slaves.begin(), all_slaves.end(), bus_node::min_address::value);
 
-    bus_comm_.send_for_all(std::move(params), [this](auto responses) {
+    send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (response) {
                 nodes_.push_back({slave, flashing_in_progress, {}, {}});
@@ -180,7 +175,7 @@ void bus_flasher::get_memory_layout()
         bus_request_params<bus_command::bl_get_info> params;
         params.query = static_cast<uint8_t>(query);
 
-        bus_comm_.send_for_all(std::move(params), [this, s, field](auto responses) {
+        send_for_all(std::move(params), [this, s, field](auto responses) {
             for (auto [slave, response] : responses) {
                 if (response)
                     std::get<memory_layout>(find_or_throw(slave)).*field = response->query_result;
@@ -206,7 +201,7 @@ void bus_flasher::flash_erase()
 {
     LOG_DBG("Erasing application flash region");
 
-    bus_comm_.send_for_all<bus_command::bl_exe_erase>({}, [this](auto responses) {
+    send_for_all<bus_command::bl_exe_erase>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
@@ -224,7 +219,7 @@ void bus_flasher::flash_next_group()
                                    .transform(extract_member<memory_layout>{})
                                    .get();
     if (mem_layouts.empty())
-        return; // TODO: done, now call completion handler?
+        return complete();
 
     auto layout = mem_layouts.front();
     auto blob = parse_hex_file(hex_filepath_, layout); // Also checks if the memory layout is valid
@@ -260,7 +255,7 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
 
     LOG_DBG("Pushing blob to group", LOG_ARG("group_size", nodes.size()));
 
-    bus_comm_.send_for_all<bus_command::bl_exe_row_reset>({}, [this, group](auto responses) {
+    send_for_all<bus_command::bl_exe_row_reset>({}, [this, group](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
@@ -280,7 +275,7 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     uint32_t const n_rows = blob.size() / row_size;
 
     if (word_size > sizeof(bus_request_params<bus_command::bl_exe_push_word>))
-        throw std::runtime_error("Unable to handle word size: " + std::to_string(word_size));
+        return error("Unable to handle word size: "s + std::to_string(word_size));
 
     LOG_DBG("Pushing row to group",
         LOG_ARG("row", row),
@@ -311,8 +306,8 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     // as the requests were initially made. When the completion handler of the last broadcast
     // is executed, we can be sure that previous broadcasts have all been sent out.
     for (uint32_t i = 0; i < (row_size - word_size); i += word_size)
-        bus_comm_.broadcast(advance_word());
-    bus_comm_.broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
+        broadcast(advance_word());
+    broadcast(advance_word(), std::bind(&bus_flasher::verify_row, this, group, row, crc));
     assert(std::distance(blob.begin() + row * row_size, data) == row_size);
 }
 
@@ -323,7 +318,7 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
     assert(group);
     auto const & [_, nodes] = *group;
 
-    bus_comm_.send_for_all<bus_command::bl_get_row_crc>({}, [this, group, row, crc](auto responses) {
+    send_for_all<bus_command::bl_get_row_crc>({}, [this, group, row, crc](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
@@ -349,7 +344,7 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
     bus_request_params<bus_command::bl_exe_row_burn> params;
     params.phy_address = start_address + row * row_size;
 
-    bus_comm_.send_for_all<bus_command::bl_exe_row_burn>(std::move(params), [this, group, row, nodes](auto responses) {
+    send_for_all<bus_command::bl_exe_row_burn>(std::move(params), [this, group, row, nodes](auto responses) {
         for (auto [slave, response] : responses) {
             if (!response)
                 mark_failed(slave, response.error().what);
@@ -368,7 +363,7 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
     assert(group);
     auto const & [blob, nodes] = *group;
 
-    bus_comm_.send_for_all<bus_command::bl_exe_boot>({}, [this](auto responses) {
+    send_for_all<bus_command::bl_exe_boot>({}, [this](auto responses) {
         for (auto [slave, response] : responses) {
             if (response)
                 mark_succeeded(slave); // TODO: maybe we should check if it actually succeeded
@@ -380,6 +375,66 @@ void bus_flasher::boot(std::shared_ptr<group_t const> group)
     }, view(nodes).filter(state_filter<flashing_in_progress>{})
                   .transform(extract_member<bus_node>{})
                   .get());
+}
+
+template<bus_command C>
+void bus_flasher::broadcast(bus_request_params<C> && params)
+{
+    if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
+        return complete();
+
+    bus_comm_.broadcast(std::forward<decltype(params)>(params));
+}
+
+template<bus_command C, typename H>
+void bus_flasher::broadcast(bus_request_params<C> && params, H && handler)
+{
+    if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
+        return complete();
+
+    bus_comm_.broadcast(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = make_weak_ref(scope_tracker_)](auto && ... args){
+        if (is_valid(r))
+            h(std::forward<decltype(args)>(args)...);
+    });
+}
+
+template<bus_command C, typename H, typename N>
+void bus_flasher::send_for_all(bus_request_params<C> && params, H && handler, N && nodes)
+{
+    if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
+        return complete();
+
+    bus_comm_.send_for_all(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = make_weak_ref(scope_tracker_)](auto && ... args){
+        if (is_valid(r))
+            h(std::forward<decltype(args)>(args)...);
+    }, std::forward<N>(nodes));
+}
+
+void bus_flasher::complete()
+{
+    if (completion_handler_) {
+        bus_flasher_result result;
+
+        for (auto && node : nodes_) {
+            bus_node const addr = std::get<bus_node>(node);
+            flashing_state const state = std::get<flashing_state>(node);
+            std::string fail_reason = std::get<std::string>(node);
+
+            switch (state) {
+                case flashing_succeeded:    result.flashed_nodes.push_back(addr);                           break;
+                case flashing_failed:       result.failed_nodes.push_back({addr, std::move(fail_reason)});  break;
+                default:;
+            }
+        }
+
+        completion_handler_(std::move(result));
+    }
+}
+
+void bus_flasher::error(std::string desc)
+{
+    if (completion_handler_)
+        completion_handler_(unexpected_error{std::move(desc)});
 }
 
 } // End of namespace

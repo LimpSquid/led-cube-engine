@@ -2,16 +2,26 @@
 
 #include <driver/rpi_cube/bus_proto.hpp>
 #include <driver/rpi_cube/hexfile.hpp>
+#include <cube/core/expected.hpp>
+#include <cube/core/utils.hpp>
 #include <functional>
 
 namespace driver::rpi_cube
 {
 
+struct bus_flasher_result
+{
+    std::vector<bus_node> flashed_nodes;
+    std::vector<std::pair<bus_node, std::string>> failed_nodes;
+};
+
 class bus_comm;
 class bus_flasher
 {
 public:
-    bus_flasher(bus_comm & comm);
+    using completion_handler_t = std::function<void(cube::core::expected_or_error<bus_flasher_result>)>;
+
+    bus_flasher(bus_comm & comm, completion_handler_t handler = {});
 
     void flash_hex_file(std::filesystem::path const & filepath);
 
@@ -61,9 +71,21 @@ private:
     void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
     void boot(std::shared_ptr<group_t const> group);
 
+    template<bus_command C>
+    void broadcast(bus_request_params<C> && params);
+    template<bus_command C, typename H>
+    void broadcast(bus_request_params<C> && params, H && handler);
+    template<bus_command C, typename H, typename N>
+    void send_for_all(bus_request_params<C> && params, H && handler, N && nodes);
+
+    void complete();
+    void error(std::string desc);
+
     bus_comm & bus_comm_;
     std::vector<node_t> nodes_;
     std::filesystem::path hex_filepath_;
+    completion_handler_t completion_handler_;
+    cube::core::scope_tracker_t scope_tracker_;
 };
 
 } // End of namespace

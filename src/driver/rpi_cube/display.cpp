@@ -81,7 +81,9 @@ struct async_pixel_pump
         run_one(disp.context().event_poller, std::bind(signature<>::select_overload(&async_pixel_pump::run), this)),
         buffer(std::move(b)),
         current_slice(0)
-    { }
+    {
+        assert(completion_handler);
+    }
 
     void run()
     {
