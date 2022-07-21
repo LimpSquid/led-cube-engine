@@ -155,10 +155,43 @@ void handle_flash_boards(std::vector<std::string> const & args)
 {
     using namespace driver::rpi_cube;
 
+    constexpr unsigned int busy_indicator_length{5};
+
     if (args.size() == 1) {
         auto [engine, _, bus_comm] = instance();
-        bus_flasher flasher{bus_comm};
+
+        unsigned int n_dots = 0;
+        recurring_timer busy_indicator{engine.context(), [&](auto, auto) {
+            if (n_dots == busy_indicator_length) {
+                std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
+                n_dots = 0;
+            }
+
+            std::cout << '.' << std::flush;
+            n_dots++;
+        }, true};
+
+        bus_flasher flasher{bus_comm, [&](auto result) {
+            if (busy_indicator.is_running()) {
+                busy_indicator.stop();
+                std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
+            }
+            if (!result)
+                throw std::runtime_error(result.error().what);
+
+            for (auto && node : result->flashed_nodes)
+                LOG_PLAIN("Succesfully flashed slave", LOG_ARG("address", as_hex(node.address)));
+            for (auto && node : result->failed_nodes)
+                LOG_PLAIN("Failed to flash slave",
+                    LOG_ARG("address", as_hex(node.first.address)),
+                    LOG_ARG("reason", node.second));
+        }};
         flasher.flash_hex_file(args[0]);
+
+        LOG_PLAIN("Flashing hex file", LOG_ARG("filepath", args[0]));
+
+        if (get_runtime_log_level() != log_prio::debug)
+            busy_indicator.start(500ms);
 
         engine.run_while(bus_transferring{bus_comm});
         std::exit(bus_comm.state() == bus_state::idle

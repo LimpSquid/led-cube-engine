@@ -30,7 +30,8 @@ private:
     {
         flashing_in_progress,
         flashing_failed,
-        flashing_succeeded
+        flashing_failed_not_detected,
+        flashing_succeeded,
     };
 
     using node_t = std::tuple<bus_node, flashing_state, memory_layout, std::string /* reason of failure */>;
@@ -57,6 +58,7 @@ private:
     void when_ready(H handler, std::optional<std::vector<node_cref_t>> opt_nodes = {});
     node_t & find_or_throw(bus_node const & slave);
     void mark_failed(bus_node const & slave, std::string const & desc = "Unknown error");
+    void mark_not_detected(bus_node const & slave);
     void mark_succeeded(bus_node const & slave);
 
     void reset_nodes();

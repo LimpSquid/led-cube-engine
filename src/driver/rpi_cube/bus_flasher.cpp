@@ -69,9 +69,15 @@ bus_flasher::bus_flasher(bus_comm & comm, completion_handler_t handler) :
 
 void bus_flasher::flash_hex_file(fs::path const & filepath)
 {
-    LOG_DBG("Flashing hex file", LOG_ARG("filepath", filepath.c_str()));
+    // Flashing busy
+    if (!nodes_.empty())
+        return;
 
-    hex_filepath_ = filepath; // TODO: check existence?
+    LOG_DBG("Started to flash hex file", LOG_ARG("filepath", filepath.c_str()));
+
+    for (auto addr = bus_node::min_address::value; addr != bus_node::max_address::value; ++addr)
+        nodes_.push_back({addr, flashing_in_progress, {}, {}});
+    hex_filepath_ = filepath;
     reset_nodes();
 }
 
@@ -125,6 +131,14 @@ void bus_flasher::mark_failed(bus_node const & slave, std::string const & desc)
         LOG_ARG("description", desc));
 }
 
+void bus_flasher::mark_not_detected(bus_node const & slave)
+{
+    node_t & node = find_or_throw(slave);
+    std::get<flashing_state>(node) = flashing_failed_not_detected;
+
+    LOG_DBG("Node not detected", LOG_ARG("address", as_hex(slave.address)));
+}
+
 void bus_flasher::mark_succeeded(bus_node const & slave)
 {
     std::get<flashing_state>(find_or_throw(slave)) = flashing_succeeded;
@@ -149,19 +163,18 @@ void bus_flasher::set_boot_magic()
     bus_request_params<bus_command::bl_set_boot_magic> params;
     params.magic = 0x0b00b1e5;
 
-    std::vector<bus_node> all_slaves(bus_node::num_addresses::value);
-    std::iota(all_slaves.begin(), all_slaves.end(), bus_node::min_address::value);
-
     send_for_all(std::move(params), [this](auto responses) {
         for (auto [slave, response] : responses) {
-            if (response) {
-                nodes_.push_back({slave, flashing_in_progress, {}, {}});
+            if (response)
                 LOG_DBG("Boot magic provided", LOG_ARG("address", as_hex(slave.address)));
-            }
+            else
+                mark_not_detected(slave);
         }
 
         when_ready(std::bind(&bus_flasher::get_memory_layout, this));
-    }, all_slaves);
+    }, view(nodes_).filter(state_filter<flashing_in_progress>{})
+                   .transform(extract_member<bus_node>{})
+                   .get());
 }
 
 void bus_flasher::get_memory_layout()
@@ -263,7 +276,6 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
 
         push_row(group, 0);
     }, view(nodes).transform(extract_member<bus_node>{}).get());
-
 }
 
 void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
@@ -429,12 +441,14 @@ void bus_flasher::complete()
 
         completion_handler_(std::move(result));
     }
+    nodes_.clear();
 }
 
 void bus_flasher::error(std::string desc)
 {
     if (completion_handler_)
         completion_handler_(unexpected_error{std::move(desc)});
+    nodes_.clear();
 }
 
 } // End of namespace
