@@ -31,14 +31,7 @@ struct bus_transferring
     }
 };
 
-struct binding
-{
-    poll_engine & engine;
-    driver::rpi_cube::resources & resources;
-    driver::rpi_cube::bus_comm & bus_comm;
-};
-
-binding instance()
+std::tuple<poll_engine &, driver::rpi_cube::resources &, driver::rpi_cube::bus_comm &> instance()
 {
     struct singleton
     {
@@ -54,7 +47,7 @@ binding instance()
     };
 
     static singleton s;
-    return binding{s.engine, s.resources, s.bus_comm};
+    return {s.engine, s.resources, s.bus_comm};
 }
 
 template<typename H>
@@ -83,8 +76,9 @@ void handle_detect_boards()
                     "." + std::to_string(app_response ? app_response->minor : bl_response->minor) +
                     "." + std::to_string(app_response ? app_response->patch : bl_response->patch);
 
-                LOG_PLAIN("Detected slave in "s + (app_response ? "app" : "bootload") + " mode",
+                LOG_PLAIN("Detected slave",
                     LOG_ARG("address", as_hex(slave)),
+                    LOG_ARG("mode", app_response ? "app" : "bootloader"),
                     LOG_ARG("version", version));
             }
         );
@@ -110,8 +104,75 @@ void handle_reset_boards()
         for (auto const & [slave, response] : responses) {
             if (response)
                 LOG_PLAIN("Slave reset", LOG_ARG("address", as_hex(slave)));
-            else
-                LOG_PLAIN("Slave not found", LOG_ARG("address", as_hex(slave)));
+        }
+    }, resources.bus_comm_slave_addresses);
+
+    engine.run_while(bus_transferring{bus_comm});
+    std::exit(bus_comm.state() == bus_state::idle
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE);
+}
+
+void handle_lod()
+{
+    using namespace driver::rpi_cube;
+
+    auto [engine, resources, bus_comm] = instance();
+
+    // Reset Immediately
+    bus_comm.send_for_all<bus_command::app_exe_led_open_detection>({}, [&](auto responses) {
+        for (auto const & [slave, response] : responses) {
+            if (response)
+                LOG_PLAIN("Initiated LED open detection on slave", LOG_ARG("address", as_hex(slave)));
+        }
+    }, resources.bus_comm_slave_addresses);
+
+    engine.run_while(bus_transferring{bus_comm});
+    std::exit(bus_comm.state() == bus_state::idle
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE);
+}
+
+void handle_dump_status()
+{
+    using namespace driver::rpi_cube;
+
+    auto [engine, resources, bus_comm] = instance();
+
+    for (auto const & slave : resources.bus_comm_slave_addresses) {
+        auto [bl_handler, app_handler] = decompose_function([slave](
+            bus_response_params_or_error<bus_command::bl_get_status> bl_response,
+            bus_response_params_or_error<bus_command::app_get_status> app_response) {
+                if (!bl_response && !app_response)
+                    return;
+
+                LOG_PLAIN("Slave status",
+                    LOG_ARG("mode", app_response ? "app" : "bootloader"),
+                    LOG_ARG("status", app_response ? to_string(*app_response) : to_string(*bl_response)));
+            }
+        );
+
+        bus_comm.send<bus_command::bl_get_status>({}, slave, std::move(bl_handler));
+        bus_comm.send<bus_command::app_get_status>({}, slave, std::move(app_handler));
+    }
+
+    engine.run_while(bus_transferring{bus_comm});
+    std::exit(bus_comm.state() == bus_state::idle
+        ? EXIT_SUCCESS
+        : EXIT_FAILURE);
+}
+
+void handle_dma_reset()
+{
+    using namespace driver::rpi_cube;
+
+    auto [engine, resources, bus_comm] = instance();
+
+    // Reset Immediately
+    bus_comm.send_for_all<bus_command::app_exe_dma_reset>({}, [&](auto responses) {
+        for (auto const & [slave, response] : responses) {
+            if (response)
+                LOG_PLAIN("Succesfully resetted DMA on slave", LOG_ARG("address", as_hex(slave)));
         }
     }, resources.bus_comm_slave_addresses);
 
@@ -215,16 +276,12 @@ namespace driver::rpi_cube
 program const program_hexflash
 {
     "hexflash",
-    "flash Intel HEX files to the LED cube controller boards.",
+    "flash Intel HEX files to the LED cube controller boards",
     [](int ac, char const * const av[]) -> int
     {
         po::options_description desc("Available options");
         desc.add_options()
             ("help,h", "produce a help message")
-            ("detect-boards", po::bool_switch()
-                ->notifier(bool_switch_notifier(handle_detect_boards)), "detect all boards on the bus")
-            ("reset-boards", po::bool_switch()
-                ->notifier(bool_switch_notifier(handle_reset_boards)), "reset all boards on the bus")
             ("dump-blob", po::value<std::vector<std::string>>()
                 ->zero_tokens()
                 ->multitoken()
@@ -241,6 +298,43 @@ program const program_hexflash
         // Print help if no handler exited
         std::cout
             << "Usage: led-cube-engine hexflash <option> [arg...]\n\n"
+            << desc;
+        return EXIT_FAILURE;
+    },
+    []()
+    {
+        for (auto && handler : sigint_handlers)
+            handler();
+    }
+};
+
+program const program_devop
+{
+    "devop",
+    "device specific operations",
+    [](int ac, char const * const av[]) -> int
+    {
+        po::options_description desc("Available options");
+        desc.add_options()
+            ("help,h", "produce a help message")
+            ("detect-boards", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_detect_boards)), "detect all the boards on the bus")
+            ("reset-boards", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_reset_boards)), "reset all the boards on the bus")
+            ("led-open-detection", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_lod)), "initiate LED open detection procedure for all boards on the bus")
+            ("dump-status", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_dump_status)), "dump application or bootloader status of all the boards on the bus")
+            ("dma-reset", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_dma_reset)), "reset DMA of all the boards on the bus");
+
+        po::variables_map cli_variables;
+        po::store(po::parse_command_line(ac, av, desc), cli_variables);
+        po::notify(cli_variables);
+
+        // Print help if no handler exited
+        std::cout
+            << "Usage: led-cube-engine devop <option> [arg...]\n\n"
             << desc;
         return EXIT_FAILURE;
     },

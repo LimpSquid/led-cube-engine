@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <cstdint>
 #include <functional>
+#include <string>
 
 namespace driver::rpi_cube
 {
@@ -164,6 +165,25 @@ struct bus_response_params<bus_command::bl_get_row_crc>
 {
     uint16_t crc;
 };
+
+inline std::string to_string(bus_response_params<bus_command::bl_get_status> const & response)
+{
+    using std::operator""s;
+
+    return "["s
+         + "ready: " + std::to_string(response.bootloader_ready) + ", "
+         + "error: " + std::to_string(response.bootloader_error) + ", "
+         + "waiting_for_magic: " + std::to_string(response.bootloader_waiting_for_magic) + "]";
+}
+
+inline std::string to_string(bus_response_params<bus_command::app_get_status> const & response)
+{
+    using std::operator""s;
+
+    return "["s
+         + "layer_ready: " + std::to_string(response.layer_ready) + ", "
+         + "layer_dma_error: " + std::to_string(response.layer_dma_error) + "]";
+}
 
 } // End of namespace
 
