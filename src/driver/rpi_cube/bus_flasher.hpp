@@ -38,7 +38,7 @@ private:
     using node_cref_t = std::reference_wrapper<node_t const>;
     // Nodes in a group all have the same memory layout, thus the blob can
     // be pushed to the nodes via broadcasts instead of point-to-point.
-    using group_t = std::tuple<memory_blob, std::vector<node_cref_t>>;
+    using group_state_t = std::tuple<memory_blob, std::vector<node_cref_t>>;
 
     template<typename T>
     struct extract_member { T operator()(node_t const & node) const { return std::get<T>(node); } };
@@ -67,11 +67,11 @@ private:
 
     void flash_erase();
     void flash_next_group();
-    void push_blob(std::shared_ptr<group_t const> group);
-    void push_row(std::shared_ptr<group_t const> group, uint32_t row);
-    void verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc);
-    void burn_row(std::shared_ptr<group_t const> group, uint32_t row);
-    void boot(std::shared_ptr<group_t const> group);
+    void push_blob(std::shared_ptr<group_state_t const> group);
+    void push_row(std::shared_ptr<group_state_t const> group, uint32_t row);
+    void verify_row(std::shared_ptr<group_state_t const> group, uint32_t row, uint16_t crc);
+    void burn_row(std::shared_ptr<group_state_t const> group, uint32_t row);
+    void boot(std::shared_ptr<group_state_t const> group);
 
     template<bus_command C>
     void broadcast(bus_request_params<C> && params);

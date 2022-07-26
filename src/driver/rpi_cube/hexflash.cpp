@@ -176,6 +176,7 @@ void handle_flash_boards(std::vector<std::string> const & args)
                 busy_indicator.stop();
                 std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
             }
+
             if (!result)
                 throw std::runtime_error(result.error().what);
 

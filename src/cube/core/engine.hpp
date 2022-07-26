@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <functional>
+#include <chrono>
 
 namespace cube::core
 {
@@ -37,12 +38,14 @@ class basic_engine
 public:
     using predicate_t = std::function<bool(void)>;
 
-    basic_engine(engine_context & context);
-
     engine_context & context();
     void run();
     void run_while(predicate_t predicate);
     void stop();
+
+protected:
+    basic_engine(engine_context & context);
+    basic_engine(engine_context & context, std::chrono::milliseconds poll_timeout);
 
 private:
     basic_engine(basic_engine &) = delete;
@@ -54,6 +57,7 @@ private:
     void do_run(F ... extra);
 
     engine_context & context_;
+    std::chrono::milliseconds const poll_timeout_;
     bool stopping_;
 };
 
@@ -74,13 +78,13 @@ class render_engine :
 public:
     template<typename T>
     render_engine(engine_context & context, graphics_device_factory<T> factory) :
-        basic_engine(context),
-        device_(factory(context))
+        render_engine(context, factory(context))
     { }
 
     void load(std::shared_ptr<animation> animation);
 
 private:
+    render_engine(engine_context & context, std::unique_ptr<graphics_device> && device);
     render_engine(render_engine &) = delete;
     render_engine(render_engine &&) = delete;
 

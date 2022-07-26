@@ -36,7 +36,7 @@ void call_all(T const & callable, O const & ... others)
     call_all(others ...);
 }
 
-constexpr milliseconds poll_timeout{std::clamp(cube::animation_scene_interval, 5ms, 50ms)};
+constexpr milliseconds default_poll_timeout{50};
 
 } // End of namespace
 
@@ -78,11 +78,6 @@ animation_session::operator bool() const
 
 } // End of namespace
 
-basic_engine::basic_engine(engine_context & context) :
-   context_(context),
-   stopping_(false)
-{ }
-
 engine_context & basic_engine::context()
 {
     return context_;
@@ -107,6 +102,16 @@ void basic_engine::stop()
     stopping_ = true;
 }
 
+basic_engine::basic_engine(engine_context & context) :
+    basic_engine(context, default_poll_timeout)
+{ }
+
+basic_engine::basic_engine(engine_context & context, milliseconds poll_timeout) :
+   context_(context),
+   poll_timeout_(poll_timeout),
+   stopping_(false)
+{ }
+
 template<typename ... F>
 void basic_engine::do_run(F ... extras)
 {
@@ -127,14 +132,14 @@ void basic_engine::do_run(F ... extras)
         // Poll asio and event_poller
         assert(!context_.io_context.stopped());
         if (context_.event_poller.has_subscribers()) {
-            auto [size, events] = context_.event_poller.poll_events(poll_timeout);
+            auto [size, events] = context_.event_poller.poll_events(poll_timeout_);
             for (int i = 0; i < size; ++i)
                 if (auto user_data = events.get().at(i).data.ptr)
                     (*reinterpret_cast<event_handler_t *>(user_data))(events.get().at(i).events);
 
             context_.io_context.poll(); // Run all asio ready handlers
         } else
-            context_.io_context.run_one_for(poll_timeout); // No events, just poll asio
+            context_.io_context.run_one_for(poll_timeout_); // No events, just poll asio
 
         // Finally check if we're stopping
         if (stopping_) {
@@ -151,6 +156,11 @@ void render_engine::load(std::shared_ptr<animation> animation)
 {
     animation_session_.set(animation);
 }
+
+render_engine::render_engine(engine_context & context, std::unique_ptr<graphics_device> && device) :
+    basic_engine(context, std::clamp(cube::animation_scene_interval, 5ms, 50ms)),
+    device_(std::move(device))
+{ }
 
 void render_engine::poll_one(bool stopping)
 {

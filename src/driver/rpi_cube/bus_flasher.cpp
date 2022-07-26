@@ -150,10 +150,8 @@ void bus_flasher::reset_nodes()
 {
     LOG_DBG("Broadcasting CPU reset");
 
-    bus_request_params<bus_command::app_exe_cpu_reset> params{}; // Reset immediately
-
     // Nodes that are already in bootloader mode will ignore this command
-    broadcast(std::move(params), std::bind(&bus_flasher::set_boot_magic, this));
+    broadcast<bus_command::app_exe_cpu_reset>({}, std::bind(&bus_flasher::set_boot_magic, this));
 }
 
 void bus_flasher::set_boot_magic()
@@ -252,7 +250,7 @@ void bus_flasher::flash_next_group()
         LOG_ARG("memory_layout", to_string(layout)),
         LOG_ARG("blob_size", blob->size()));
 
-    auto group = std::make_shared<group_t const>(
+    auto group = std::make_shared<group_state_t const>(
         std::move(*blob),
         view<node_cref_t>({nodes_.begin(), nodes_.end()})
             .filter(state_filter<flashing_in_progress>{})
@@ -261,7 +259,7 @@ void bus_flasher::flash_next_group()
     push_blob(std::move(group));
 }
 
-void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
+void bus_flasher::push_blob(std::shared_ptr<group_state_t const> group)
 {
     assert(group);
     auto const & [_, nodes] = *group;
@@ -278,7 +276,7 @@ void bus_flasher::push_blob(std::shared_ptr<group_t const> group)
     }, view(nodes).transform(extract_member<bus_node>{}).get());
 }
 
-void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
+void bus_flasher::push_row(std::shared_ptr<group_state_t const> group, uint32_t row)
 {
     assert(group);
     auto const & [blob, nodes] = *group;
@@ -323,7 +321,7 @@ void bus_flasher::push_row(std::shared_ptr<group_t const> group, uint32_t row)
     assert(std::distance(blob.begin() + row * row_size, data) == row_size);
 }
 
-void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row, uint16_t crc)
+void bus_flasher::verify_row(std::shared_ptr<group_state_t const> group, uint32_t row, uint16_t crc)
 {
     LOG_DBG("Verifying row CRC", LOG_ARG("row", row));
 
@@ -344,7 +342,7 @@ void bus_flasher::verify_row(std::shared_ptr<group_t const> group, uint32_t row,
                   .get());
 }
 
-void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
+void bus_flasher::burn_row(std::shared_ptr<group_state_t const> group, uint32_t row)
 {
     LOG_DBG("Burning row to flash", LOG_ARG("row", row));
 
@@ -368,7 +366,7 @@ void bus_flasher::burn_row(std::shared_ptr<group_t const> group, uint32_t row)
                   .get());
 }
 
-void bus_flasher::boot(std::shared_ptr<group_t const> group)
+void bus_flasher::boot(std::shared_ptr<group_state_t const> group)
 {
     LOG_DBG("Booting boards");
 
