@@ -37,15 +37,20 @@ private:
         template<typename T>
         using normalized_optional_t = std::optional<normalized_t<T>>;
 
-        template<std::size_t I, typename T>
+        template<std::size_t I, typename N /* normalized type */>
         struct closure
         {
+            static_assert(!std::is_reference_v<N>);
+            static_assert(!std::is_const_v<N>);
+            static_assert(!std::is_volatile_v<N>);
+
             std::shared_ptr<impl> i;
 
-            void operator()(T value)
+            template<typename T>
+            void operator()(T && value)
             {
                 if (i) {
-                    std::get<I>(i->args) = std::move(value);
+                    std::get<I>(i->args) = std::forward<T>(value);
                     i->arg_set();
                     i.reset();
                 }
