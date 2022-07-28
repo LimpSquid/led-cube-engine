@@ -67,7 +67,7 @@ bus_flasher::bus_flasher(bus_comm & comm, completion_handler_t handler) :
     scope_tracker_(make_scope_tracker())
 { }
 
-void bus_flasher::flash_hex_file(fs::path const & filepath)
+void bus_flasher::flash_hex_file(fs::path const & filepath, std::unordered_set<bus_node> const & filter)
 {
     // Flashing busy
     if (!nodes_.empty())
@@ -76,7 +76,8 @@ void bus_flasher::flash_hex_file(fs::path const & filepath)
     LOG_DBG("Started to flash hex file", LOG_ARG("filepath", filepath.c_str()));
 
     for (auto addr = bus_node::min_address::value; addr != bus_node::max_address::value; ++addr)
-        nodes_.push_back({addr, flashing_in_progress, {}, {}});
+        if (filter.empty() || filter.count(addr))
+            nodes_.push_back({addr, flashing_in_progress, {}, {}});
     hex_filepath_ = filepath;
     reset_nodes();
 }
@@ -148,10 +149,11 @@ void bus_flasher::mark_succeeded(bus_node const & slave)
 
 void bus_flasher::reset_nodes()
 {
-    LOG_DBG("Broadcasting CPU reset");
+    LOG_DBG("Sending CPU reset");
 
     // Nodes that are already in bootloader mode will ignore this command
-    broadcast<bus_command::app_exe_cpu_reset>({}, std::bind(&bus_flasher::set_boot_magic, this));
+    send_for_all<bus_command::app_exe_cpu_reset>({}, std::bind(&bus_flasher::set_boot_magic, this),
+        view(nodes_).transform(extract_member<bus_node>{}).get());
 }
 
 void bus_flasher::set_boot_magic()

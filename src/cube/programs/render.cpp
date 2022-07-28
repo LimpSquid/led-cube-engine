@@ -26,6 +26,8 @@ render_engine & engine_instance()
 {
     struct singleton
     {
+        using factory_t = graphics_device_factory<driver::graphics_device_t>;
+
         singleton()
         {
             sigint_handlers.push_back([&]() {
@@ -35,7 +37,7 @@ render_engine & engine_instance()
         }
 
         engine_context context;
-        render_engine engine{context, graphics_device_factory<driver::graphics_device_t>{}};
+        render_engine engine{context, factory_t{}};
     };
 
     static singleton s;

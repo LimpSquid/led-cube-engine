@@ -218,9 +218,25 @@ void handle_flash_boards(std::vector<std::string> const & args)
 
     constexpr unsigned int busy_indicator_length{5};
 
-    if (args.size() == 1) {
-        auto [engine, _, bus_comm] = instance();
+    if (args.size() > 0) {
+        auto filepath = args[0];
+        std::unordered_set<bus_node> filter;
 
+        if (args.size() > 1) {
+            try {
+                std::for_each(args.begin() + 1, args.end(), [&](std::string const & arg) {
+                    auto const address = std::stoul(arg, nullptr, 16);
+                    if (address == std::clamp<unsigned long>(address, bus_node::min_address::value, bus_node::max_address::value))
+                        filter.insert(static_cast<unsigned char>(address));
+                    else
+                        throw std::exception();
+                });
+            } catch(...) {
+                throw std::runtime_error("Unable to use number input as address");
+            }
+        }
+
+        auto [engine, _, bus_comm] = instance();
         unsigned int n_dots = 0;
         recurring_timer busy_indicator{engine.context(), [&](auto, auto) {
             if (n_dots == busy_indicator_length) {
@@ -248,9 +264,10 @@ void handle_flash_boards(std::vector<std::string> const & args)
                     LOG_ARG("address", as_hex(node.first.address)),
                     LOG_ARG("reason", node.second));
         }};
-        flasher.flash_hex_file(args[0]);
 
         LOG_PLAIN("Flashing hex file", LOG_ARG("filepath", args[0]));
+
+        flasher.flash_hex_file(filepath, filter);
 
         if (get_runtime_log_level() != log_prio::debug)
             busy_indicator.start(500ms);
@@ -262,9 +279,10 @@ void handle_flash_boards(std::vector<std::string> const & args)
     }
 
     std::cout
-        << "Usage: led-cube-engine hexflash --flash-boards <filepath>\n\n"
+        << "Usage: led-cube-engine hexflash --flash-boards <filepath> [address...]\n\n"
         << "Examples:\n"
-        << "  led-cube-engine hexflash --flash-boards /tmp/board.hex\n";
+        << "  led-cube-engine hexflash --flash-boards /tmp/board.hex\n"
+        << "  led-cube-engine hexflash --flash-boards ./board.hex 0x1 0xf 0x3\n";
     std::exit(EXIT_FAILURE);
 }
 

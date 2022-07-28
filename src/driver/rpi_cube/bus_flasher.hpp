@@ -5,6 +5,7 @@
 #include <cube/core/expected.hpp>
 #include <cube/core/utils.hpp>
 #include <functional>
+#include <unordered_set>
 
 namespace driver::rpi_cube
 {
@@ -23,7 +24,7 @@ public:
 
     bus_flasher(bus_comm & comm, completion_handler_t handler = {});
 
-    void flash_hex_file(std::filesystem::path const & filepath);
+    void flash_hex_file(std::filesystem::path const & filepath, std::unordered_set<bus_node> const & filter = {});
 
 private:
     enum flashing_state
