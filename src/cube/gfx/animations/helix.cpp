@@ -36,7 +36,7 @@ struct helix :
 
     gradient gradient_;
     ease_in_sine fader_;
-    int step_;
+    int time_;
     int thickness_;
     double omega_;
     double length_;
@@ -63,20 +63,20 @@ helix::helix(engine_context & context) :
 
 void helix::start()
 {
-    int step_interval = static_cast<int>(read_property(helix_rotation_time_ms, default_rotation_time) / cube::animation_scene_interval);
+    auto const rotation_time = read_property(helix_rotation_time_ms, default_rotation_time);
 
     gradient_ = read_property(helix_gradient, default_gradient);
     thickness_ = read_property(helix_thickness, default_thickness);
     length_ =  2.0 * M_PI * read_property(helix_length, default_length);
-    omega_ = (2.0 * M_PI) / step_interval;
-    step_ = rand(range{0, UINT16_MAX});
+    omega_ = (2.0 * M_PI) / static_cast<double>(rotation_time.count());
+    time_ = rand(range{0, UINT16_MAX});
 
     fader_.start();
 }
 
-void helix::scene_tick(milliseconds)
+void helix::scene_tick(milliseconds dt)
 {
-    step_++;
+    time_ += static_cast<int>(dt.count());
 }
 
 void helix::paint(graphics_device & device)
@@ -89,12 +89,12 @@ void helix::paint(graphics_device & device)
 
     for (int y = 0; y < cube::cube_size_1d; y++) {
         double phase_shift = map(y, cube_axis_range, range(0.0, length_));
-        double x1 = std::sin(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_sin_factor));
-        double z1 = std::cos(step_ * omega_ + phase_shift * std::cos(step_ * omega_ * phase_shift_cos_factor));
+        double x1 = std::sin(time_ * omega_ + phase_shift * std::cos(time_ * omega_ * phase_shift_sin_factor));
+        double z1 = std::cos(time_ * omega_ + phase_shift * std::cos(time_ * omega_ * phase_shift_cos_factor));
         int x = map(x1, unit_circle_range, cube_axis_range);
         int z = map(z1, unit_circle_range, cube_axis_range);
 
-        p.set_color(gradient_(abs_sin(step_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
+        p.set_color(gradient_(abs_sin(time_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
         p.sphere({x, y, z}, thickness_);
     }
 }
@@ -118,10 +118,9 @@ json_or_error_t helix::properties_to_json() const
 
 property_pairs_or_error_t helix::properties_from_json(nlohmann::json const & json) const
 {
-    auto rotation_time = parse_field(json, helix_rotation_time_ms, default_rotation_time);
-    if (rotation_time < cube::animation_scene_interval)
-        return unexpected_error{"Field '"s + to_string(helix_rotation_time_ms) + "' must be atleast "
-            + std::to_string(cube::animation_scene_interval.count()) + "ms"};
+    auto const rotation_time = parse_field(json, helix_rotation_time_ms, default_rotation_time);
+    if (rotation_time == 0ms)
+        return unexpected_error{"Field '"s + to_string(helix_rotation_time_ms) + "' cannot be 0ms"};
 
     return property_pairs_t {
         make_property(helix_rotation_time_ms, std::move(rotation_time)),

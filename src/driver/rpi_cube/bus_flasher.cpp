@@ -13,7 +13,7 @@ using std::operator""s;
 namespace
 {
 
-// See: https://github.com/LimpSquid/led-controller/blob/5-make-a-bootloader/led-controller.X/include/bootloader/bootloader.h#L6
+// See: https://github.com/LimpSquid/led-controller/blob/master/led-controller.X/include/bootloader/bootloader.h#L6
 enum class bootloader_query : uint8_t
 {
     mem_phy_start   = 0,
@@ -302,7 +302,7 @@ void bus_flasher::push_row(std::shared_ptr<group_state_t const> group, uint32_t 
     {
         bus_request_params<bus_command::bl_exe_push_word> params;
         for (uint32_t i = 0; i < word_size; ++i)
-            params.data[i] = *data++; // Little-endian
+            params.data[i] = *data++;
         crc(params.data, word_size);
         return params;
     };

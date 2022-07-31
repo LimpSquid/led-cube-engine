@@ -33,7 +33,7 @@ struct ripple :
     property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
 
     gradient gradient_;
-    int step_;
+    int time_;
     double omega_;
     double length_;
 };
@@ -58,17 +58,17 @@ ripple::ripple(engine_context & context) :
 
 void ripple::start()
 {
-    int step_interval = static_cast<int>(read_property(ripple_wave_time_ms, default_wave_time) / cube::animation_scene_interval);
+    auto const wave_time = read_property(ripple_wave_time_ms, default_wave_time);
 
     gradient_ = read_property(ripple_gradient, default_gradient);
     length_ = read_property(ripple_length, default_length);
-    omega_ = (2.0 * M_PI) / step_interval;
-    step_ = rand(range{0, UINT16_MAX});
+    omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
+    time_ = rand(range{0, UINT16_MAX});
 }
 
-void ripple::scene_tick(milliseconds)
+void ripple::scene_tick(milliseconds dt)
 {
-    step_++;
+    time_ += static_cast<int>(dt.count());
 }
 
 void ripple::paint(graphics_device & device)
@@ -83,7 +83,7 @@ void ripple::paint(graphics_device & device)
         if (equal(drift_factor, 0.0))
             return {-1.0, 1.0};
 
-        double drift = std::sin(step_ * omega_ * drift_factor);
+        double drift = std::sin(time_ * omega_ * drift_factor);
         return {
             map(drift, unit_circle_range, range{-1.0, -0.2}),
             map(drift, unit_circle_range, range{ 0.2,  1.0})
@@ -97,7 +97,7 @@ void ripple::paint(graphics_device & device)
         double x1 = map(x, cube_axis_range, drift_range_x);
         for (int y = 0; y < cube::cube_size_1d; ++y) {
             double y1 = map(y, cube_axis_range, drift_range_y);
-            double z1 = std::sin(step_ * omega_ + length_ * std::sqrt(x1 * x1 + y1 * y1));
+            double z1 = std::sin(time_ * omega_ + length_ * std::sqrt(x1 * x1 + y1 * y1));
             int z = map(z1, unit_circle_range, cube_axis_range);
 
             p.set_color(gradient_(map(z1, unit_circle_range, gradient_pos_range)));
@@ -119,10 +119,9 @@ json_or_error_t ripple::properties_to_json() const
 
 property_pairs_or_error_t ripple::properties_from_json(nlohmann::json const & json) const
 {
-    auto wave_time = parse_field(json, ripple_wave_time_ms, default_wave_time);
-    if (wave_time < cube::animation_scene_interval)
-        return unexpected_error{"Field '"s + to_string(ripple_wave_time_ms) + "' must be atleast "
-            + std::to_string(cube::animation_scene_interval.count()) + "ms"};
+    auto const wave_time = parse_field(json, ripple_wave_time_ms, default_wave_time);
+    if (wave_time == 0ms)
+        return unexpected_error{"Field '"s + to_string(ripple_wave_time_ms) + "' cannot be 0ms"};
 
     return property_pairs_t {
         make_property(ripple_wave_time_ms, std::move(wave_time)),
