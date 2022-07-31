@@ -29,8 +29,6 @@ void library::publish_animation(std::string const & name, animation_incubator_t 
     if (animations_.find(name) != animations_.cend())
         throw std::runtime_error("Failed to publish animation '" + name + "', name already exists");
     animations_[name] = std::move(incubator);
-
-    LOG_DBG("Published animation", LOG_ARG("name", name));
 }
 
 expected_or_error<animation_pointer_t> library::incubate(std::string const & animation, engine_context & context) const
