@@ -88,7 +88,7 @@ private:
     std::vector<node_t> nodes_;
     std::filesystem::path hex_filepath_;
     completion_handler_t completion_handler_;
-    cube::core::scope_tracker_t scope_tracker_;
+    cube::core::scope_guard_t scope_guard_;
 };
 
 } // End of namespace

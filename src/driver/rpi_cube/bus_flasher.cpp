@@ -64,7 +64,7 @@ namespace driver::rpi_cube
 bus_flasher::bus_flasher(bus_comm & comm, completion_handler_t handler) :
     bus_comm_(comm),
     completion_handler_(std::move(handler)),
-    scope_tracker_(make_scope_tracker())
+    scope_guard_(make_scope_guard())
 { }
 
 void bus_flasher::flash_hex_file(fs::path const & filepath, std::unordered_set<bus_node> const & filter)
@@ -404,8 +404,8 @@ void bus_flasher::broadcast(bus_request_params<C> && params, H && handler)
     if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
         return complete();
 
-    bus_comm_.broadcast(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = make_weak_ref(scope_tracker_)](auto && ... args){
-        if (is_valid(r))
+    bus_comm_.broadcast(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = get_ref(scope_guard_)](auto && ... args){
+        if (lock(r))
             h(std::forward<decltype(args)>(args)...);
     });
 }
@@ -416,8 +416,8 @@ void bus_flasher::send_for_all(bus_request_params<C> && params, H && handler, N 
     if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
         return complete();
 
-    bus_comm_.send_for_all(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = make_weak_ref(scope_tracker_)](auto && ... args){
-        if (is_valid(r))
+    bus_comm_.send_for_all(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = get_ref(scope_guard_)](auto && ... args){
+        if (lock(r))
             h(std::forward<decltype(args)>(args)...);
     }, std::forward<N>(nodes));
 }
