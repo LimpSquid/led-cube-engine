@@ -41,7 +41,7 @@ color adjust_brightness(color const & c, double factor)
     return c;
 }
 
-color from_string(std::string c)
+color color_from_string(std::string c)
 {
     if (c.empty())
         return {};
@@ -66,6 +66,7 @@ color from_string(std::string c)
     STATEMENT_FOR(yellow)
     STATEMENT_FOR(orange)
     STATEMENT_FOR(pink)
+    STATEMENT_FOR(steel_blue)
 #undef STATEMENT_FOR
     return {};
 }

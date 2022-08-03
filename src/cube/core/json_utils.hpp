@@ -206,7 +206,7 @@ inline void from_json(nlohmann::json const & json, color & out)
     std::string color = json;
     out = color == "random"
         ? random_color()
-        : from_string(color);
+        : color_from_string(color);
 }
 
 } // End of namespace

@@ -55,17 +55,18 @@ inline constexpr color operator!(color const & c)
     return {r, g, b, c.a};
 }
 
-constexpr color color_transparent   {000, 000, 000, 000};
-constexpr color color_black         {000, 000, 000};
+constexpr color color_transparent   {  0,   0,   0,   0};
+constexpr color color_black         {  0,   0,   0};
 constexpr color color_white         {255, 255, 255};
-constexpr color color_red           {255, 000, 000};
-constexpr color color_green         {000, 255, 000};
-constexpr color color_blue          {000, 000, 255};
-constexpr color color_cyan          {000, 255, 255};
-constexpr color color_magenta       {255, 000, 255};
-constexpr color color_yellow        {255, 255, 000};
-constexpr color color_orange        {255, 128, 000};
+constexpr color color_red           {255,   0,   0};
+constexpr color color_green         {  0, 255,   0};
+constexpr color color_blue          {  0,   0, 255};
+constexpr color color_cyan          {  0, 255, 255};
+constexpr color color_magenta       {255,   0, 255};
+constexpr color color_yellow        {255, 255,   0};
+constexpr color color_orange        {255, 128,   0};
 constexpr color color_pink          {255,  96, 255};
+constexpr color color_steel_blue    { 70, 130, 180};
 
 constexpr inline color_vec_t red_vec(double scalar) { return {scalar, 1.0, 1.0, 1.0}; }
 constexpr inline color_vec_t green_vec(double scalar) { return {1.0, scalar, 1.0, 1.0}; }
@@ -102,7 +103,7 @@ constexpr inline bool opaque(rgba_t const & rgba)
 color lighter(color const & c, double factor = 0.1);
 color darker(color const & c, double factor = 0.1);
 color adjust_brightness(color const & c, double factor);
-color from_string(std::string c);
+color color_from_string(std::string c);
 void alpha_blend(color const & c, color & bucket);
 void alpha_blend(rgba_t const & c, rgba_t & bucket);
 void blend(color const & c, color & bucket);
