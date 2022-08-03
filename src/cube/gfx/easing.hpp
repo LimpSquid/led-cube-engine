@@ -23,7 +23,7 @@ public:
 
     basic_easing_transition(core::engine_context & context, easing_config config,
         completion_handler_t completion_handler = {}) :
-        timer_(context, std::bind(&basic_easing_transition::operator(), this)),
+        timer_(context, std::bind(&basic_easing_transition::operator(), this, std::placeholders::_2)),
         completion_handler_(std::move(completion_handler)),
         config_(std::move(config)),
         value_(config_.range.from)
@@ -36,8 +36,10 @@ public:
     void stop() { timer_.stop(); }
     void start()
     {
-        step_ = 0;
+        using std::operator""ms;
+
         value_ = config_.range.from;
+        elapsed_ = 0ms;
         timer_.start(config_.time / config_.resolution);
     }
 
@@ -45,14 +47,15 @@ private:
     using easing_curve_t = EasingCurve;
     using inverse = std::integral_constant<bool, Inverse>;
 
-    void operator()()
+    void operator()(std::chrono::milliseconds dt)
     {
         constexpr easing_range_t curve_range{0.0, 1.0};
         static const easing_curve_t curve{};
 
-        if (++step_ < config_.resolution) {
+        elapsed_ += dt;
+        if (elapsed_ < config_.time) {
+            double const position = static_cast<double>(elapsed_.count()) / static_cast<double>(config_.time.count());
             double curve_position;
-            double const position = static_cast<double>(step_) / config_.resolution;
             if constexpr(inverse::value)
                 curve_position = 1.0 - core::clamp(curve(1.0 - position), curve_range);
             else
@@ -69,8 +72,8 @@ private:
     core::recurring_timer timer_;
     completion_handler_t completion_handler_;
     easing_config const config_;
+    std::chrono::milliseconds elapsed_;
     double value_;
-    unsigned int step_;
 };
 
 struct linear_curve { double operator()(double) const; };
