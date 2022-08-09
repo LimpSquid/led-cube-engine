@@ -75,7 +75,6 @@ void ripple::paint(graphics_device & device)
 {
     painter p(device);
     p.wipe_canvas();
-    p.set_color(color_red);
 
     double const drift_factor_x = read_property(ripple_drift_factor_x, default_drift_factor);
     double const drift_factor_y = read_property(ripple_drift_factor_y, default_drift_factor);
