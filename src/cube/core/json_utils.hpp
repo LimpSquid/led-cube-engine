@@ -5,6 +5,7 @@
 #include <3rdparty/nlohmann/json.hpp>
 #include <boost/type_index.hpp>
 #include <iomanip>
+#include <optional>
 
 namespace cube::core
 {

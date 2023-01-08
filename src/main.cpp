@@ -2,6 +2,7 @@
 #include <cube/core/logging.hpp>
 #include <iostream>
 #include <vector>
+#include <optional>
 #include <signal.h>
 #include <execinfo.h>
 
