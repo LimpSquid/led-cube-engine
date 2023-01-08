@@ -4,7 +4,6 @@ Description=Led Cube Engine
 [Service]
 Type=simple
 ExecStart=/home/pi/led-cube-engine render --file /home/pi/animations.json
-ExecStopPost=/home/pi/led-cube-engine devop
 KillSignal=SIGINT
 Restart=on-failure
 RestartSec=60
