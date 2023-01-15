@@ -47,7 +47,7 @@ struct fireworks :
 {
     fireworks(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
@@ -64,7 +64,7 @@ struct fireworks :
 animation_publisher<fireworks> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr double default_explosion_force = 1.0;
+constexpr double default_explosion_force = 2.5;
 constexpr double gravity = -0.000001 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_shells{3};
@@ -75,17 +75,23 @@ fireworks::fireworks(engine_context & context) :
     configurable_animation(context)
 { }
 
-void fireworks::start()
+void fireworks::state_changed(animation_state state)
 {
-    explosion_force_ = read_property<double>("explosion_force");
-    shell_colors_ = read_property<std::vector<color>>("shell_colors");
-    num_fragments_ = read_property<unsigned int>("number_of_fragments");
-    shell_radius_ = read_property<int>("shell_radius");
+    switch (state) {
+        case running: {
+            explosion_force_ = read_property<double>("explosion_force");
+            shell_colors_ = read_property<std::vector<color>>("shell_colors");
+            num_fragments_ = read_property<unsigned int>("number_of_fragments");
+            shell_radius_ = read_property<int>("shell_radius");
 
-    auto const num_shells = read_property<unsigned int>("number_of_shells");
-    shells_.resize(num_shells);
-    for (auto & shell : shells_)
-        shell = make_shell();
+            auto const num_shells = read_property<unsigned int>("number_of_shells");
+            shells_.resize(num_shells);
+            for (auto & shell : shells_)
+                shell = make_shell();
+            break;
+        }
+        default:;
+    }
 }
 
 void fireworks::scene_tick(milliseconds dt)

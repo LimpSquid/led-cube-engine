@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
 #include <unistd.h>
 
 #define LOG_ARG(name, value)    std::make_pair(name, value)
@@ -120,6 +121,35 @@ template<typename T>
 typename std::enable_if_t<std::is_floating_point_v<T>, std::size_t> write(char * buffer, T const & value)
 {
     return sprintf(buffer, "%f", value);
+}
+
+template<class Rep, std::intmax_t Num, std::intmax_t Den>
+std::size_t write(char * buffer, std::chrono::duration<Rep, std::ratio<Num, Den>> const & value)
+{
+    using ratio_t = std::ratio<Num, Den>;
+
+    if constexpr (std::is_same_v<ratio_t, std::nano>)
+        return sprintf(buffer, "%ldns", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::micro>)
+        return sprintf(buffer, "%ldus", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::milli>)
+        return sprintf(buffer, "%ldms", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<1>>)
+        return sprintf(buffer, "%lds", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<60>>)
+        return sprintf(buffer, "%ld minute(s)", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<3600>>)
+        return sprintf(buffer, "%ld hour(s)", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<86400>>)
+        return sprintf(buffer, "%ld day(s)", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<604800>>)
+        return sprintf(buffer, "%ld week(s)", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<2629746>>)
+        return sprintf(buffer, "%ld month(s)", value.count());
+    else if constexpr (std::is_same_v<ratio_t, std::ratio<31556952>>)
+        return sprintf(buffer, "%ld year(s)", value.count());
+    else
+        return sprintf(buffer, "%ld [num: %ld, den: %ld]", value.count(), Num, Den);
 }
 
 template<typename T>

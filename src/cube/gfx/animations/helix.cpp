@@ -17,14 +17,14 @@ struct helix :
 {
     helix(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    void stop() override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     gradient gradient_;
-    ease_in_sine fader_;
+    ease_in_sine fade_in_;
+    ease_out_sine fade_out_;
     int time_;
     int thickness_;
     double omega_;
@@ -47,20 +47,33 @@ gradient const default_gradient
 
 helix::helix(engine_context & context) :
     configurable_animation(context),
-    fader_(context, {{0.1, 1.0}, 10, 1000ms})
+    fade_in_(context, {{0.0, 1.0}, 20, 1000ms}),
+    fade_out_(context, {{1.0, 0.0}, 20, 1000ms})
 { }
 
-void helix::start()
+void helix::state_changed(animation_state state)
 {
-    auto const rotation_time = read_property<milliseconds>("helix_rotation_time_ms");
+    switch (state) {
+        case running: {
+            auto const rotation_time = read_property<milliseconds>("helix_rotation_time_ms");
 
-    gradient_ = read_property<gradient>("helix_gradient");
-    thickness_ = read_property<int>("helix_thickness");
-    length_ =  2.0 * M_PI * read_property<double>("helix_length");
-    omega_ = (2.0 * M_PI) / static_cast<double>(rotation_time.count());
-    time_ = rand(range{0, UINT16_MAX});
+            gradient_ = read_property<gradient>("helix_gradient");
+            thickness_ = read_property<int>("helix_thickness");
+            length_ =  2.0 * M_PI * read_property<double>("helix_length");
+            omega_ = (2.0 * M_PI) / static_cast<double>(rotation_time.count());
+            time_ = rand(range{0, UINT16_MAX});
 
-    fader_.start();
+            fade_in_.start();
+            break;
+        }
+        case stopping:
+            fade_out_.start();
+            break;
+        case stopped:
+            fade_in_.stop();
+            fade_out_.stop();
+            break;
+    }
 }
 
 void helix::scene_tick(milliseconds dt)
@@ -83,14 +96,13 @@ void helix::paint(graphics_device & device)
         int const x = map(x1, unit_circle_range, cube_axis_range);
         int const z = map(z1, unit_circle_range, cube_axis_range);
 
-        p.set_color(gradient_(abs_sin(time_ * omega_ + 0.5 * phase_shift)).vec() * rgb_vec(fader_.value()));
+        auto c = gradient_(abs_sin(time_ * omega_ + 0.5 * phase_shift)).vec();
+        c *= rgb_vec(fade_in_.value());
+        c *= rgb_vec(fade_out_.value());
+
+        p.set_color(c);
         p.sphere({x, y, z}, thickness_);
     }
-}
-
-void helix::stop()
-{
-    fader_.stop();
 }
 
 std::unordered_map<std::string, property_value_t> helix::extra_properties() const

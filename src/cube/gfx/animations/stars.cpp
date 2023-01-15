@@ -3,6 +3,7 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/core/logging.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -24,7 +25,7 @@ struct stars :
 {
     stars(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
@@ -61,20 +62,33 @@ stars::stars(engine_context & context) :
     configurable_animation(context)
 { }
 
-void stars::start()
+void stars::state_changed(animation_state state)
 {
-    galaxy_gradient_ = read_property<gradient>("galaxy_gradient");
-    star_radius_ = read_property<int>("star_radius");
-    step_interval_ = static_cast<int>(read_property<milliseconds>("fade_time_ms") / cube::animation_scene_interval);
-    omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
-    omega_gradient_ = omega_ * gradient_omega_scalar;
-    gradient_step_ = 0;
+    switch (state) {
+        case running: {
+            auto fade_time = read_property<milliseconds>("fade_time_ms");
+            if (fade_time < cube::animation_scene_interval) {
+                LOG_WRN("Ignoring property 'fade_time_ms', must be atleast 'animation_scene_interval.",
+                    LOG_ARG("animation_scene_interval", cube::animation_scene_interval));
+                fade_time = cube::animation_scene_interval;
+            }
 
-    auto const num_stars = read_property<unsigned int>("number_of_stars");
-    stars_.resize(num_stars);
-    for (auto & star : stars_) {
-        star = make_star();
-        star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
+            galaxy_gradient_ = read_property<gradient>("galaxy_gradient");
+            star_radius_ = read_property<int>("star_radius");
+            step_interval_ = static_cast<int>(fade_time / cube::animation_scene_interval);
+            omega_ = M_PI / step_interval_; // omega = 0.5 * ((2 * pi) / step_interval_), multiply by 0.5 as we only use half a sine period for fading
+            omega_gradient_ = omega_ * gradient_omega_scalar;
+            gradient_step_ = 0;
+
+            auto const num_stars = read_property<unsigned int>("number_of_stars");
+            stars_.resize(num_stars);
+            for (auto & star : stars_) {
+                star = make_star();
+                star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
+            }
+            break;
+        }
+        default:;
     }
 }
 
@@ -104,12 +118,6 @@ void stars::paint(graphics_device & device)
 
 std::unordered_map<std::string, property_value_t> stars::extra_properties() const
 {
-    // TODO:
-    // auto fade_time = parse_field(json, fade_time_ms, default_fade_time);
-    // if (fade_time < cube::animation_scene_interval)
-    //     return unexpected_error{"Field '"s + to_string(fade_time_ms) + "' must be atleast "
-    //         + std::to_string(cube::animation_scene_interval.count()) + "ms"};
-
     return {
         { "fade_time_ms", default_fade_time },
         { "number_of_stars", default_number_of_stars },

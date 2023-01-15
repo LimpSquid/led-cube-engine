@@ -144,10 +144,9 @@ struct my_animation :
 {
     my_animation(engine_context & context);
 
-    void start() override; // Optional, called before the animation is started
+    void state_changed(animation_state value) override; // Optional, called when the animation state changed
     void scene_tick(std::chrono::milliseconds dt) override; // Optional, called with an interval of `animation_scene_interval` ms.
     void paint(graphics_device & device) override; // Required, paint a single animation frame
-    void stop() override; // Optional, called after the animation is finished
     std::unordered_map<std::string, property_value_t> extra_properties() const override; // Optional, implement if we have atleast one animation property
 };
 
@@ -171,21 +170,35 @@ my_animation::my_animation(engine_context & context) :
     configurable_animation(context)
 { }
 
-void my_animation::start()
+void my_animation::state_changed(animation_state state)
 {
-    // Do some additional processing before the animation starts
-    // ...
-    // ...
+    switch (state) {
+        case running:
+            // Do some additional processing before the animation starts
+            // ...
+            // ...
 
-    // For example read the int & double property:
-    auto const my_int = read_property<int>("my_int_property");
-    auto const my_double = read_property<double>("my_double_property");
+            // For example read the int & double property:
+            auto const my_int = read_property<int>("my_int_property");
+            auto const my_double = read_property<double>("my_double_property");
 
-    // Or a gradient:
-    auto const my_gradient = read_property<gradient>("my_gradient_property");
+            // Or a gradient:
+            auto const my_gradient = read_property<gradient>("my_gradient_property");
 
-    // Or a vector of colors:
-    auto const my_colors = read_property<std::vector<color>>("my_color_vector_property");
+            // Or a vector of colors:
+            auto const my_colors = read_property<std::vector<color>>("my_color_vector_property");
+            break;
+        case stopping:
+            // Do some additional processing when the animation is about to be stopped
+            // ...
+            // ...
+            break;
+        case stopped:
+            // Do some additional processing after the animation has stopped
+            // ...
+            // ...
+            break;
+    }
 }
 
 void my_animation::scene_tick(std::chrono::milliseconds dt)
@@ -203,21 +216,11 @@ void my_animation::paint(graphics_device & device)
     // ...
 }
 
-void my_animation::stop()
-{
-    // Do some additional processing after the animation has finished
-    // ...
-    // ...
-}
-
 std::unordered_map<std::string, property_value_t> my_animation::extra_properties() const
 {
-    // TODO:
-    // Return error when certain JSON values are not allowed
-    // auto my_int = parse_field(json, my_int_property, default_int_property);
-    // if (my_int == 1234)
-    //     return unexpected_error{"Field '"s + to_string(my_int_property) + "' cannot be 1234"};
-
+    // Return a map of extra properties where:
+    // - Key: property label
+    // - Value: default property value
     return {
         { "my_int_property", default_int_property },
         { "my_double_property", default_double_property },

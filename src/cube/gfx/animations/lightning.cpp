@@ -24,9 +24,8 @@ struct lightning :
 {
     lightning(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void paint(graphics_device & device) override;
-    void stop() override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     void spawn_cloud(cloud & c);
@@ -51,15 +50,27 @@ lightning::lightning(engine_context & context) :
     configurable_animation(context)
 { }
 
-void lightning::start()
+void lightning::state_changed(animation_state state)
 {
-    cloud_gradient_ = read_property<gradient>("cloud_gradient");
-    cloud_radius_ = read_property<int>("cloud_radius");
+    switch (state) {
+        case running: {
+            cloud_gradient_ = read_property<gradient>("cloud_gradient");
+            cloud_radius_ = read_property<int>("cloud_radius");
 
-    auto const num_clouds = read_property<unsigned int>("number_of_clouds");
-    clouds_.resize(num_clouds);
-    for (auto & cloud : clouds_)
-        spawn_cloud(cloud);
+            auto const num_clouds = read_property<unsigned int>("number_of_clouds");
+            clouds_.resize(num_clouds);
+            for (auto & cloud : clouds_)
+                spawn_cloud(cloud);
+            break;
+        }
+        case stopped:
+            for (auto & cloud : clouds_) {
+                cloud.in_fader.reset();
+                cloud.out_fader.reset();
+            }
+            break;
+        default:;
+    }
 }
 
 void lightning::paint(graphics_device & device)
@@ -73,14 +84,6 @@ void lightning::paint(graphics_device & device)
 
         p.set_color(cloud_gradient_(fade_scalar).vec() * alpha_vec(map(fade_scalar, 0.0, 1.0, 0.6, 1.0)));
         p.sphere(cloud.voxel, radius);
-    }
-}
-
-void lightning::stop()
-{
-    for (auto & cloud : clouds_) {
-        cloud.in_fader.reset();
-        cloud.out_fader.reset();
     }
 }
 

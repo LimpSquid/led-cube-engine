@@ -75,14 +75,24 @@ void handle_file(std::vector<std::string> const & args)
             std::size_t index = 0;
             single_shot_timer player(engine.context(), [&](auto, auto) {
                 auto const & [name, animation] = animations[index];
-                index = (index + 1) % animations.size();
-                engine.load(std::static_pointer_cast<cube::core::animation>(animation));
-                player.start(animation->get_duration());
 
-                LOG_INF("Playing animation",
-                    LOG_ARG("animation", name),
-                    LOG_ARG("label", animation->get_label()),
-                    LOG_ARG("duration_ms", animation->get_duration().count()));
+                switch (animation->state()) {
+                    case animation::running:
+                        index = (index + 1) % animations.size();
+                        animation->about_to_finish();
+                        player.start(1000ms); // TODO: eventually make part of anim?
+                        break;
+                    case animation::stopping:
+                    case animation::stopped:
+                        engine.load(std::static_pointer_cast<cube::core::animation>(animation));
+                        player.start(animation->get_duration());
+
+                        LOG_INF("Playing animation",
+                            LOG_ARG("animation", name),
+                            LOG_ARG("label", animation->get_label()),
+                            LOG_ARG("duration_ms", animation->get_duration().count()));
+                        break;
+                }
             });
             player.start(0ms);
             engine.run();

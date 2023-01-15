@@ -27,7 +27,7 @@ struct falling_balls :
 {
     falling_balls(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
@@ -52,16 +52,22 @@ falling_balls::falling_balls(engine_context & context) :
     configurable_animation(context)
 { }
 
-void falling_balls::start()
+void falling_balls::state_changed(animation_state state)
 {
-    max_radius_ = read_property<int>("max_ball_radius");
-    min_radius_ = read_property<int>("min_ball_radius");
-    ball_colors_ = read_property<std::vector<color>>("ball_colors");
+    switch (state) {
+        case running: {
+            max_radius_ = read_property<int>("max_ball_radius");
+            min_radius_ = read_property<int>("min_ball_radius");
+            ball_colors_ = read_property<std::vector<color>>("ball_colors");
 
-    auto const num_balls = read_property<unsigned int>("number_of_balls");
-    balls_.resize(num_balls);
-    for (auto & ball : balls_)
-        ball = make_ball();
+            auto const num_balls = read_property<unsigned int>("number_of_balls");
+            balls_.resize(num_balls);
+            for (auto & ball : balls_)
+                ball = make_ball();
+            break;
+        }
+        default:;
+    }
 }
 
 void falling_balls::scene_tick(milliseconds dt)

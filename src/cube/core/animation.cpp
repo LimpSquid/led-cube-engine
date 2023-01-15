@@ -9,6 +9,11 @@ engine_context & animation::context()
     return context_;
 }
 
+animation::animation_state animation::state() const
+{
+    return state_;
+}
+
 bool animation::dirty() const
 {
     return dirty_;
@@ -18,7 +23,7 @@ void animation::init()
 {
     dirty_ = true;
     scene_timer_.start(animation_scene_interval);
-    start();
+    change_state(running);
 }
 
 void animation::update()
@@ -26,11 +31,16 @@ void animation::update()
     dirty_ = true;
 }
 
+void animation:: about_to_finish()
+{
+    change_state(stopping);
+}
+
 void animation::finish()
 {
     dirty_ = false;
     scene_timer_.stop();
-    stop();
+    change_state(stopped);
 }
 
 void animation::paint_event(graphics_device & device)
@@ -45,16 +55,22 @@ animation::animation(engine_context & context) :
         scene_tick(std::move(elapsed));
         update();
     }),
+    state_(stopped),
     dirty_(true)
 { }
 
-void animation::start()
-{ }
+void animation::change_state(animation_state state)
+{
+    if (state != state_) {
+        state_ = state;
+        state_changed(state);
+    }
+}
 
 void animation::scene_tick(std::chrono::milliseconds)
 { }
 
-void animation::stop()
+void animation::state_changed(animation_state)
 { }
 
 } // End of namespace

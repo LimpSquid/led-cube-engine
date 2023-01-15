@@ -28,8 +28,7 @@ struct rain :
 {
     rain(engine_context & context);
 
-    void start() override;
-    void stop() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
@@ -53,23 +52,27 @@ rain::rain(engine_context & context) :
     fader_(context, {{0.1, 1.0}, 20, 1000ms})
 { }
 
-void rain::start()
+void rain::state_changed(animation_state state)
 {
-    droplet_colors_ = read_property<std::vector<color>>("droplet_colors");
+    switch (state) {
+        case running: {
+            droplet_colors_ = read_property<std::vector<color>>("droplet_colors");
 
-    auto const num_droplets = read_property<unsigned int>("number_of_droplets");
-    droplets_.resize(num_droplets);
-    for (auto & droplet : droplets_) {
-        droplet = make_droplet();
-        droplet.position.z = rand(cube_axis_range);
+            auto const num_droplets = read_property<unsigned int>("number_of_droplets");
+            droplets_.resize(num_droplets);
+            for (auto & droplet : droplets_) {
+                droplet = make_droplet();
+                droplet.position.z = rand(cube_axis_range);
+            }
+
+            fader_.start();
+            break;
+        }
+        case stopped:
+            fader_.stop();
+            break;
+        default:;
     }
-
-    fader_.start();
-}
-
-void rain::stop()
-{
-    fader_.stop();
 }
 
 void rain::scene_tick(milliseconds dt)

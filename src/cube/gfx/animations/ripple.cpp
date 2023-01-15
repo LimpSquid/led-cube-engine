@@ -1,8 +1,10 @@
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
+#include <cube/core/logging.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -17,12 +19,14 @@ struct ripple :
 {
     ripple(engine_context & context);
 
-    void start() override;
+    void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     gradient gradient_;
+    ease_in_sine fade_in_;
+    ease_out_sine fade_out_;
     int time_;
     double omega_;
     double length_;
@@ -43,17 +47,37 @@ gradient const default_gradient
 };
 
 ripple::ripple(engine_context & context) :
-    configurable_animation(context)
+    configurable_animation(context),
+    fade_in_(context, {{0.0, 1.0}, 20, 1000ms}),
+    fade_out_(context, {{1.0, 0.0}, 20, 1000ms})
 { }
 
-void ripple::start()
+void ripple::state_changed(animation_state state)
 {
-    auto const wave_time = read_property<milliseconds>("ripple_wave_time_ms");
+    switch (state) {
+        case running: {
+            auto wave_time = read_property<milliseconds>("ripple_wave_time_ms");
+            if (wave_time <= 0ms) {
+                LOG_WRN("Ignoring property 'ripple_wave_time_ms', must be > 0ms.");
+                wave_time = default_wave_time;
+            }
 
-    gradient_ = read_property<gradient>("ripple_gradient");
-    length_ = read_property<double>("ripple_length");
-    omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
-    time_ = rand(range{0, UINT16_MAX});
+            gradient_ = read_property<gradient>("ripple_gradient");
+            length_ = read_property<double>("ripple_length");
+            omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
+            time_ = rand(range{0, UINT16_MAX});
+
+            fade_in_.start();
+            break;
+        }
+        case stopping:
+            fade_out_.start();
+            break;
+        case stopped:
+            fade_in_.stop();
+            fade_out_.stop();
+            break;
+    }
 }
 
 void ripple::scene_tick(milliseconds dt)
@@ -89,7 +113,11 @@ void ripple::paint(graphics_device & device)
             double z1 = std::sin(time_ * omega_ + length_ * std::sqrt(x1 * x1 + y1 * y1));
             int z = map(z1, unit_circle_range, cube_axis_range);
 
-            p.set_color(gradient_(map(z1, unit_circle_range, gradient_pos_range)));
+            auto c = gradient_(map(z1, unit_circle_range, gradient_pos_range)).vec();
+            c *= rgb_vec(fade_in_.value());
+            c *= rgb_vec(fade_out_.value());
+
+            p.set_color(c);
             p.draw({x, y, z});
         }
     }
@@ -97,11 +125,6 @@ void ripple::paint(graphics_device & device)
 
 std::unordered_map<std::string, property_value_t> ripple::extra_properties() const
 {
-    // TODO:
-    // auto const wave_time = parse_field(json, ripple_wave_time_ms, default_wave_time);
-    // if (wave_time == 0ms)
-    //     return unexpected_error{"Field '"s + to_string(ripple_wave_time_ms) + "' cannot be 0ms"};
-
     return {
         { "ripple_wave_time_ms", default_wave_time },
         { "ripple_length", default_length },
