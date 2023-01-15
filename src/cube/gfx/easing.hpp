@@ -34,7 +34,14 @@ public:
 
     double value() const { return value_; }
     bool is_running() const { return timer_.is_running(); }
-    void stop() { timer_.stop(); }
+
+    void pause() { timer_.stop(); }
+    void stop()
+    {
+        timer_.stop();
+        value_ = config_.range.from;
+    }
+
     void start()
     {
         using std::operator""ms;
