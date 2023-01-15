@@ -33,6 +33,7 @@ public:
     }
 
     double value() const { return value_; }
+    bool is_running() const { return timer_.is_running(); }
     void stop() { timer_.stop(); }
     void start()
     {

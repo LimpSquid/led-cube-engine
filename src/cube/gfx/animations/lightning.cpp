@@ -22,20 +22,12 @@ struct cloud
 struct lightning :
     configurable_animation
 {
-    PROPERTY_ENUM
-    (
-        number_of_clouds,       // Number of clouds in the cube
-        cloud_radius,           // Radius of the cloud
-        cloud_gradient,         // Gradient of the clouds
-    )
-
     lightning(engine_context & context);
 
     void start() override;
     void paint(graphics_device & device) override;
     void stop() override;
-    json_or_error_t properties_to_json() const override;
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
+    std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     void spawn_cloud(cloud & c);
 
@@ -61,10 +53,10 @@ lightning::lightning(engine_context & context) :
 
 void lightning::start()
 {
-    cloud_gradient_ = read_property(cloud_gradient, default_gradient);
-    cloud_radius_ = read_property(cloud_radius, default_radius);
+    cloud_gradient_ = read_property<gradient>("cloud_gradient");
+    cloud_radius_ = read_property<int>("cloud_radius");
 
-    unsigned int num_clouds = read_property(number_of_clouds, default_number_of_clouds);
+    auto const num_clouds = read_property<unsigned int>("number_of_clouds");
     clouds_.resize(num_clouds);
     for (auto & cloud : clouds_)
         spawn_cloud(cloud);
@@ -92,21 +84,12 @@ void lightning::stop()
     }
 }
 
-json_or_error_t lightning::properties_to_json() const
+std::unordered_map<std::string, property_value_t> lightning::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(number_of_clouds, default_number_of_clouds),
-        make_json(cloud_radius, default_radius),
-        make_json(cloud_gradient, default_gradient),
-    };
-}
-
-property_pairs_or_error_t lightning::properties_from_json(nlohmann::json const & json) const
-{
-    return property_pairs_t {
-        make_property(json, number_of_clouds, default_number_of_clouds),
-        make_property(json, cloud_radius, default_radius),
-        make_property(json, cloud_gradient, default_gradient),
+    return {
+        { "number_of_clouds", default_number_of_clouds },
+        { "cloud_radius", default_radius },
+        { "cloud_gradient", default_gradient },
     };
 }
 

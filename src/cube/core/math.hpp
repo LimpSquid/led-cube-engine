@@ -115,6 +115,12 @@ constexpr T diff(range<T> const & range)
 }
 
 template<typename T>
+constexpr range<T> reverse(range<T> const & range)
+{
+    return {range.to, range.from};
+}
+
+template<typename T>
 constexpr T diff(safe_range<T> const & range)
 {
     return range.to - range.from;

@@ -142,23 +142,13 @@ namespace
 struct my_animation :
     configurable_animation
 {
-    // Optional, properties that are to be configured via JSON
-    PROPERTY_ENUM
-    (
-        my_int_property,
-        my_double_property,
-        my_gradient_property,
-        my_color_vector_property,
-    )
-
     my_animation(engine_context & context);
 
     void start() override; // Optional, called before the animation is started
     void scene_tick(std::chrono::milliseconds dt) override; // Optional, called with an interval of `animation_scene_interval` ms.
     void paint(graphics_device & device) override; // Required, paint a single animation frame
     void stop() override; // Optional, called after the animation is finished
-    json_or_error_t properties_to_json() const override; // Optional, implement if we have atleast one property
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override; // Optional, implement if we have atleast one property
+    std::unordered_map<std::string, property_value_t> extra_properties() const override; // Optional, implement if we have atleast one animation property
 };
 
 // Adds the animation to library with name "my_animation".
@@ -188,14 +178,14 @@ void my_animation::start()
     // ...
 
     // For example read the int & double property:
-    auto const my_int = read_property(my_int_property, default_int_property);
-    auto const my_double = read_property(my_double_property, default_double_property);
+    auto const my_int = read_property<int>("my_int_property");
+    auto const my_double = read_property<double>("my_double_property");
 
     // Or a gradient:
-    auto const my_gradient = read_property(my_gradient_property, default_gradient_property);
+    auto const my_gradient = read_property<gradient>("my_gradient_property");
 
     // Or a vector of colors:
-    auto const my_colors = read_property(my_color_vector_property, std::vector<color>{});
+    auto const my_colors = read_property<std::vector<color>>("my_color_vector_property");
 }
 
 void my_animation::scene_tick(std::chrono::milliseconds dt)
@@ -220,28 +210,19 @@ void my_animation::stop()
     // ...
 }
 
-json_or_error_t my_animation::properties_to_json() const
+std::unordered_map<std::string, property_value_t> my_animation::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(my_int_property, default_int_property),
-        make_json(my_double_property, default_double_property),
-        make_json(my_gradient_property, default_gradient_property),
-        make_json(my_color_vector_property, std::vector<color>{}),
-    };
-}
-
-property_pairs_or_error_t my_animation::properties_from_json(nlohmann::json const & json) const
-{
+    // TODO:
     // Return error when certain JSON values are not allowed
-    auto my_int = parse_field(json, my_int_property, default_int_property);
-    if (my_int == 1234)
-        return unexpected_error{"Field '"s + to_string(my_int_property) + "' cannot be 1234"};
+    // auto my_int = parse_field(json, my_int_property, default_int_property);
+    // if (my_int == 1234)
+    //     return unexpected_error{"Field '"s + to_string(my_int_property) + "' cannot be 1234"};
 
-    return property_pairs_t {
-        make_property(my_int_property, my_int),
-        make_property(json, my_double_property, default_double_property),
-        make_property(json, my_gradient_property, default_gradient_property),
-        make_property(json, my_color_vector_property, std::vector<color>{}),
+    return {
+        { "my_int_property", default_int_property },
+        { "my_double_property", default_double_property },
+        { "my_gradient_property", default_gradient_property },
+        { "my_color_vector_property", std::vector<color>{} },
     };
 }
 

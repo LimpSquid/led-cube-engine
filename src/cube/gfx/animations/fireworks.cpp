@@ -45,22 +45,12 @@ struct shell
 struct fireworks :
     configurable_animation
 {
-    PROPERTY_ENUM
-    (
-        number_of_shells,       // Number of shells
-        number_of_fragments,    // Number of fragments when exploded
-        explosion_force,        // Factor to limit or increase the explosion force
-        shell_radius,           // Radius of the shell
-        shell_colors,           // Array of shell colors to pick from
-    )
-
     fireworks(engine_context & context);
 
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    json_or_error_t properties_to_json() const override;
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
+    std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     shell make_shell() const;
 
@@ -87,12 +77,12 @@ fireworks::fireworks(engine_context & context) :
 
 void fireworks::start()
 {
-    explosion_force_ = read_property(explosion_force, default_explosion_force);
-    shell_colors_ = read_property(shell_colors, std::vector<color>{});
-    num_fragments_ = read_property(number_of_fragments, default_number_of_fragments);
-    shell_radius_ = read_property(shell_radius, default_shell_radius);
+    explosion_force_ = read_property<double>("explosion_force");
+    shell_colors_ = read_property<std::vector<color>>("shell_colors");
+    num_fragments_ = read_property<unsigned int>("number_of_fragments");
+    shell_radius_ = read_property<int>("shell_radius");
 
-    unsigned int num_shells = read_property(number_of_shells, default_number_of_shells);
+    auto const num_shells = read_property<unsigned int>("number_of_shells");
     shells_.resize(num_shells);
     for (auto & shell : shells_)
         shell = make_shell();
@@ -116,25 +106,14 @@ void fireworks::paint(graphics_device & device)
         shell.paint(p);
 }
 
-json_or_error_t fireworks::properties_to_json() const
+std::unordered_map<std::string, property_value_t> fireworks::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(number_of_shells, default_number_of_shells),
-        make_json(number_of_fragments, default_number_of_fragments),
-        make_json(shell_radius, default_shell_radius),
-        make_json(explosion_force, default_explosion_force),
-        make_json(shell_colors, std::vector<color>{}),
-    };
-}
-
-property_pairs_or_error_t fireworks::properties_from_json(nlohmann::json const & json) const
-{
-    return property_pairs_t {
-        make_property(json, number_of_shells, default_number_of_shells),
-        make_property(json, number_of_fragments, default_number_of_fragments),
-        make_property(json, shell_radius, default_shell_radius),
-        make_property(json, explosion_force, default_explosion_force),
-        make_property(json, shell_colors, std::vector<color>{}),
+    return {
+        { "number_of_shells", default_number_of_shells },
+        { "number_of_fragments", default_number_of_fragments },
+        { "shell_radius", default_shell_radius },
+        { "explosion_force", default_explosion_force},
+        { "shell_colors", std::vector<color>{}},
     };
 }
 

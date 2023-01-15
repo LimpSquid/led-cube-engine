@@ -20,12 +20,12 @@ namespace cube::gfx
 
 std::string configurable_animation::get_label() const
 {
-    return read_property(label, std::string(default_label));
+    return read_property<std::string>("label");
 }
 
 milliseconds configurable_animation::get_duration() const
 {
-    return read_property(duration_ms, default_duration);
+    return read_property<milliseconds>("duration_ms");
 }
 
 void configurable_animation::load_properties(nlohmann::json const & json)
@@ -33,30 +33,29 @@ void configurable_animation::load_properties(nlohmann::json const & json)
     if (!json.is_object())
         throw std::runtime_error("Expected JSON object got: "s + json.type_name());
 
-    auto properties = properties_from_json(json);
-    if (!properties)
-        throw std::runtime_error("Failed to load properties: " + properties.error().what);
+    auto defaults = default_properties();
+    for (auto & [label, def] : defaults) {
+        auto value = std::visit([&](auto & def) -> property_value_t {
+            return {parse_field(json, label.c_str(), std::move(def))};
+        }, def);
 
-    properties->push_back(make_property(json, label, std::string(default_label)));
-    properties->push_back(make_property(json, duration_ms, default_duration));
-    write_properties(*properties);
+        write_property(label, std::move(value));
+    }
 }
 
 nlohmann::json configurable_animation::dump_properties() const
 {
-    nlohmann::json json =
-    {
-        make_json(label, std::string(default_label)),
-        make_json(duration_ms, default_duration),
-    };
+    nlohmann::json json = nlohmann::json::object();
 
-    auto other = properties_to_json();
-    if (!other)
-        throw std::runtime_error("Failed to dump properties: " + other.error().what);
-    if (!other->empty()) {
-        assert(other->is_object());
-        json.update(*other); // If other is no object this will throw an exception
+    auto defaults = default_properties();
+    for (auto & [label, _] : defaults) {
+        auto value = read_property_value(label);
+
+        std::visit([&](auto & value) {
+            json.emplace(make_field(label.c_str(), value));
+        }, value);
     }
+
     return json;
 }
 
@@ -64,20 +63,26 @@ configurable_animation::configurable_animation(engine_context & context) :
     animation(context)
 { }
 
-void configurable_animation::write_properties(property_pairs_t const & properties)
+std::unordered_map<std::string, property_value_t> configurable_animation::default_properties() const
 {
-    for (auto const & property : properties)
-        write_property(property.first, property.second);
+    auto x = extra_properties();
+    auto b = base_properties();
+    x.insert(b.begin(), b.end()); // Base overwrites extra
+
+    return x;
 }
 
-json_or_error_t configurable_animation::properties_to_json() const
+std::unordered_map<std::string, property_value_t> configurable_animation::base_properties() const
 {
-    return nlohmann::json{};
+    return {
+        { "label", std::string(default_label) },
+        { "duration_ms", default_duration },
+    };
 }
 
-property_pairs_or_error_t configurable_animation::properties_from_json(nlohmann::json const &) const
+std::unordered_map<std::string, property_value_t> configurable_animation::extra_properties() const
 {
-    return property_pairs_t{};
+    return {};
 }
 
 } // End of namespace

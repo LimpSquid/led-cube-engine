@@ -25,21 +25,12 @@ struct ball
 struct falling_balls :
     configurable_animation
 {
-    PROPERTY_ENUM
-    (
-        number_of_balls,    // Number of falling balls
-        max_ball_radius,    // Maximum radius of a ball
-        min_ball_radius,    // Minimum radius of a ball
-        ball_colors,        // Array of ball colors to pick from
-    )
-
     falling_balls(engine_context & context);
 
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    json_or_error_t properties_to_json() const override;
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
+    std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     ball make_ball() const;
 
@@ -63,11 +54,11 @@ falling_balls::falling_balls(engine_context & context) :
 
 void falling_balls::start()
 {
-    max_radius_ = read_property(max_ball_radius, default_max_radius);
-    min_radius_ = read_property(min_ball_radius, default_min_radius);
-    ball_colors_ = read_property(ball_colors, std::vector<color>{});
+    max_radius_ = read_property<int>("max_ball_radius");
+    min_radius_ = read_property<int>("min_ball_radius");
+    ball_colors_ = read_property<std::vector<color>>("ball_colors");
 
-    unsigned int num_balls = read_property(number_of_balls, default_number_of_balls);
+    auto const num_balls = read_property<unsigned int>("number_of_balls");
     balls_.resize(num_balls);
     for (auto & ball : balls_)
         ball = make_ball();
@@ -96,23 +87,13 @@ void falling_balls::paint(graphics_device & device)
     }
 }
 
-json_or_error_t falling_balls::properties_to_json() const
+std::unordered_map<std::string, property_value_t> falling_balls::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(number_of_balls, default_number_of_balls),
-        make_json(max_ball_radius, default_max_radius),
-        make_json(min_ball_radius, default_min_radius),
-        make_json(ball_colors, std::vector<color>{}),
-    };
-}
-
-property_pairs_or_error_t falling_balls::properties_from_json(nlohmann::json const & json) const
-{
-    return property_pairs_t {
-        make_property(json, number_of_balls, default_number_of_balls),
-        make_property(json, max_ball_radius, default_max_radius),
-        make_property(json, min_ball_radius, default_min_radius),
-        make_property(json, ball_colors, std::vector<color>{}),
+    return {
+        { "number_of_balls", default_number_of_balls },
+        { "max_ball_radius", default_max_radius },
+        { "min_ball_radius", default_min_radius },
+        { "ball_colors", std::vector<color>{}},
     };
 }
 

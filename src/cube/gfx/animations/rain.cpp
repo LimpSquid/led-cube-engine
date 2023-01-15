@@ -26,20 +26,13 @@ struct droplet
 struct rain :
     configurable_animation
 {
-    PROPERTY_ENUM
-    (
-        number_of_droplets,
-        droplet_colors
-    )
-
     rain(engine_context & context);
 
     void start() override;
     void stop() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    json_or_error_t properties_to_json() const override;
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
+    std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     droplet make_droplet() const;
 
@@ -62,9 +55,9 @@ rain::rain(engine_context & context) :
 
 void rain::start()
 {
-    droplet_colors_ = read_property(droplet_colors, default_droplet_colors);
+    droplet_colors_ = read_property<std::vector<color>>("droplet_colors");
 
-    unsigned int num_droplets = read_property(number_of_droplets, default_number_of_droplets);
+    auto const num_droplets = read_property<unsigned int>("number_of_droplets");
     droplets_.resize(num_droplets);
     for (auto & droplet : droplets_) {
         droplet = make_droplet();
@@ -97,19 +90,11 @@ void rain::paint(graphics_device & device)
         droplet.paint(p, rgb_vec(fader_.value()));
 }
 
-json_or_error_t rain::properties_to_json() const
+std::unordered_map<std::string, property_value_t> rain::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(number_of_droplets, default_number_of_droplets),
-        make_json(droplet_colors, default_droplet_colors),
-    };
-}
-
-property_pairs_or_error_t rain::properties_from_json(nlohmann::json const & json) const
-{
-    return property_pairs_t {
-        make_property(json, number_of_droplets, default_number_of_droplets),
-        make_property(json, droplet_colors, default_droplet_colors),
+    return {
+        { "number_of_droplets", default_number_of_droplets },
+        { "droplet_colors", default_droplet_colors },
     };
 }
 

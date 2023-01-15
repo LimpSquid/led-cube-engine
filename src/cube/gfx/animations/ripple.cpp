@@ -15,22 +15,12 @@ namespace
 struct ripple :
     configurable_animation
 {
-    PROPERTY_ENUM
-    (
-        ripple_wave_time_ms,    // Time in milliseconds to complete one ripple period
-        ripple_gradient,        // Ripple gradient
-        ripple_length,          // Ripple length
-        ripple_drift_factor_x,  // Drift factor in the X direction
-        ripple_drift_factor_y,  // Drift factor in the Y direction
-    )
-
     ripple(engine_context & context);
 
     void start() override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
-    json_or_error_t properties_to_json() const override;
-    property_pairs_or_error_t properties_from_json(nlohmann::json const & json) const override;
+    std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     gradient gradient_;
     int time_;
@@ -58,10 +48,10 @@ ripple::ripple(engine_context & context) :
 
 void ripple::start()
 {
-    auto const wave_time = read_property(ripple_wave_time_ms, default_wave_time);
+    auto const wave_time = read_property<milliseconds>("ripple_wave_time_ms");
 
-    gradient_ = read_property(ripple_gradient, default_gradient);
-    length_ = read_property(ripple_length, default_length);
+    gradient_ = read_property<gradient>("ripple_gradient");
+    length_ = read_property<double>("ripple_length");
     omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
     time_ = rand(range{0, UINT16_MAX});
 }
@@ -76,8 +66,8 @@ void ripple::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    double const drift_factor_x = read_property(ripple_drift_factor_x, default_drift_factor);
-    double const drift_factor_y = read_property(ripple_drift_factor_y, default_drift_factor);
+    auto const drift_factor_x = read_property<double>("ripple_drift_factor_x");
+    auto const drift_factor_y = read_property<double>("ripple_drift_factor_y");
     auto const compute_range = [&](double drift_factor) -> range<double> {
         if (equal(drift_factor, 0.0))
             return {-1.0, 1.0};
@@ -105,29 +95,19 @@ void ripple::paint(graphics_device & device)
     }
 }
 
-json_or_error_t ripple::properties_to_json() const
+std::unordered_map<std::string, property_value_t> ripple::extra_properties() const
 {
-    return nlohmann::json {
-        make_json(ripple_wave_time_ms, default_wave_time),
-        make_json(ripple_length, default_length),
-        make_json(ripple_gradient, default_gradient),
-        make_json(ripple_drift_factor_x, default_drift_factor),
-        make_json(ripple_drift_factor_y, default_drift_factor),
-    };
-}
+    // TODO:
+    // auto const wave_time = parse_field(json, ripple_wave_time_ms, default_wave_time);
+    // if (wave_time == 0ms)
+    //     return unexpected_error{"Field '"s + to_string(ripple_wave_time_ms) + "' cannot be 0ms"};
 
-property_pairs_or_error_t ripple::properties_from_json(nlohmann::json const & json) const
-{
-    auto const wave_time = parse_field(json, ripple_wave_time_ms, default_wave_time);
-    if (wave_time == 0ms)
-        return unexpected_error{"Field '"s + to_string(ripple_wave_time_ms) + "' cannot be 0ms"};
-
-    return property_pairs_t {
-        make_property(ripple_wave_time_ms, std::move(wave_time)),
-        make_property(json, ripple_length, default_length),
-        make_property(json, ripple_gradient, default_gradient),
-        make_property(json, ripple_drift_factor_x, default_drift_factor),
-        make_property(json, ripple_drift_factor_y, default_drift_factor),
+    return {
+        { "ripple_wave_time_ms", default_wave_time },
+        { "ripple_length", default_length },
+        { "ripple_gradient", default_gradient },
+        { "ripple_drift_factor_x", default_drift_factor },
+        { "ripple_drift_factor_y", default_drift_factor },
     };
 }
 
