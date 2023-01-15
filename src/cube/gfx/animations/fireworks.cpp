@@ -1,5 +1,6 @@
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/gradient.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
@@ -12,6 +13,12 @@ using namespace std::chrono;
 namespace
 {
 
+struct paint_context
+{
+    painter & p;
+    double fade;
+};
+
 struct particle
 {
     int radius;
@@ -20,7 +27,7 @@ struct particle
     gradient hue;
 
     void move(std::chrono::milliseconds const & dt);
-    void paint(painter & p) const;
+    void paint(paint_context const & ctx) const;
 };
 
 struct shell
@@ -38,7 +45,7 @@ struct shell
     state state{flying};
 
     void update(std::chrono::milliseconds const & dt);
-    void paint(painter & p) const;
+    void paint(paint_context const & ctx) const;
     void explode();
 };
 
@@ -56,6 +63,8 @@ struct fireworks :
 
     std::vector<shell> shells_;
     std::vector<color> shell_colors_;
+    std::optional<ease_in_sine> fade_in_;
+    std::optional<ease_out_sine> fade_out_;
     double explosion_force_;
     unsigned int num_fragments_;
     int shell_radius_;
@@ -88,9 +97,20 @@ void fireworks::state_changed(animation_state state)
             shells_.resize(num_shells);
             for (auto & shell : shells_)
                 shell = make_shell();
+
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 20, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 20, get_transition_time()});
+
+            fade_in_->start();
             break;
         }
-        default:;
+        case stopping:
+            fade_out_->start();
+            break;
+        case stopped:
+            fade_in_->stop();
+            fade_out_->stop();
+            break;
     }
 }
 
@@ -108,18 +128,19 @@ void fireworks::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
+    paint_context ctx{p, fade_in_->value() * fade_out_->value()};
     for (auto const & shell : shells_)
-        shell.paint(p);
+        shell.paint(ctx);
 }
 
 std::unordered_map<std::string, property_value_t> fireworks::extra_properties() const
 {
     return {
-        { "number_of_shells", default_number_of_shells },
-        { "number_of_fragments", default_number_of_fragments },
-        { "shell_radius", default_shell_radius },
-        { "explosion_force", default_explosion_force},
-        { "shell_colors", std::vector<color>{}},
+        {"number_of_shells", default_number_of_shells},
+        {"number_of_fragments", default_number_of_fragments},
+        {"shell_radius", default_shell_radius},
+        {"explosion_force", default_explosion_force},
+        {"shell_colors", std::vector<color>{}},
     };
 }
 
@@ -154,10 +175,13 @@ void particle::move(milliseconds const & dt)
     position += velocity * static_cast<double>(dt.count());
 }
 
-void particle::paint(painter & p) const
+void particle::paint(paint_context const & ctx) const
 {
-    p.set_color(hue(map(static_cast<int>(position.z), cube_axis_range, gradient_pos_range)));
-    p.sphere(position, radius);
+    auto c = hue(map(static_cast<int>(position.z), cube_axis_range, gradient_pos_range)).vec();
+    c *= rgb_vec(ctx.fade);
+
+    ctx.p.set_color(c);
+    ctx.p.sphere(position, radius);
 }
 
 void shell::update(std::chrono::milliseconds const & dt)
@@ -182,15 +206,15 @@ void shell::update(std::chrono::milliseconds const & dt)
     }
 }
 
-void shell::paint(painter & p) const
+void shell::paint(paint_context const & ctx) const
 {
     switch (state) {
         case flying:
-            shell.paint(p);
+            shell.paint(ctx);
             break;
         case exploded:
             for (auto const & fragment : fragments)
-                fragment.paint(p);
+                fragment.paint(ctx);
             break;
         default:;
     }

@@ -1,6 +1,7 @@
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/gradient.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/logging.hpp>
@@ -35,6 +36,8 @@ struct stars :
 
     std::vector<star> stars_;
     gradient galaxy_gradient_;
+    std::optional<ease_in_sine> fade_in_;
+    std::optional<ease_out_sine> fade_out_;
     int gradient_step_;
     int step_interval_;
     int star_radius_;
@@ -86,9 +89,20 @@ void stars::state_changed(animation_state state)
                 star = make_star();
                 star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
             }
+
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 20, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 20, get_transition_time()});
+
+            fade_in_->start();
             break;
         }
-        default:;
+        case stopping:
+            fade_out_->start();
+            break;
+        case stopped:
+            fade_in_->stop();
+            fade_out_->stop();
+            break;
     }
 }
 
@@ -106,12 +120,17 @@ void stars::paint(graphics_device & device)
     p.wipe_canvas();
 
     for (star const & s : stars_) {
+        // Half of sine period is used for fading the star, the other half the star is off
         gradient fade({
             {0.0, color_transparent},
             {1.0, s.fade_color ? *s.fade_color : galaxy_color(s.voxel)},
         });
 
-        p.set_color(fade(std::sin(s.fade_step * omega_))); // Half of sine period is used for fading the star, the other half the star is black
+        auto c = fade(std::sin(s.fade_step * omega_)).vec();
+        c *= rgb_vec(fade_in_->value());
+        c *= rgb_vec(fade_out_->value());
+
+        p.set_color(c);
         p.sphere(s.voxel, star_radius_);
     }
 }
@@ -119,10 +138,10 @@ void stars::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> stars::extra_properties() const
 {
     return {
-        { "fade_time_ms", default_fade_time },
-        { "number_of_stars", default_number_of_stars },
-        { "galaxy_gradient", default_galaxy_gradient },
-        { "star_radius", default_radius },
+        {"fade_time_ms", default_fade_time},
+        {"number_of_stars", default_number_of_stars},
+        {"galaxy_gradient", default_galaxy_gradient},
+        {"star_radius", default_radius},
     };
 }
 

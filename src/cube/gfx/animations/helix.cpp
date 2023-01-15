@@ -109,12 +109,12 @@ void helix::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> helix::extra_properties() const
 {
     return {
-        { "helix_rotation_time_ms", default_rotation_time },
-        { "helix_phase_shift_cos_factor", default_phase_shift_factor },
-        { "helix_phase_shift_sin_factor", default_phase_shift_factor },
-        { "helix_thickness", default_thickness },
-        { "helix_length", default_length },
-        { "helix_gradient", default_gradient },
+        {"helix_rotation_time_ms", default_rotation_time},
+        {"helix_phase_shift_cos_factor", default_phase_shift_factor},
+        {"helix_phase_shift_sin_factor", default_phase_shift_factor},
+        {"helix_thickness", default_thickness},
+        {"helix_length", default_length},
+        {"helix_gradient", default_gradient},
     };
 }
 

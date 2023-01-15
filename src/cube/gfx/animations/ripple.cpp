@@ -127,11 +127,11 @@ void ripple::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> ripple::extra_properties() const
 {
     return {
-        { "ripple_wave_time_ms", default_wave_time },
-        { "ripple_length", default_length },
-        { "ripple_gradient", default_gradient },
-        { "ripple_drift_factor_x", default_drift_factor },
-        { "ripple_drift_factor_y", default_drift_factor },
+        {"ripple_wave_time_ms", default_wave_time},
+        {"ripple_length", default_length},
+        {"ripple_gradient", default_gradient},
+        {"ripple_drift_factor_x", default_drift_factor},
+        {"ripple_drift_factor_y", default_drift_factor},
     };
 }
 

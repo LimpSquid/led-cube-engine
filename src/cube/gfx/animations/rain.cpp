@@ -96,8 +96,8 @@ void rain::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> rain::extra_properties() const
 {
     return {
-        { "number_of_droplets", default_number_of_droplets },
-        { "droplet_colors", default_droplet_colors },
+        {"number_of_droplets", default_number_of_droplets},
+        {"droplet_colors", default_droplet_colors},
     };
 }
 

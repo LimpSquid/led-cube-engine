@@ -96,10 +96,10 @@ void falling_balls::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> falling_balls::extra_properties() const
 {
     return {
-        { "number_of_balls", default_number_of_balls },
-        { "max_ball_radius", default_max_radius },
-        { "min_ball_radius", default_min_radius },
-        { "ball_colors", std::vector<color>{}},
+        {"number_of_balls", default_number_of_balls},
+        {"max_ball_radius", default_max_radius},
+        {"min_ball_radius", default_min_radius},
+        {"ball_colors", std::vector<color>{}},
     };
 }
 

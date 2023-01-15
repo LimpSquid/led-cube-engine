@@ -222,10 +222,10 @@ std::unordered_map<std::string, property_value_t> my_animation::extra_properties
     // - Key: property label
     // - Value: default property value
     return {
-        { "my_int_property", default_int_property },
-        { "my_double_property", default_double_property },
-        { "my_gradient_property", default_gradient_property },
-        { "my_color_vector_property", std::vector<color>{} },
+        {"my_int_property", default_int_property},
+        {"my_double_property", default_double_property},
+        {"my_gradient_property", default_gradient_property},
+        {"my_color_vector_property", std::vector<color>{}},
     };
 }
 

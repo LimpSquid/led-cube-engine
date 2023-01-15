@@ -90,9 +90,9 @@ void lightning::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> lightning::extra_properties() const
 {
     return {
-        { "number_of_clouds", default_number_of_clouds },
-        { "cloud_radius", default_radius },
-        { "cloud_gradient", default_gradient },
+        {"number_of_clouds", default_number_of_clouds},
+        {"cloud_radius", default_radius},
+        {"cloud_gradient", default_gradient},
     };
 }
 
