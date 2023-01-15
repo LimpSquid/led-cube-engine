@@ -80,18 +80,23 @@ void handle_file(std::vector<std::string> const & args)
                     case animation::running:
                         index = (index + 1) % animations.size();
                         animation->about_to_finish();
-                        player.start(1000ms); // TODO: eventually make part of anim?
+                        player.start(animation->get_transition_time());
                         break;
                     case animation::stopping:
-                    case animation::stopped:
+                    case animation::stopped: {
                         engine.load(std::static_pointer_cast<cube::core::animation>(animation));
-                        player.start(animation->get_duration());
+
+                        auto const transition_time = animation->get_transition_time();
+                        auto const duration = std::max(animation->get_duration(), transition_time) - transition_time;
+                        player.start(duration);
 
                         LOG_INF("Playing animation",
                             LOG_ARG("animation", name),
                             LOG_ARG("label", animation->get_label()),
-                            LOG_ARG("duration_ms", animation->get_duration().count()));
+                            LOG_ARG("duration", animation->get_duration()),
+                            LOG_ARG("transition_time", animation->get_transition_time()));
                         break;
+                    }
                 }
             });
             player.start(0ms);

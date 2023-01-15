@@ -24,6 +24,7 @@ class configurable_animation :
 public:
     std::string get_label() const;
     std::chrono::milliseconds get_duration() const;
+    std::chrono::milliseconds get_transition_time() const;
 
     void load_properties(nlohmann::json const & json);
     nlohmann::json dump_properties() const;

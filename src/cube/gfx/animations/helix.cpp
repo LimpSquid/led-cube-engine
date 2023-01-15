@@ -23,8 +23,8 @@ struct helix :
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
 
     gradient gradient_;
-    ease_in_sine fade_in_;
-    ease_out_sine fade_out_;
+    std::optional<ease_in_sine> fade_in_;
+    std::optional<ease_out_sine> fade_out_;
     int time_;
     int thickness_;
     double omega_;
@@ -46,9 +46,7 @@ gradient const default_gradient
 };
 
 helix::helix(engine_context & context) :
-    configurable_animation(context),
-    fade_in_(context, {{0.0, 1.0}, 20, 1000ms}),
-    fade_out_(context, {{1.0, 0.0}, 20, 1000ms})
+    configurable_animation(context)
 { }
 
 void helix::state_changed(animation_state state)
@@ -63,15 +61,18 @@ void helix::state_changed(animation_state state)
             omega_ = (2.0 * M_PI) / static_cast<double>(rotation_time.count());
             time_ = rand(range{0, UINT16_MAX});
 
-            fade_in_.start();
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 20, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 20, get_transition_time()});
+
+            fade_in_->start();
             break;
         }
         case stopping:
-            fade_out_.start();
+            fade_out_->start();
             break;
         case stopped:
-            fade_in_.stop();
-            fade_out_.stop();
+            fade_in_->stop();
+            fade_out_->stop();
             break;
     }
 }
@@ -97,8 +98,8 @@ void helix::paint(graphics_device & device)
         int const z = map(z1, unit_circle_range, cube_axis_range);
 
         auto c = gradient_(abs_sin(time_ * omega_ + 0.5 * phase_shift)).vec();
-        c *= rgb_vec(fade_in_.value());
-        c *= rgb_vec(fade_out_.value());
+        c *= rgb_vec(fade_in_->value());
+        c *= rgb_vec(fade_out_->value());
 
         p.set_color(c);
         p.sphere({x, y, z}, thickness_);

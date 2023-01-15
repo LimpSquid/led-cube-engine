@@ -11,6 +11,7 @@ namespace
 
 constexpr std::string_view default_label{""};
 constexpr milliseconds default_duration{15000};
+constexpr milliseconds default_transition_time{2000};
 
 } // End of namespace
 
@@ -26,6 +27,11 @@ std::string configurable_animation::get_label() const
 milliseconds configurable_animation::get_duration() const
 {
     return read_property<milliseconds>("duration_ms");
+}
+
+milliseconds configurable_animation::get_transition_time() const
+{
+    return read_property<milliseconds>("transition_time_ms");
 }
 
 void configurable_animation::load_properties(nlohmann::json const & json)
@@ -77,6 +83,7 @@ std::unordered_map<std::string, property_value_t> configurable_animation::base_p
     return {
         { "label", std::string(default_label) },
         { "duration_ms", default_duration },
+        { "transition_time_ms", default_transition_time },
     };
 }
 
