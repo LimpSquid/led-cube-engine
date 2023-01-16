@@ -266,12 +266,12 @@ void rs485::write_from_buffer()
         tx_buffer_.pop_back();
     }
 
-    steady_clock::time_point transmission_end;
+    high_resolution_clock::time_point transmission_end;
     gpio_hi_guard dir_guard{dir_gpio_};
     ssize_t size;
 
     critical_section([&]() {
-        transmission_end = steady_clock::now(); // Mark starting time
+        transmission_end = high_resolution_clock::now(); // Mark starting time
         size = ::write(fd_, &chunk_buffer_, csize);
     });
 
@@ -290,7 +290,7 @@ void rs485::write_from_buffer()
             // low way too late. For now make a rough estimate of how long it would take to transfer the amount of chars
             // we've just written to the device and sleep for atleast that amount. This is far from ideal but should work
             // fine for now.
-            auto const now = steady_clock::now();
+            auto const now = high_resolution_clock::now();
             if (now < transmission_end) {
                 auto const sleep = duration_cast<microseconds>(transmission_end - now).count();
                 usleep(static_cast<useconds_t>(sleep));

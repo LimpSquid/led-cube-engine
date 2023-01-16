@@ -8,7 +8,7 @@ namespace cube::core
 {
 
 using timer_handler_t = std::function<void(
-    std::chrono::steady_clock::time_point /* now */,
+    std::chrono::high_resolution_clock::time_point /* now */,
     std::chrono::milliseconds /* elapsed */)>;
 
 class engine_context;

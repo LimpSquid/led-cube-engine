@@ -65,8 +65,8 @@ void ripple::state_changed(animation_state state)
             omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
             time_ = rand(range{0, UINT16_MAX});
 
-            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 20, get_transition_time()});
-            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 20, get_transition_time()});
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 50, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 50, get_transition_time()});
 
             fade_in_->start();
             break;

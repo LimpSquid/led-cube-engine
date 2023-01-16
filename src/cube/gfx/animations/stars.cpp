@@ -90,8 +90,8 @@ void stars::state_changed(animation_state state)
                 star.fade_step = -rand(range{0, step_interval_}); // Negative so stars are initially black
             }
 
-            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 20, get_transition_time()});
-            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 20, get_transition_time()});
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 50, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 50, get_transition_time()});
 
             fade_in_->start();
             break;

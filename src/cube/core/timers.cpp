@@ -59,7 +59,7 @@ bool recurring_timer::is_running() const
 void recurring_timer::start(milliseconds interval)
 {
     auto & ticker = find_ticker_or_throw(context_.tickers, id_);
-    auto const now = steady_clock::now();
+    auto const now = high_resolution_clock::now();
 
     ticker.interval = interval;
     ticker.last = now;

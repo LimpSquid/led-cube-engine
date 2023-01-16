@@ -12,19 +12,28 @@ namespace
 {
 
 template<typename T>
-void poll(T & tickers)
+milliseconds poll(T & tickers)
 {
-    auto const now = steady_clock::now();
+    auto const now = high_resolution_clock::now();
+    auto min_time_until_next = milliseconds::max();
 
     for (auto & ticker : tickers) {
-        if (!ticker.suspended && now >= ticker.next) {
-            auto const elapsed = duration_cast<milliseconds>(now - ticker.last);
+        if (ticker.suspended)
+            continue;
+
+        if (now >= ticker.next) {
+            auto const elapsed = round<milliseconds>(now - ticker.last);
 
             ticker.last = now;
             ticker.next += ticker.interval;
             ticker.handler(now, elapsed);
-        }
+
+            min_time_until_next = std::min(min_time_until_next, ticker.interval);
+        } else
+            min_time_until_next = std::min(min_time_until_next, ceil<milliseconds>(ticker.next - now));
     }
+
+    return min_time_until_next;
 }
 
 template<typename T = void>
@@ -36,7 +45,7 @@ void call_all(T const & callable, O const & ... others)
     call_all(others ...);
 }
 
-constexpr milliseconds default_poll_timeout{50};
+constexpr milliseconds default_poll_timeout{25};
 
 } // End of namespace
 
@@ -124,7 +133,8 @@ void basic_engine::do_run(F ... extras)
         call_all(extras ...);
 
         // Poll tickers
-        poll(context_.tickers);
+        auto const time_until_next = poll(context_.tickers);
+        auto const timeout = std::min(poll_timeout_, time_until_next);
 
         // Poll self
         poll_one(stopping_);
@@ -132,14 +142,14 @@ void basic_engine::do_run(F ... extras)
         // Poll asio and event_poller
         assert(!context_.io_context.stopped());
         if (context_.event_poller.has_subscribers()) {
-            auto [size, events] = context_.event_poller.poll_events(poll_timeout_);
+            auto [size, events] = context_.event_poller.poll_events(timeout);
             for (int i = 0; i < size; ++i)
                 if (auto user_data = events.get().at(i).data.ptr)
                     (*reinterpret_cast<event_handler_t *>(user_data))(events.get().at(i).events);
 
             context_.io_context.poll(); // Run all asio ready handlers
         } else
-            context_.io_context.run_one_for(poll_timeout_); // No events, just poll asio
+            context_.io_context.run_one_for(timeout); // No events, just poll asio
 
         // Finally check if we're stopping
         if (stopping_) {
@@ -158,7 +168,7 @@ void render_engine::load(std::shared_ptr<animation> animation)
 }
 
 render_engine::render_engine(engine_context & context, std::unique_ptr<graphics_device> && device) :
-    basic_engine(context, std::clamp(cube::animation_scene_interval, 5ms, 50ms)),
+    basic_engine(context, default_poll_timeout),
     device_(std::move(device))
 { }
 

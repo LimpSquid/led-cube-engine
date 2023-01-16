@@ -49,7 +49,7 @@ std::vector<color> const default_droplet_colors{color_steel_blue, color_cyan};
 
 rain::rain(engine_context & context) :
     configurable_animation(context),
-    fader_(context, {{0.1, 1.0}, 20, 1000ms})
+    fader_(context, {{0.1, 1.0}, 50, 1000ms})
 { }
 
 void rain::state_changed(animation_state state)

@@ -33,11 +33,11 @@ private:
     struct ticker
     {
         std::function<void(
-            std::chrono::steady_clock::time_point,
+            std::chrono::high_resolution_clock::time_point,
             std::chrono::milliseconds)> handler;
         std::chrono::milliseconds interval;
-        std::chrono::steady_clock::time_point last;
-        std::chrono::steady_clock::time_point next;
+        std::chrono::high_resolution_clock::time_point last;
+        std::chrono::high_resolution_clock::time_point next;
         uint64_t id;
         bool suspended;
     };
