@@ -31,19 +31,21 @@ struct lightning :
     void spawn_cloud(cloud & c);
 
     std::vector<cloud> clouds_;
+    std::optional<ease_in_sine> fade_in_;
+    std::optional<ease_out_sine> fade_out_;
     gradient cloud_gradient_;
     int cloud_radius_;
 };
 
 animation_publisher<lightning> const publisher;
 
-constexpr unsigned int default_number_of_clouds{3};
-constexpr int default_radius{4 * cube::cube_size_1d / 5};
+constexpr unsigned int default_number_of_clouds{5};
+constexpr int default_radius{cube::cube_size_1d};
 gradient const default_gradient
 {
     {0.00, color_transparent},
-    {0.50, color_blue},
-    {1.00, color_white},
+    {0.50, lighter(color_blue, 0.25)},
+    {1.00, darker(color_white, 0.25)},
 };
 
 lightning::lightning(engine_context & context) :
@@ -61,9 +63,20 @@ void lightning::state_changed(animation_state state)
             clouds_.resize(num_clouds);
             for (auto & cloud : clouds_)
                 spawn_cloud(cloud);
+
+            fade_in_.emplace(context(), easing_config{{0.0, 1.0}, 50, get_transition_time()});
+            fade_out_.emplace(context(), easing_config{{1.0, 0.0}, 50, get_transition_time()});
+
+            fade_in_->start();
             break;
         }
+        case stopping:
+            fade_out_->start();
+            break;
         case stopped:
+            fade_in_->stop();
+            fade_out_->stop();
+
             for (auto & cloud : clouds_) {
                 cloud.in_fader.reset();
                 cloud.out_fader.reset();
@@ -82,7 +95,12 @@ void lightning::paint(graphics_device & device)
         double const fade_scalar = cloud.in_fader->value() * cloud.out_fader->value();
         int const radius = static_cast<int>(std::round(cloud_radius_ * map(fade_scalar, 0.0, 1.0, 0.5, 1.0)));
 
-        p.set_color(cloud_gradient_(fade_scalar).vec() * alpha_vec(map(fade_scalar, 0.0, 1.0, 0.6, 1.0)));
+        auto c = cloud_gradient_(fade_scalar).vec();
+        c *= alpha_vec(map(fade_scalar, 0.0, 1.0, 0.6, 1.0));
+        c *= rgb_vec(fade_in_->value());
+        c *= rgb_vec(fade_out_->value());
+
+        p.set_color(c);
         p.sphere(cloud.voxel, radius);
     }
 }
@@ -99,7 +117,7 @@ std::unordered_map<std::string, property_value_t> lightning::extra_properties() 
 void lightning::spawn_cloud(cloud & c)
 {
     constexpr int fade_out_factor = 8;
-    constexpr int fade_time_min = std::max(750ms, fade_out_factor * cube::animation_scene_interval).count();
+    constexpr int fade_time_min = std::max(500ms, fade_out_factor * cube::animation_scene_interval).count();
     constexpr int fade_time_max = fade_time_min + 1250;
 
     milliseconds fade_in_time{rand(range{fade_time_min, fade_time_max})};
