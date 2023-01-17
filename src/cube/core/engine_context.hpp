@@ -42,7 +42,7 @@ private:
         bool suspended;
     };
 
-    std::vector<ticker> tickers;
+    std::vector<std::shared_ptr<ticker>> tickers;
     std::unordered_set<engine_shutdown_signal *> shutdown_signals;
 };
 

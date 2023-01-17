@@ -12,18 +12,18 @@ template<typename Container>
 auto & find_ticker_or_throw(Container & tickers, uint64_t id)
 {
     auto search = std::find_if(tickers.begin(), tickers.end(),
-        [id](auto const & ticker) { return ticker.id == id; });
+        [id](auto const & ticker) { return ticker->id == id; });
 
     if (search == tickers.end())
         throw std::runtime_error("Unable to find tiker with id: " + std::to_string(id));
-    return *search;
+    return **search;
 }
 
 template<typename Container>
 void remove_ticker(Container & tickers, uint64_t id)
 {
     auto begin = std::remove_if(tickers.begin(), tickers.end(),
-        [id](auto const & ticker) { return ticker.id == id; });
+        [id](auto const & ticker) { return ticker->id == id; });
 
     tickers.erase(begin, tickers.end());
 }
@@ -38,12 +38,14 @@ recurring_timer::recurring_timer(engine_context & context, timer_handler_t handl
     id_(ticker_id++),
     trigger_on_start_(trigger_on_start)
 {
-    context_.tickers.push_back(engine_context::ticker{
+    using ticker_t = engine_context::ticker;
+
+    context_.tickers.push_back(std::shared_ptr<ticker_t>(new ticker_t{
         [h = std::move(handler)](auto now, auto elapsed) { h(std::move(now), std::move(elapsed)); },
         {/* interval */}, {/* last */}, { /* next */ },
         id_,
         true
-    });
+    }));
 }
 
 recurring_timer::~recurring_timer()

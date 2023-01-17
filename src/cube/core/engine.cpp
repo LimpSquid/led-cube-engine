@@ -11,26 +11,27 @@ using namespace std::chrono;
 namespace
 {
 
-template<typename T>
-milliseconds poll(T & tickers)
+template<typename T> // Since engine_context::ticker is private
+milliseconds poll(T tickers)
 {
     auto const now = high_resolution_clock::now();
     auto min_time_until_next = milliseconds::max();
 
-    for (auto & ticker : tickers) {
-        if (ticker.suspended)
+    for (auto & ref : tickers) {
+        auto ticker = ref.lock();
+        if (!ticker || ticker->suspended)
             continue;
 
-        if (now >= ticker.next) {
-            auto const elapsed = round<milliseconds>(now - ticker.last);
+        if (now >= ticker->next) {
+            auto const elapsed = round<milliseconds>(now - ticker->last);
 
-            ticker.last = now;
-            ticker.next += ticker.interval;
-            ticker.handler(now, elapsed);
+            ticker->last = now;
+            ticker->next += ticker->interval;
+            ticker->handler(now, elapsed);
 
-            min_time_until_next = std::min(min_time_until_next, ticker.interval);
+            min_time_until_next = std::min(min_time_until_next, ticker->interval);
         } else
-            min_time_until_next = std::min(min_time_until_next, ceil<milliseconds>(ticker.next - now));
+            min_time_until_next = std::min(min_time_until_next, ceil<milliseconds>(ticker->next - now));
     }
 
     return min_time_until_next;
@@ -124,6 +125,8 @@ basic_engine::basic_engine(engine_context & context, milliseconds poll_timeout) 
 template<typename ... F>
 void basic_engine::do_run(F ... extras)
 {
+    using tickers_t = std::vector<std::weak_ptr<cube::core::engine_context::ticker>>;
+
     std::once_flag shutdown_flag;
     bool run = true;
     stopping_ = false;
@@ -133,7 +136,8 @@ void basic_engine::do_run(F ... extras)
         call_all(extras ...);
 
         // Poll tickers
-        auto const time_until_next = poll(context_.tickers);
+        auto tickers = tickers_t{begin(context_.tickers), end(context_.tickers)};
+        auto const time_until_next = poll(std::move(tickers));
         auto const timeout = std::min(poll_timeout_, time_until_next);
 
         // Poll self
