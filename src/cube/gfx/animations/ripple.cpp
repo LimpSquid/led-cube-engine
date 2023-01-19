@@ -54,14 +54,14 @@ void ripple::state_changed(animation_state state)
 {
     switch (state) {
         case running: {
-            auto wave_time = read_property<milliseconds>("ripple_wave_time_ms");
+            auto wave_time = read_property<milliseconds>("wave_time_ms");
             if (wave_time <= 0ms) {
-                LOG_WRN("Ignoring property 'ripple_wave_time_ms', must be > 0ms.");
+                LOG_WRN("Ignoring property 'wave_time_ms', must be > 0ms.");
                 wave_time = default_wave_time;
             }
 
-            gradient_ = read_property<gradient>("ripple_gradient");
-            length_ = read_property<double>("ripple_length");
+            gradient_ = read_property<gradient>("gradient");
+            length_ = read_property<double>("length");
             omega_ = (2.0 * M_PI) / static_cast<double>(wave_time.count());
             time_ = rand(range{0, UINT16_MAX});
 
@@ -91,8 +91,8 @@ void ripple::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    auto const drift_factor_x = read_property<double>("ripple_drift_factor_x");
-    auto const drift_factor_y = read_property<double>("ripple_drift_factor_y");
+    auto const drift_factor_x = read_property<double>("drift_factor_x");
+    auto const drift_factor_y = read_property<double>("drift_factor_y");
     auto const compute_range = [&](double drift_factor) -> range<double> {
         if (equal(drift_factor, 0.0))
             return {-1.0, 1.0};
@@ -127,11 +127,11 @@ void ripple::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> ripple::extra_properties() const
 {
     return {
-        {"ripple_wave_time_ms", default_wave_time},
-        {"ripple_length", default_length},
-        {"ripple_gradient", default_gradient},
-        {"ripple_drift_factor_x", default_drift_factor},
-        {"ripple_drift_factor_y", default_drift_factor},
+        {"wave_time_ms", default_wave_time},
+        {"length", default_length},
+        {"gradient", default_gradient},
+        {"drift_factor_x", default_drift_factor},
+        {"drift_factor_y", default_drift_factor},
     };
 }
 

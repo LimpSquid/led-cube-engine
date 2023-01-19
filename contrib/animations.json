@@ -3,10 +3,10 @@
     "animation": "ripple",
     "properties": {
       "duration_ms": 8500,
-      "ripple_drift_factor_x": 0.1,
-      "ripple_drift_factor_y": 0.07,
-      "ripple_length": 6,
-      "ripple_wave_time_ms": 1500
+      "drift_factor_x": 0.1,
+      "drift_factor_y": 0.07,
+      "length": 6,
+      "wave_time_ms": 1500
     }
   },
   {
