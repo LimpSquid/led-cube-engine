@@ -135,13 +135,13 @@ void basic_engine::do_run(F ... extras)
         // Poll extras, if any
         call_all(extras ...);
 
+        // Poll self
+        poll_one(stopping_);
+
         // Poll tickers
         auto tickers = tickers_t{begin(context_.tickers), end(context_.tickers)};
         auto const time_until_next = poll(std::move(tickers));
         auto const timeout = std::min(poll_timeout_, time_until_next);
-
-        // Poll self
-        poll_one(stopping_);
 
         // Poll asio and event_poller
         assert(!context_.io_context.stopped());
