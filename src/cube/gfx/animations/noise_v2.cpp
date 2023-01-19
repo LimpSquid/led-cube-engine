@@ -18,6 +18,7 @@ struct noise_v2 :
 {
     noise_v2(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
@@ -52,7 +53,7 @@ noise_v2::noise_v2(engine_context & context) :
 void noise_v2::state_changed(animation_state state)
 {
     switch (state) {
-        case running:
+        case animation_state::running:
             gradient_ = read_property<gradient>("gradient");
             time_ = randf({0, 100.0f});
 
@@ -61,10 +62,10 @@ void noise_v2::state_changed(animation_state state)
 
             fade_in_->start();
             break;
-        case stopping:
+        case animation_state::stopping:
             fade_out_->start();
             break;
-        case stopped:
+        case animation_state::stopped:
             fade_in_->stop();
             fade_out_->stop();
             break;

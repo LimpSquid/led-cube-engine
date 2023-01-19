@@ -55,7 +55,7 @@ falling_balls::falling_balls(engine_context & context) :
 void falling_balls::state_changed(animation_state state)
 {
     switch (state) {
-        case running: {
+        case animation_state::running: {
             max_radius_ = read_property<int>("max_ball_radius");
             min_radius_ = read_property<int>("min_ball_radius");
             ball_colors_ = read_property<std::vector<color>>("ball_colors");

@@ -5,16 +5,17 @@
 namespace cube::core
 {
 
+enum class animation_state
+{
+    stopped,
+    running,
+    stopping
+};
+
 class graphics_device;
 class animation
 {
 public:
-    enum animation_state {
-        stopped,
-        running,
-        stopping
-    };
-
     virtual ~animation() = default;
 
     engine_context & context();

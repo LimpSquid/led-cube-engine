@@ -144,6 +144,7 @@ struct my_animation :
 {
     my_animation(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; } // Optional, return traits supported by this animation
     void state_changed(animation_state value) override; // Optional, called when the animation state changed
     void scene_tick(std::chrono::milliseconds dt) override; // Optional, called with an interval of `animation_scene_interval` ms.
     void paint(graphics_device & device) override; // Required, paint a single animation frame
@@ -173,7 +174,7 @@ my_animation::my_animation(engine_context & context) :
 void my_animation::state_changed(animation_state state)
 {
     switch (state) {
-        case running:
+        case animation_state::running:
             // Do some additional processing before the animation starts
             // ...
             // ...
@@ -188,12 +189,12 @@ void my_animation::state_changed(animation_state state)
             // Or a vector of colors:
             auto const my_colors = read_property<std::vector<color>>("my_color_vector_property");
             break;
-        case stopping:
+        case animation_state::stopping:
             // Do some additional processing when the animation is about to be stopped
             // ...
             // ...
             break;
-        case stopped:
+        case animation_state::stopped:
             // Do some additional processing after the animation has stopped
             // ...
             // ...

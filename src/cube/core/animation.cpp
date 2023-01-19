@@ -9,7 +9,7 @@ engine_context & animation::context()
     return context_;
 }
 
-animation::animation_state animation::state() const
+animation_state animation::state() const
 {
     return state_;
 }
@@ -23,7 +23,7 @@ void animation::init()
 {
     dirty_ = true;
     scene_timer_.start(animation_scene_interval);
-    change_state(running);
+    change_state(animation_state::running);
 }
 
 void animation::update()
@@ -33,14 +33,14 @@ void animation::update()
 
 void animation:: about_to_finish()
 {
-    change_state(stopping);
+    change_state(animation_state::stopping);
 }
 
 void animation::finish()
 {
     dirty_ = false;
     scene_timer_.stop();
-    change_state(stopped);
+    change_state(animation_state::stopped);
 }
 
 void animation::paint_event(graphics_device & device)
@@ -55,7 +55,7 @@ animation::animation(engine_context & context) :
         scene_tick(std::move(elapsed));
         update();
     }),
-    state_(stopped),
+    state_(animation_state::stopped),
     dirty_(true)
 { }
 

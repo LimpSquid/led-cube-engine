@@ -26,6 +26,7 @@ struct stars :
 {
     stars(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
@@ -68,7 +69,7 @@ stars::stars(engine_context & context) :
 void stars::state_changed(animation_state state)
 {
     switch (state) {
-        case running: {
+        case animation_state::running: {
             auto fade_time = read_property<milliseconds>("fade_time_ms");
             if (fade_time < cube::animation_scene_interval) {
                 LOG_WRN("Ignoring property 'fade_time_ms', must be atleast 'animation_scene_interval.",
@@ -96,10 +97,10 @@ void stars::state_changed(animation_state state)
             fade_in_->start();
             break;
         }
-        case stopping:
+        case animation_state::stopping:
             fade_out_->start();
             break;
-        case stopped:
+        case animation_state::stopped:
             fade_in_->stop();
             fade_out_->stop();
             break;

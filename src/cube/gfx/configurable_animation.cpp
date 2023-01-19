@@ -31,7 +31,9 @@ milliseconds configurable_animation::get_duration() const
 
 milliseconds configurable_animation::get_transition_time() const
 {
-    return read_property<milliseconds>("transition_time_ms");
+    return is_set(traits(), animation_trait::transition)
+        ? read_property<milliseconds>("transition_time_ms")
+        : milliseconds{};
 }
 
 void configurable_animation::load_properties(nlohmann::json const & json)
@@ -69,6 +71,16 @@ configurable_animation::configurable_animation(engine_context & context) :
     animation(context)
 { }
 
+animation_trait configurable_animation::traits() const
+{
+    return animation_trait::none;
+}
+
+std::unordered_map<std::string, property_value_t> configurable_animation::extra_properties() const
+{
+    return {};
+}
+
 std::unordered_map<std::string, property_value_t> configurable_animation::default_properties() const
 {
     auto x = extra_properties();
@@ -80,16 +92,15 @@ std::unordered_map<std::string, property_value_t> configurable_animation::defaul
 
 std::unordered_map<std::string, property_value_t> configurable_animation::base_properties() const
 {
-    return {
+    std::unordered_map<std::string, property_value_t> properties = {
         { "label", std::string(default_label) },
         { "duration_ms", default_duration },
-        { "transition_time_ms", default_transition_time },
     };
-}
 
-std::unordered_map<std::string, property_value_t> configurable_animation::extra_properties() const
-{
-    return {};
+    if (is_set(traits(), animation_trait::transition))
+        properties["transition_time_ms"] = default_transition_time;
+
+    return properties;
 }
 
 } // End of namespace

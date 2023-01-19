@@ -18,13 +18,32 @@ using property_value_t = std::variant<
     core::color, std::vector<core::color>,
     gradient, gradient_stop>;
 
+enum class animation_trait : unsigned int
+{
+    none = 0x0000,
+    transition = 0x0001,
+    all = UINT_MAX,
+};
+
+inline animation_trait operator|(animation_trait const lhs, animation_trait const rhs)
+{
+    using type = std::underlying_type_t<animation_trait>;
+    return static_cast<animation_trait>(type(lhs) | type(rhs));
+}
+
+inline bool is_set(animation_trait const traits, animation_trait const flags)
+{
+    using type = std::underlying_type_t<animation_trait>;
+    return (type(traits) & type(flags)) == type(flags);
+}
+
 class configurable_animation :
     public core::animation
 {
 public:
     std::string get_label() const;
     std::chrono::milliseconds get_duration() const;
-    std::chrono::milliseconds get_transition_time() const;
+    std::chrono::milliseconds get_transition_time() const; // returns zero if animation_trait::transition is not supported by the animation
 
     void load_properties(nlohmann::json const & json);
     nlohmann::json dump_properties() const;
@@ -68,9 +87,11 @@ protected:
     }
 
 private:
+    virtual animation_trait traits() const;
+    virtual std::unordered_map<std::string, property_value_t> extra_properties() const;
+
     std::unordered_map<std::string, property_value_t> default_properties() const;
     std::unordered_map<std::string, property_value_t> base_properties() const;
-    virtual std::unordered_map<std::string, property_value_t> extra_properties() const;
 
     std::unordered_map<std::string, property_value_t> properties_;
 };

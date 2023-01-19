@@ -24,6 +24,7 @@ struct lightning :
 {
     lightning(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void paint(graphics_device & device) override;
     std::unordered_map<std::string, property_value_t> extra_properties() const override;
@@ -55,7 +56,7 @@ lightning::lightning(engine_context & context) :
 void lightning::state_changed(animation_state state)
 {
     switch (state) {
-        case running: {
+        case animation_state::running: {
             cloud_gradient_ = read_property<gradient>("cloud_gradient");
             cloud_radius_ = read_property<int>("cloud_radius");
 
@@ -70,10 +71,10 @@ void lightning::state_changed(animation_state state)
             fade_in_->start();
             break;
         }
-        case stopping:
+        case animation_state::stopping:
             fade_out_->start();
             break;
-        case stopped:
+        case animation_state::stopped:
             fade_in_->stop();
             fade_out_->stop();
 

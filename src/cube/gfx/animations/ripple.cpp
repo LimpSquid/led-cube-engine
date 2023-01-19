@@ -19,6 +19,7 @@ struct ripple :
 {
     ripple(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
@@ -53,7 +54,7 @@ ripple::ripple(engine_context & context) :
 void ripple::state_changed(animation_state state)
 {
     switch (state) {
-        case running: {
+        case animation_state::running: {
             auto wave_time = read_property<milliseconds>("wave_time_ms");
             if (wave_time <= 0ms) {
                 LOG_WRN("Ignoring property 'wave_time_ms', must be > 0ms.");
@@ -71,10 +72,10 @@ void ripple::state_changed(animation_state state)
             fade_in_->start();
             break;
         }
-        case stopping:
+        case animation_state::stopping:
             fade_out_->start();
             break;
-        case stopped:
+        case animation_state::stopped:
             fade_in_->stop();
             fade_out_->stop();
             break;

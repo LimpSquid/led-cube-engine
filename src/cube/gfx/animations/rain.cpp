@@ -55,7 +55,7 @@ rain::rain(engine_context & context) :
 void rain::state_changed(animation_state state)
 {
     switch (state) {
-        case running: {
+        case animation_state::running: {
             droplet_colors_ = read_property<std::vector<color>>("droplet_colors");
 
             auto const num_droplets = read_property<unsigned int>("number_of_droplets");
@@ -68,7 +68,7 @@ void rain::state_changed(animation_state state)
             fader_.start();
             break;
         }
-        case stopped:
+        case animation_state::stopped:
             fader_.stop();
             break;
         default:;

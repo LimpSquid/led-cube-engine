@@ -18,17 +18,17 @@ enum class graphics_fill_mode
 
 struct graphics_state
 {
-    enum dirty_flags : int
+    enum dirty_flags : unsigned int
     {
         dirty_draw_color = 0x0001,
         dirty_fill_mode = 0x0002,
-        dirty_all = 0xffff,
+        dirty_all = UINT_MAX,
     };
 
     color draw_color{color_transparent};
     graphics_fill_mode fill_mode{graphics_fill_mode::solid};
 
-    int dirty_flags{dirty_all};
+    unsigned int dirty_flags{dirty_all};
 };
 
 struct graphics_buffer

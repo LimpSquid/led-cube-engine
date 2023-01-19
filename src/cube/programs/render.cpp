@@ -77,17 +77,17 @@ void handle_file(std::vector<std::string> const & args)
                 auto const & [name, animation] = animations[index];
 
                 switch (animation->state()) {
-                    case animation::running:
+                    case animation_state::running:
                         index = (index + 1) % animations.size();
                         animation->about_to_finish();
                         player.start(animation->get_transition_time());
                         break;
-                    case animation::stopping:
-                    case animation::stopped: {
+                    case animation_state::stopping:
+                    case animation_state::stopped: {
                         engine.load(std::static_pointer_cast<cube::core::animation>(animation));
 
                         auto const transition_time = animation->get_transition_time();
-                        auto const duration = std::max(animation->get_duration(), transition_time) - transition_time;
+                        auto const duration = std::max(animation->get_duration(), transition_time * 2 /* start + end transition */) - transition_time;
                         player.start(duration);
 
                         LOG_INF("Playing animation",
