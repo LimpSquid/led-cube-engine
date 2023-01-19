@@ -1,6 +1,6 @@
 # LED Cube Engine
 <p align="left">
-    <img src="resources/demo.gif" alt="OpenGL Mock Demo"/>
+    <img src="https://github.com/LimpSquid/led-cube-engine-demo-gifs/blob/main/demo.gif?raw=true" alt="OpenGL Mock Demo"/>
 </p>
 
 *Note: quality and frame rate are downsampled to reduce GIF size.*
@@ -45,7 +45,7 @@ To build and run the `mock` target follow the steps below:
     ```bash
     $ bin/led-cube-engine render --animation stars
     $ bin/led-cube-engine render --animation lightning '{"cloud_gradient":{"gradient_stops":[{"stop_color":"#ff8000ff","stop_position":0.5},{"stop_color":"random","stop_position":1}]}}'
-    $ bin/led-cube-engine render --animation helix '{"helix_rotation_time_ms":1500,"helix_phase_shift_sin_factor":0.04,"helix_thickness":2,"helix_length":4,"helix_gradient":{"gradient_stops":[{"stop_color":"yellow","stop_position":0.0},{"stop_color":"#24e6ebff","stop_position":1.0}]}}'
+    $ bin/led-cube-engine render --animation helix '{"rotation_time_ms":1500,"phase_shift_sin_factor":0.04,"thickness":2,"length":4,"gradient":{"gradient_stops":[{"stop_color":"yellow","stop_position":0.0},{"stop_color":"#24e6ebff","stop_position":1.0}]}}'
     ```
 1. Finally, see the [programs](#programs) section for a detailed overview of all commands that are available.
 
@@ -242,16 +242,16 @@ $ ./led-cube-engine render --animation my_animation # Finally, render it
 ```
 
 ## Evaluate animation property expressions
-With the build option `LCE_EVAL_EXPRESSIONS` enabled it is possible to further customize an animation. Usually an animation contains one or more number properties. For example, the `helix` animation has a decimal property `helix_length` to change the length of the helix. By default this is a hardcoded value, which you can set to some different decimal, for example by providing `"helix_length": 2.0`. This will modify the `helix` animation in a way that the helix is of exactly two full rotations in length.
+With the build option `LCE_EVAL_EXPRESSIONS` enabled it is possible to further customize an animation. Usually an animation contains one or more number properties. For example, the `helix` animation has a decimal property `length` to change the length of the helix. By default this is a hardcoded value, which you can set to some different decimal, for example by providing `"length": 2.0`. This will modify the `helix` animation in a way that the helix is of exactly two full rotations in length.
 
-To make this property more interesting we can use an expression which assigns some random number to `helix_length`:
+To make this property more interesting we can use an expression which assigns some random number to `length`:
 ```JSON
-"helix_length": "random(0.5, 4.0)"
+"length": "random(0.5, 4.0)"
 ```
 
-With this expression, whenever the animation is first loaded, a random number from the interval `[0.5, 4.0]` is assigned to `helix_length`. We can even go a step further and improve this expression given some constants that are available during the expression evaluation:
+With this expression, whenever the animation is first loaded, a random number from the interval `[0.5, 4.0]` is assigned to `length`. We can even go a step further and improve this expression given some constants that are available during the expression evaluation:
 ```JSON
-"helix_length": "random(0.5, cube_size_1d / 4)"
+"length": "random(0.5, cube_size_1d / 4)"
 ```
 With this expression the LED cube's size is also taken into consideration. For example, when the cube has a size of `16` a random number will be picked from the interval `[0.5, 4.0]`. If the cube has a size of `32` a random number will be picked from the interval `[0.5, 8.0]`.
 

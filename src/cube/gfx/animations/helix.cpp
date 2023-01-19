@@ -52,11 +52,11 @@ void helix::state_changed(animation_state state)
 {
     switch (state) {
         case running: {
-            auto const rotation_time = read_property<milliseconds>("helix_rotation_time_ms");
+            auto const rotation_time = read_property<milliseconds>("rotation_time_ms");
 
-            gradient_ = read_property<gradient>("helix_gradient");
-            thickness_ = read_property<int>("helix_thickness");
-            length_ =  2.0 * M_PI * read_property<double>("helix_length");
+            gradient_ = read_property<gradient>("gradient");
+            thickness_ = read_property<int>("thickness");
+            length_ =  2.0 * M_PI * read_property<double>("length");
             omega_ = (2.0 * M_PI) / static_cast<double>(rotation_time.count());
             time_ = rand(range{0, UINT16_MAX});
 
@@ -86,8 +86,8 @@ void helix::paint(graphics_device & device)
     painter p(device);
     p.wipe_canvas();
 
-    auto const phase_shift_sin_factor = read_property<double>("helix_phase_shift_sin_factor");
-    auto const phase_shift_cos_factor = read_property<double>("helix_phase_shift_cos_factor");
+    auto const phase_shift_sin_factor = read_property<double>("phase_shift_sin_factor");
+    auto const phase_shift_cos_factor = read_property<double>("phase_shift_cos_factor");
 
     for (int y = 0; y < cube::cube_size_1d; y++) {
         double const phase_shift = map(y, cube_axis_range, range(0.0, length_));
@@ -108,12 +108,12 @@ void helix::paint(graphics_device & device)
 std::unordered_map<std::string, property_value_t> helix::extra_properties() const
 {
     return {
-        {"helix_rotation_time_ms", default_rotation_time},
-        {"helix_phase_shift_cos_factor", default_phase_shift_factor},
-        {"helix_phase_shift_sin_factor", default_phase_shift_factor},
-        {"helix_thickness", default_thickness},
-        {"helix_length", default_length},
-        {"helix_gradient", default_gradient},
+        {"rotation_time_ms", default_rotation_time},
+        {"phase_shift_cos_factor", default_phase_shift_factor},
+        {"phase_shift_sin_factor", default_phase_shift_factor},
+        {"thickness", default_thickness},
+        {"length", default_length},
+        {"gradient", default_gradient},
     };
 }
 

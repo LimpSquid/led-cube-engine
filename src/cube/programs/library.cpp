@@ -86,7 +86,7 @@ void handle_dump_properties(std::vector<std::string> const & args)
     std::cout
         << "Usage: led-cube-engine library --dump-properties <name> <properties>\n\n"
         << "Example:\n"
-        << "  led-cube-engine library --dump-properties helix '{\"helix_rotation_time_ms\":7500,\"helix_length\":4}'\n";
+        << "  led-cube-engine library --dump-properties helix '{\"rotation_time_ms\":7500,\"length\":4}'\n";
     std::exit(EXIT_FAILURE);
 }
 

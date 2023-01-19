@@ -1,8 +1,10 @@
 [
   {
+    "animation": "noise_v2"
+  },
+  {
     "animation": "ripple",
     "properties": {
-      "duration_ms": 8500,
       "drift_factor_x": 0.1,
       "drift_factor_y": 0.07,
       "length": 6,
@@ -13,13 +15,11 @@
     "animation": "helix",
     "enabled": true,
     "properties": {
-      "duration_ms": 8500,
-      "label": "my fancy helix!",
-      "helix_phase_shift_cos_factor": 0.04,
-      "helix_phase_shift_sin_factor": 0.02,
-      "helix_thickness": 4,
-      "helix_length": 1.2,
-      "helix_gradient": {
+      "phase_shift_cos_factor": 0.04,
+      "phase_shift_sin_factor": 0.02,
+      "thickness": 4,
+      "length": 1.2,
+      "gradient": {
         "gradient_stops": [
           {
             "stop_position": 0,
@@ -35,7 +35,6 @@
   },
   {
     "animation": "fireworks",
-    "enabled": true,
     "properties": {
       "duration_ms": 9500,
       "number_of_shells": 5,
@@ -43,17 +42,10 @@
     }
   },
   {
-    "animation": "stars",
-    "enabled": true,
-    "properties": {
-      "duration_ms": 8500
-    }
+    "animation": "stars"
   },
   {
-    "animation": "lightning",
-    "properties": {
-      "duration_ms": 8500
-    }
+    "animation": "lightning"
   },
   {
     "animation": "falling_balls"
