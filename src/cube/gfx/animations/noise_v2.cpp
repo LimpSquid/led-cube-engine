@@ -8,7 +8,6 @@
 using namespace cube::gfx;
 using namespace cube::core;
 using namespace std::chrono;
-using std::operator""s;
 
 namespace
 {
