@@ -45,7 +45,7 @@ void configurable_animation::load_properties(nlohmann::json const & json)
             return {parse_field(json, label.c_str(), std::move(def))};
         }, def);
 
-        write_property(label, std::move(value));
+        write_property(std::move(label), std::move(value));
     }
 }
 
