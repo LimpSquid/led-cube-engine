@@ -19,6 +19,7 @@ gradient::gradient() :
 
 gradient & gradient::add(gradient_stop stop)
 {
+    stop.gpos = std::clamp(stop.gpos, 0.0, 1.0);
     stops_.erase(stop);
     stops_.insert(std::move(stop));
     return *this;
