@@ -1,6 +1,8 @@
 #include <cube/core/color.hpp>
 #include <cube/core/math.hpp>
 #include <boost/algorithm/string.hpp>
+#include <sstream>
+#include <iomanip>
 
 namespace cube::core
 {
@@ -69,6 +71,32 @@ color color_from_string(std::string c)
     STATEMENT_FOR(steel_blue)
 #undef STATEMENT_FOR
     return {};
+}
+
+std::string color_to_string(color const & c)
+{
+#define STATEMENT_FOR(name) \
+    if (c == color_##name) return #name;
+    STATEMENT_FOR(transparent)
+    STATEMENT_FOR(black)
+    STATEMENT_FOR(white)
+    STATEMENT_FOR(red)
+    STATEMENT_FOR(green)
+    STATEMENT_FOR(blue)
+    STATEMENT_FOR(cyan)
+    STATEMENT_FOR(magenta)
+    STATEMENT_FOR(yellow)
+    STATEMENT_FOR(orange)
+    STATEMENT_FOR(pink)
+    STATEMENT_FOR(steel_blue)
+#undef STATEMENT_FOR
+
+    std::stringstream stream;
+    stream
+        << "#"
+        << std::setfill('0') << std::setw(sizeof(rgba_t) * 2)
+        << std::hex << c.rgba();
+    return stream.str();
 }
 
 void alpha_blend(color const & c, color & bucket)

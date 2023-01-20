@@ -4,7 +4,6 @@
 #include <cube/core/expression.hpp>
 #include <3rdparty/nlohmann/json.hpp>
 #include <boost/type_index.hpp>
-#include <iomanip>
 #include <optional>
 
 namespace cube::core
@@ -189,12 +188,7 @@ nlohmann::json make_field(Key const & key, T const & value)
 
 inline void to_json(color const & c, nlohmann::json & out)
 {
-    std::stringstream stream;
-    stream
-        << "#"
-        << std::setfill('0') << std::setw(sizeof(rgba_t) * 2)
-        << std::hex << c.rgba();
-    out = stream.str();
+    out = color_to_string(c);
 }
 
 inline void from_json(nlohmann::json const & json, color & out)

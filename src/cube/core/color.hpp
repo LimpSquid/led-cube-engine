@@ -104,6 +104,7 @@ color lighter(color const & c, double factor = 0.1);
 color darker(color const & c, double factor = 0.1);
 color adjust_brightness(color const & c, double factor);
 color color_from_string(std::string c);
+std::string color_to_string(color const & c);
 void alpha_blend(color const & c, color & bucket);
 void alpha_blend(rgba_t const & c, rgba_t & bucket);
 void blend(color const & c, color & bucket);
