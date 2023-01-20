@@ -4,7 +4,6 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/gfx/easing.hpp>
 #include <cube/core/painter.hpp>
-#include <cube/core/logging.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
