@@ -1,7 +1,5 @@
 [
-  {
-    "animation": "noise_v2"
-  },
+  { "animation": "noise_v2" },
   {
     "animation": "ripple",
     "properties": {
@@ -41,16 +39,9 @@
       "explosion_force": 2
     }
   },
-  {
-    "animation": "stars"
-  },
-  {
-    "animation": "lightning"
-  },
-  {
-    "animation": "falling_balls"
-  },
-  {
-    "animation": "rain"
-  }
+  { "animation": "stars" },
+  { "animation": "lightning" },
+  { "animation": "noise_v1" },
+  { "animation": "falling_balls" },
+  { "animation": "rain" }
 ]

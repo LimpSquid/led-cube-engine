@@ -97,7 +97,7 @@ void helix::paint(graphics_device & device)
         int const x = map(x1, unit_circle_range, cube_axis_range);
         int const z = map(z1, unit_circle_range, cube_axis_range);
 
-        auto c = gradient_(abs_sin(time_ * omega_ + 0.5 * phase_shift)).vec();
+        auto c = gradient_(map_sin(time_ * omega_ + 0.5 * phase_shift)).vec();
         c *= rgb_vec(fade_in_->value());
         c *= rgb_vec(fade_out_->value());
 

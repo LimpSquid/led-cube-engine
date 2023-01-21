@@ -33,8 +33,15 @@ struct safe_range
     boost::safe_numerics::safe<T> to;
 };
 
+template<typename T>
+constexpr range<T> make_unit_circle_range()
+{
+    static_assert(std::is_floating_point_v<T>);
+    return {T{-1.0}, T{1.0}};
+}
+
 constexpr range rand_range{0, RAND_MAX};
-constexpr range unit_circle_range{-1.0, 1.0};
+constexpr range unit_circle_range = make_unit_circle_range<double>();
 constexpr range randd_range{0.0, 1.0};
 constexpr range randf_range{0.0f, 1.0f};
 
@@ -162,17 +169,17 @@ constexpr bool greater_than_or_equal(T lhs, T rhs)
 }
 
 template<typename T>
-constexpr T abs_sin(T const & value)
+constexpr T map_sin(T const & value, range<T> range = range(T{0}, T{1}))
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::sin(value), unit_circle_range, range(0.0, 1.0));
+    return map(std::sin(value), make_unit_circle_range<T>(), range);
 }
 
 template<typename T>
-constexpr T abs_cos(T const & value)
+constexpr T map_cos(T const & value, range<T> range = range(T{0}, T{1}))
 {
     static_assert(std::is_floating_point_v<T>);
-    return map(std::cos(value), unit_circle_range, range(0.0, 1.0));
+    return map(std::cos(value), make_unit_circle_range<T>(), range);
 }
 
 inline double randd(range<double> range = randd_range) // Inclusive

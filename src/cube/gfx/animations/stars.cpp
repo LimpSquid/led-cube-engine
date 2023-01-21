@@ -149,7 +149,7 @@ std::unordered_map<std::string, property_value_t> stars::extra_properties() cons
 color stars::galaxy_color(voxel_t voxel) const
 {
     double phase_shift = gradient_phase_shift_scalar * M_PI * (static_cast<double>(voxel.z) / cube::cube_size_1d);
-    return galaxy_gradient_(abs_cos(gradient_step_ * omega_gradient_ - phase_shift));
+    return galaxy_gradient_(map_cos(gradient_step_ * omega_gradient_ - phase_shift));
 }
 
 star stars::make_star()
