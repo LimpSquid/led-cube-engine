@@ -129,15 +129,6 @@ void bus_comm::do_write_one()
             if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
                 response_watchdog_.start(params.response_timeout);
-            } else if constexpr (std::is_same_v<params_t, broadcast_params>) {
-                // TODO: here we could peek for the next job and see if this is also a broadcast.
-                // If it is we can already send that to the device. This should speed up sending
-                // consecutive broadcasts considerably since we can write a multiple frames of data
-                // to the device its buffer which are then send in one go. We cannot do this when the
-                // next job is a unicast, because once a unicast is written to the device its buffer,
-                // the response watchdog is started. This would mean that if the buffer of the underlying
-                // device was already filled up significantly, we could ending up with a timeout
-                // because the data of the unicast was not send out fast enough.
             } else
                 throw std::runtime_error("Unexpected write for current job");
         }, job.params);

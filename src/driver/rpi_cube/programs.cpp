@@ -6,6 +6,7 @@
 #include <cube/core/engine_context.hpp>
 #include <cube/core/logging.hpp>
 #include <cube/core/composite_function.hpp>
+#include <cube/core/utils.hpp>
 #include <cube/programs/program.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -220,14 +221,14 @@ void handle_flash_boards(std::vector<std::string> const & args)
 
     if (args.size() > 0) {
         auto filepath = args[0];
-        std::unordered_set<bus_node> filter;
+        std::unordered_set<bus_node> nodes_to_flash;
 
         if (args.size() > 1) {
             try {
                 std::for_each(args.begin() + 1, args.end(), [&](std::string const & arg) {
                     auto const address = std::stoul(arg, nullptr, 16);
-                    if (address == std::clamp<unsigned long>(address, bus_node::min_address::value, bus_node::max_address::value))
-                        filter.insert(static_cast<unsigned char>(address));
+                    if (address => bus_node::min_address::value && address <= bus_node::max_address::value)
+                        nodes_to_flash.insert(static_cast<unsigned char>(address));
                     else
                         throw std::exception();
                 });
@@ -237,42 +238,54 @@ void handle_flash_boards(std::vector<std::string> const & args)
         }
 
         auto [engine, _, bus_comm] = instance();
-        unsigned int n_dots = 0;
-        recurring_timer busy_indicator{engine.context(), [&](auto, auto) {
-            if (n_dots == busy_indicator_length) {
-                std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
-                n_dots = 0;
-            }
+        bool retry = false;
 
-            std::cout << '.' << std::flush;
-            n_dots++;
-        }, true};
+        do {
+            unsigned int n_dots = 0;
+            recurring_timer busy_indicator{engine.context(), [&](auto, auto) {
+                if (n_dots == busy_indicator_length) {
+                    std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
+                    n_dots = 0;
+                }
 
-        bus_flasher flasher{bus_comm, [&](auto result) {
-            if (busy_indicator.is_running()) {
-                busy_indicator.stop();
-                std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
-            }
+                std::cout << '.' << std::flush;
+                n_dots++;
+            }, true};
 
-            if (!result)
-                throw std::runtime_error(result.error().what);
+            bus_flasher flasher{bus_comm, [&](auto result) {
+                if (busy_indicator.is_running()) {
+                    busy_indicator.stop();
+                    std::cout << '\r' << std::string(busy_indicator_length, ' ') << '\r' << std::flush;
+                }
 
-            for (auto && node : result->flashed_nodes)
-                LOG_PLAIN("Succesfully flashed slave", LOG_ARG("address", as_hex(node.address)));
-            for (auto && node : result->failed_nodes)
-                LOG_PLAIN("Failed to flash slave",
-                    LOG_ARG("address", as_hex(node.first.address)),
-                    LOG_ARG("reason", node.second));
-        }};
+                if (!result)
+                    throw std::runtime_error(result.error().what);
 
-        LOG_PLAIN("Flashing hex file", LOG_ARG("filepath", args[0]));
+                for (auto && node : result->flashed_nodes) {
+                    nodes_to_flash.erase(node);
+                    LOG_PLAIN("Succesfully flashed slave", LOG_ARG("address", as_hex(node.address)));
+                }
+                for (auto && node : result->failed_nodes) {
+                    nodes_to_flash.insert(node); // Retry
+                    LOG_PLAIN("Failed to flash slave",
+                        LOG_ARG("address", as_hex(node.first.address)),
+                        LOG_ARG("reason", node.second));
+                }
+            }};
 
-        flasher.flash_hex_file(filepath, filter);
+            LOG_PLAIN("Flashing hex file", LOG_ARG("filepath", args[0]));
 
-        if (get_runtime_log_level() != log_prio::debug)
-            busy_indicator.start(500ms);
+            flasher.flash_hex_file(filepath, filter);
 
-        engine.run_while(bus_transferring{bus_comm});
+            if (get_runtime_log_level() != log_prio::debug)
+                busy_indicator.start(500ms);
+
+            engine.run_while(bus_transferring{bus_comm});
+
+            retry = !nodes_to_flash.empty()
+                && question_yesno("Retry to flash the failed slave(s)");
+        } while (retry);
+
         std::exit(bus_comm.state() == bus_state::idle
             ? EXIT_SUCCESS
             : EXIT_FAILURE);

@@ -5,6 +5,10 @@
 #include <stdexcept>
 #include <cstring>
 #include <cerrno>
+#include <iostream>
+#include <optional>
+#include <algorithm>
+#include <csignal>
 #include <unistd.h>
 
 namespace cube::core
@@ -58,5 +62,47 @@ struct signature
     template<typename R>
     constexpr static auto select_overload(R (*f)(A ...)) { return f; }
 };
+
+inline bool question_yesno(const char * message)
+{
+    std::string answer;
+    auto const check_answer = [&]() {
+        std::transform(answer.begin(), answer.end(), answer.begin(),
+            [](unsigned char x) { return std::tolower(x); });
+
+        bool ok = answer == "y"
+            || answer == "n"
+            || answer == "yes"
+            || answer == "no";
+
+        return ok
+            ? answer[0] == 'y'
+            : std::optional<bool>{};
+    };
+
+    auto const handler = signal(SIGINT, SIG_DFL);
+    if (handler == SIG_ERR)
+        throw std::runtime_error("Failed installing default SIGINT handler");
+
+    std::cout << message << "? [Y/n]\n";
+
+    std::optional<bool> result;
+    for (;;) {
+        std::cin >> answer;
+        result = check_answer();
+        if (result)
+            break;
+        std::cout
+            << "Invalid answer: " << answer << " Please try again\n"
+            << message << "? [Y/n]\n";
+    };
+
+    if (signal(SIGINT, handler) == SIG_ERR)
+        throw std::runtime_error("Failed installing SIGINT handler");
+
+    if (!std::cin)
+        throw std::runtime_error("Reading user input failed");
+    return *result;
+}
 
 } // End of namespace
