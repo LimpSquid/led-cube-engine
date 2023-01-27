@@ -24,6 +24,7 @@ namespace cube::gfx
 {
     constexpr core::range noise_range{-1.0f, 1.0f};
     constexpr core::range ridged_noise_range{0.0f, 1.0f};
+    constexpr core::range ridged_mf_noise_range{0.0f, 1.0f};
 
     inline void noise_reseed() { Simplex::seed(static_cast<uint32_t>(std::time(nullptr))); }
     inline float noise(float x) { return Simplex::noise(x); }
@@ -34,4 +35,8 @@ namespace cube::gfx
     inline float ridged_noise(glm::vec2 const x) { return Simplex::ridgedNoise(x); }
     inline float ridged_noise(glm::vec3 const x) { return Simplex::ridgedNoise(x); }
     inline float ridged_noise(glm::vec4 const x) { return Simplex::ridgedNoise(x); }
+    inline float ridged_mf_noise(float x) { return Simplex::ridgedMF(x); }
+    inline float ridged_mf_noise(glm::vec2 const x) { return Simplex::ridgedMF(x); }
+    inline float ridged_mf_noise(glm::vec3 const x) { return Simplex::ridgedMF(x); }
+    inline float ridged_mf_noise(glm::vec4 const x) { return Simplex::ridgedMF(x); }
 }
