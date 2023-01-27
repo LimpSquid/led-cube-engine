@@ -9,6 +9,7 @@
       "wave_time_ms": 1500
     }
   },
+  { "animation": "noise_v3" },
   {
     "animation": "helix",
     "enabled": true,

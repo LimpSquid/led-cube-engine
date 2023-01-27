@@ -50,7 +50,7 @@ void handle_file(std::vector<std::string> const & args)
         auto & engine = engine_instance();
         animation_list_t animations;
 
-        for (auto const & arg : args) {
+        for (auto const & arg : std::unordered_set(args.begin(), args.end())) {
             auto const filepath = fs::path(arg);
             if (!fs::exists(filepath)) {
                 LOG_WRN("Ignoring non-existing file", LOG_ARG("filepath", filepath.native()));

@@ -1,5 +1,6 @@
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
+#include <cube/gfx/easing.hpp>
 #include <cube/core/voxel.hpp>
 #include <cube/core/painter.hpp>
 #include <cube/core/math.hpp>
@@ -27,6 +28,7 @@ struct falling_balls :
 {
     falling_balls(engine_context & context);
 
+    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;
@@ -36,6 +38,8 @@ struct falling_balls :
 
     std::vector<ball> balls_;
     std::vector<color> ball_colors_;
+    std::optional<ease_linear> grow_in_;
+    std::optional<ease_linear> shrink_out_;
     int max_radius_;
     int min_radius_;
 };
@@ -64,8 +68,20 @@ void falling_balls::state_changed(animation_state state)
             balls_.resize(num_balls);
             for (auto & ball : balls_)
                 ball = make_ball();
+
+            grow_in_.emplace(context(), easing_config{{0.0, 1.0}, 50, get_transition_time()});
+            shrink_out_.emplace(context(), easing_config{{1.0, 0.0}, 50, get_transition_time()});
+
+            grow_in_->start();
             break;
         }
+        case animation_state::stopping:
+            shrink_out_->start();
+            break;
+        case animation_state::stopped:
+            grow_in_->stop();
+            shrink_out_->stop();
+            break;
         default:;
     }
 }
@@ -87,9 +103,11 @@ void falling_balls::paint(graphics_device & device)
     p.wipe_canvas();
     p.set_fill_mode(graphics_fill_mode::none);
 
+    double const grow_shrink_scalar = grow_in_->value() * shrink_out_->value();
+
     for (auto const & ball : balls_) {
         p.set_color(ball.c);
-        p.sphere(ball.position, ball.radius);
+        p.sphere(ball.position, static_cast<int>(std::round(grow_shrink_scalar * ball.radius)));
     }
 }
 
