@@ -22,6 +22,17 @@ namespace
 
 std::vector<cube::programs::program_sigint_t> sigint_handlers;
 
+template<typename T>
+inline std::vector<T> & dedup(std::vector<T> & v)
+{
+    auto end = v.end();
+    for (auto it = v.begin(); it != end; ++it)
+        end = std::remove(it + 1, end, *it);
+
+    v.erase(end, v.end());
+    return v;
+}
+
 render_engine & engine_instance()
 {
     struct singleton
@@ -46,12 +57,15 @@ render_engine & engine_instance()
 
 void handle_file(std::vector<std::string> const & args)
 {
-    if (!args.empty()) {
+    std::vector<fs::path> filepaths;
+    std::transform(args.begin(), args.end(), std::back_inserter(filepaths),
+        [](auto const & p) { return fs::canonical(p); });
+
+    if (!filepaths.empty()) {
         auto & engine = engine_instance();
         animation_list_t animations;
 
-        for (auto const & arg : std::unordered_set(args.begin(), args.end())) {
-            auto const filepath = fs::path(arg);
+        for (auto const & filepath : dedup(filepaths)) {
             if (!fs::exists(filepath)) {
                 LOG_WRN("Ignoring non-existing file", LOG_ARG("filepath", filepath.native()));
                 continue;
