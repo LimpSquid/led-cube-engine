@@ -275,7 +275,7 @@ void handle_flash_boards(std::vector<std::string> const & args)
 
             LOG_PLAIN("Flashing hex file", LOG_ARG("filepath", args[0]));
 
-            flasher.flash_hex_file(filepath, filter);
+            flasher.flash_hex_file(filepath, nodes_to_flash);
 
             if (get_runtime_log_level() != log_prio::debug)
                 busy_indicator.start(500ms);

@@ -95,7 +95,7 @@ inline bool question_yesno(const char * message)
         std::cout
             << "Invalid answer: " << answer << " Please try again\n"
             << message << "? [Y/n]\n";
-    };
+    }
 
     if (signal(SIGINT, handler) == SIG_ERR)
         throw std::runtime_error("Failed installing SIGINT handler");
