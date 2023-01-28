@@ -126,7 +126,7 @@ private:
 
 void parallel_for_impl(core::parallel_range_t range, core::parallel_handler_t handler, double nice_factor)
 {
-    static std::unique_ptr<job_processor<parallel_for_job>> processor;
+    thread_local std::unique_ptr<job_processor<parallel_for_job>> processor;
     if (!processor || processor->exited())
         processor = std::make_unique<job_processor<parallel_for_job>>();
 
@@ -159,7 +159,7 @@ namespace cube::core
 
 void parallel_for(parallel_range_t range, parallel_handler_t handler, double nice_factor)
 {
-    static std::atomic_bool running{false};
+    thread_local std::atomic_bool running{false};
 
     int const x = diff(range);
     if (x < 0)
