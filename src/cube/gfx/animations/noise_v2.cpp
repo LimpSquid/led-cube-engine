@@ -4,6 +4,7 @@
 #include <cube/gfx/gradient.hpp>
 #include <cube/gfx/easing.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/core/parallel.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -86,23 +87,24 @@ void noise_v2::paint(graphics_device & device)
     auto const grow_shrink_rate = time_ * 0.5;
     auto const grow_shrink_scalar = static_cast<float>(map(std::sin(grow_shrink_rate), unit_circle_range, grow_shrink_range));
 
-    for (int x = 0; x < cube::cube_size_1d; ++x) {
-        auto const xx = static_cast<float>(x) * grow_shrink_scalar;
-        for (int y = 0; y < cube::cube_size_1d; ++y) {
-            auto const yy = static_cast<float>(y) * grow_shrink_scalar;
-            for (int z = 0; z < cube::cube_size_1d; ++z) {
-                auto const zz = static_cast<float>(z) * grow_shrink_scalar;
-                auto const gp = map(ridged_noise({xx, yy, zz, time_}), ridged_noise_range, gradient_pos_range);
+    parallel_for({0, cube::cube_size_1d}, [&](parallel_range_t range) {
+        for (int x = range.from; x < range.to; ++x) {
+            auto const xx = static_cast<float>(x) * grow_shrink_scalar;
+            for (int y = 0; y < cube::cube_size_1d; ++y) {
+                auto const yy = static_cast<float>(y) * grow_shrink_scalar;
+                for (int z = 0; z < cube::cube_size_1d; ++z) {
+                    auto const zz = static_cast<float>(z) * grow_shrink_scalar;
+                    auto const gp = map(ridged_noise({xx, yy, zz, time_}), ridged_noise_range, gradient_pos_range);
 
-                auto c = gradient_(gp).vec();
-                c *= rgb_vec(fade_in_->value());
-                c *= rgb_vec(fade_out_->value());
+                    auto c = gradient_(gp).vec();
+                    c *= rgb_vec(fade_in_->value());
+                    c *= rgb_vec(fade_out_->value());
 
-                p.set_color(c);
-                p.draw({x, y, z});
+                    device.draw_with_color({x, y, z}, c); // Draw directly to device since painter is not thread safe
+                }
             }
         }
-    }
+    }, use_all_cpus);
 }
 
 std::unordered_map<std::string, property_value_t> noise_v2::extra_properties() const

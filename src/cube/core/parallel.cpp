@@ -16,7 +16,7 @@ namespace
 
 struct parallel_for_job
 {
-    core::parallel_exclusive_range_t range;
+    core::parallel_range_t range;
     core::parallel_handler_t handler;
 
     void operator()()
@@ -124,7 +124,7 @@ private:
     int in_flight_;
 };
 
-void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_handler_t handler, double nice_factor)
+void parallel_for_impl(core::parallel_range_t range, core::parallel_handler_t handler, double nice_factor)
 {
     static std::unique_ptr<job_processor<parallel_for_job>> processor;
     if (!processor || processor->exited())
@@ -132,6 +132,9 @@ void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_ha
 
     int const span = std::abs(core::diff(range));
     int const jobs = map(nice_factor, 0.0, 1.0, std::min(span, processor->available_threads()), 1);
+
+    if (jobs == 0)
+        throw std::runtime_error("Number of jobs cannot be zero");
 
     // If we end up with only one job, just directly execute it on this thread
     if (jobs == 1)
@@ -154,11 +157,14 @@ void parallel_for_impl(core::parallel_exclusive_range_t range, core::parallel_ha
 namespace cube::core
 {
 
-void parallel_for(parallel_exclusive_range_t range, parallel_handler_t handler, double nice_factor)
+void parallel_for(parallel_range_t range, parallel_handler_t handler, double nice_factor)
 {
     static std::atomic_bool running{false};
 
-    if (diff(range) == 0)
+    int const x = diff(range);
+    if (x < 0)
+        throw std::runtime_error("range::to < range::from");
+    if (x == 0)
         return;
 
     if (running)

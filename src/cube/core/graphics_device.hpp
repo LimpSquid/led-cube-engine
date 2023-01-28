@@ -56,6 +56,7 @@ public:
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
+    void draw_with_color(voxel_t const & voxel, color const & color);
     void draw_sphere(voxel_t const & origin, int radius);
     void fill();
 

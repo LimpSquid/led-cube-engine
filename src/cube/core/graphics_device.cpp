@@ -24,6 +24,12 @@ void graphics_device::draw(voxel_t const & voxel)
         blend(draw_color_, buffer_.data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
 }
 
+void graphics_device::draw_with_color(voxel_t const & voxel, color const & color)
+{
+    if (visible(voxel))
+        blend(color, buffer_.data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
+}
+
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 {
     radius = std::clamp(radius, 0, cube_size_1d); // clamp to some reasonable values
