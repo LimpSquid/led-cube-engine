@@ -227,7 +227,7 @@ void handle_flash_boards(std::vector<std::string> const & args)
             try {
                 std::for_each(args.begin() + 1, args.end(), [&](std::string const & arg) {
                     auto const address = std::stoul(arg, nullptr, 16);
-                    if (address => bus_node::min_address::value && address <= bus_node::max_address::value)
+                    if (address >= bus_node::min_address::value && address <= bus_node::max_address::value)
                         nodes_to_flash.insert(static_cast<unsigned char>(address));
                     else
                         throw std::exception();
@@ -266,7 +266,7 @@ void handle_flash_boards(std::vector<std::string> const & args)
                     LOG_PLAIN("Succesfully flashed slave", LOG_ARG("address", as_hex(node.address)));
                 }
                 for (auto && node : result->failed_nodes) {
-                    nodes_to_flash.insert(node); // Retry
+                    nodes_to_flash.insert(node.first); // Retry
                     LOG_PLAIN("Failed to flash slave",
                         LOG_ARG("address", as_hex(node.first.address)),
                         LOG_ARG("reason", node.second));
