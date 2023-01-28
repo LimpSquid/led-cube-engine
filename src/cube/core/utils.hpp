@@ -73,10 +73,11 @@ inline bool question_yesno(const char * message)
         bool ok = answer == "y"
             || answer == "n"
             || answer == "yes"
-            || answer == "no";
+            || answer == "no"
+            || answer.empty();
 
         return ok
-            ? answer[0] == 'y'
+            ? (answer.empty() || answer[0] == 'y')
             : std::optional<bool>{};
     };
 
@@ -88,7 +89,7 @@ inline bool question_yesno(const char * message)
 
     std::optional<bool> result;
     for (;;) {
-        std::cin >> answer;
+        std::getline(std::cin, answer);
         result = check_answer();
         if (result)
             break;
