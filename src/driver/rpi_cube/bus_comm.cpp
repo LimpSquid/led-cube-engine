@@ -129,7 +129,7 @@ void bus_comm::do_write_one()
             if constexpr (std::is_same_v<params_t, unicast_params>) {
                 params.attempt++;
                 response_watchdog_.start(params.response_timeout);
-            } else
+            } else if constexpr (!std::is_same_v<params_t, broadcast_params>)
                 throw std::runtime_error("Unexpected write for current job");
         }, job.params);
     } else
