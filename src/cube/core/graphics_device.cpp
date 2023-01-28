@@ -1,9 +1,8 @@
 #include <cube/core/graphics_device.hpp>
 #include <cube/core/animation.hpp>
 #include <cube/core/math.hpp>
-#include <cube/core/parallel.hpp>
+#include <cube/core/logging.hpp>
 #include <3rdparty/glm/geometric.hpp>
-#include <chrono>
 
 using namespace std::chrono;
 
@@ -121,6 +120,13 @@ void graphics_device::fill()
 void graphics_device::render(animation & anim)
 {
     if (anim.dirty()) {
+        auto const now = steady_clock::now();
+        auto const elapsed = std::max(1ms, duration_cast<milliseconds>(now - last_render_tp_));
+        LOG_DBG_PERIODIC(10s, "Framerate information.",
+            LOG_ARG("frame_time", elapsed),
+            LOG_ARG("FPS", 1000 / elapsed.count()));
+        last_render_tp_ = now;
+
         anim.paint_event(*this);
         show(buffer_);
     }
@@ -129,7 +135,8 @@ void graphics_device::render(animation & anim)
 graphics_device::graphics_device(engine_context & context) :
     context_(context),
     fill_mode_(graphics_fill_mode::solid),
-    draw_color_(color_transparent)
+    draw_color_(color_transparent),
+    last_render_tp_(steady_clock::now())
 { }
 
 engine_context & graphics_device::context()

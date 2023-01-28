@@ -6,6 +6,7 @@
 #include <cube/core/engine_context.hpp>
 #include <cstring>
 #include <array>
+#include <chrono>
 
 namespace cube::core
 {
@@ -56,11 +57,13 @@ public:
 
     void update_state(graphics_state const & state);
     void draw(voxel_t const & voxel);
-    void draw_with_color(voxel_t const & voxel, color const & color);
     void draw_sphere(voxel_t const & origin, int radius);
     void fill();
 
     void render(animation & anim);
+
+    // thread safe given that each thread accesses a different voxel
+    void draw_with_color(voxel_t const & voxel, color const & color);
 
 protected:
     graphics_device(engine_context & context);
@@ -79,6 +82,7 @@ private:
     graphics_buffer buffer_; // FIXME: allocate on heap instead of stack?
     graphics_fill_mode fill_mode_;
     color draw_color_;
+    std::chrono::steady_clock::time_point last_render_tp_;
 };
 
 } // End of namespace
