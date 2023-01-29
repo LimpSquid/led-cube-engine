@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cube/core/timers.hpp>
+#include <optional>
 
 namespace cube::core
 {
@@ -28,6 +29,8 @@ public:
     void about_to_finish();
     void finish();
     void paint_event(graphics_device & device);
+
+    virtual std::optional<double> motion_blur() const;
 
 protected:
     animation(engine_context & context);

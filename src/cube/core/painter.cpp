@@ -29,16 +29,6 @@ void painter::draw(voxel_t const & v)
     device_.draw(v);
 }
 
-void painter::wipe_canvas()
-{
-    color const old = state_.draw_color;
-
-    set_color(color_black);
-    update_state();
-    device_.fill();
-    set_color(old);
-}
-
 void painter::fill_canvas()
 {
     update_state();

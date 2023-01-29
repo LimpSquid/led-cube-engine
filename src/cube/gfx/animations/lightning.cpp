@@ -90,7 +90,6 @@ void lightning::state_changed(animation_state state)
 void lightning::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     for (auto const & cloud : clouds_) {
         double const fade_scalar = cloud.in_fader->value() * cloud.out_fader->value();

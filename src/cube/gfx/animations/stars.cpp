@@ -118,7 +118,6 @@ void stars::scene_tick(milliseconds)
 void stars::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     for (star const & s : stars_) {
         // Half of sine period is used for fading the star, the other half the star is off

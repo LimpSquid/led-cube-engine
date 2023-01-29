@@ -11,6 +11,41 @@
 namespace cube::core
 {
 
+namespace detail
+{
+
+template<typename T>
+class flip_flop
+{
+public:
+    using buffer_t = T;
+
+    flip_flop() :
+        f(&buffers_[0]),
+        b(&buffers_[1])
+    { }
+
+    buffer_t & front() { return *f; }
+    buffer_t & back() { return *b; }
+    buffer_t * operator->() { return f; }
+    buffer_t & operator*() { return *f; }
+    void flip() { std::swap(f, b); }
+
+    template<typename F>
+    void flip_and_fill(F value)
+    {
+        flip();
+        f->fill(value);
+    }
+
+private:
+    buffer_t buffers_[2]; // FIXME: allocate on heap instead of stack?
+    buffer_t * f;
+    buffer_t * b;
+};
+
+} // End of namespace
+
 enum class graphics_fill_mode
 {
     none,
@@ -40,6 +75,7 @@ struct graphics_buffer
     auto const begin() const { return data.begin(); }
     auto end() { return data.end(); }
     auto const end() const { return data.end(); }
+    void fill(rgba_t value) { data.fill(value); }
 };
 
 inline void scale(graphics_buffer & buffer, double scalar)
@@ -76,10 +112,11 @@ private:
     graphics_device(graphics_device &) = delete;
     graphics_device(graphics_device &&) = delete;
 
+    void apply_motion_blur(double blur);
     virtual void show(graphics_buffer const & buffer) = 0;
 
     engine_context & context_;
-    graphics_buffer buffer_; // FIXME: allocate on heap instead of stack?
+    detail::flip_flop<graphics_buffer> buffer_;
     graphics_fill_mode fill_mode_;
     color draw_color_;
     std::chrono::steady_clock::time_point last_render_tp_;

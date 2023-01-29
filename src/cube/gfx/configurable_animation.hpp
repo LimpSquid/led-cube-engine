@@ -44,6 +44,7 @@ public:
     std::string get_label() const;
     std::chrono::milliseconds get_duration() const;
     std::chrono::milliseconds get_transition_time() const; // returns zero if animation_trait::transition is not supported by the animation
+    double get_motion_blur() const;
 
     void load_properties(nlohmann::json const & json);
     nlohmann::json dump_properties() const;
@@ -87,6 +88,7 @@ protected:
     }
 
 private:
+    virtual std::optional<double> motion_blur() const;
     virtual animation_trait traits() const;
     virtual std::unordered_map<std::string, property_value_t> extra_properties() const;
 

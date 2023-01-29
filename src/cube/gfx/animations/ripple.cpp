@@ -90,7 +90,6 @@ void ripple::scene_tick(milliseconds dt)
 void ripple::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     auto const drift_factor_x = read_property<double>("drift_factor_x");
     auto const drift_factor_y = read_property<double>("drift_factor_y");

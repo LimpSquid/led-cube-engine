@@ -159,6 +159,7 @@ animation_publisher<my_animation> const publisher;
 // Some default animation property values
 constexpr int default_int_property = 12345;
 constexpr double default_double_property = 3.14;
+constexpr double default_motion_blur_property = 0.75;
 gradient const default_gradient_property =
 {
     {0.00, color_blue},
@@ -210,7 +211,6 @@ void my_animation::scene_tick(std::chrono::milliseconds dt)
 void my_animation::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     // Draw something interesting with the use of the painter
     // ...
@@ -227,6 +227,9 @@ std::unordered_map<std::string, property_value_t> my_animation::extra_properties
         {"my_double_property", default_double_property},
         {"my_gradient_property", default_gradient_property},
         {"my_color_vector_property", std::vector<color>{}},
+
+        // You can also override the base property default values
+        {"motion_blur", default_motion_blur_property},
     };
 }
 

@@ -83,7 +83,6 @@ void noise_v3::scene_tick(milliseconds dt)
 void noise_v3::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     auto const grow_shrink_rate = time_ * 0.5;
     auto const grow_shrink_scalar = static_cast<float>(map(std::sin(grow_shrink_rate), unit_circle_range, grow_shrink_range));

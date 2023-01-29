@@ -47,6 +47,7 @@ struct falling_balls :
 animation_publisher<falling_balls> const publisher;
 
 constexpr double gravity = -0.000002 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per second
+constexpr double default_motion_blur{0.75};
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_balls{3};
 constexpr int default_max_radius{cube::cube_size_1d / 4};
@@ -100,7 +101,6 @@ void falling_balls::scene_tick(milliseconds dt)
 void falling_balls::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
     p.set_fill_mode(graphics_fill_mode::none);
 
     double const grow_shrink_scalar = grow_in_->value() * shrink_out_->value();
@@ -118,6 +118,7 @@ std::unordered_map<std::string, property_value_t> falling_balls::extra_propertie
         {"max_ball_radius", default_max_radius},
         {"min_ball_radius", default_min_radius},
         {"ball_colors", std::vector<color>{}},
+        {"motion_blur", default_motion_blur},
     };
 }
 

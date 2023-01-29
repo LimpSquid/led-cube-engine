@@ -49,6 +49,11 @@ void animation::paint_event(graphics_device & device)
     paint(device);
 }
 
+std::optional<double> animation::motion_blur() const
+{
+    return std::optional<double>{};
+}
+
 animation::animation(engine_context & context) :
     context_(context),
     scene_timer_(context, [&](auto, auto elapsed) {

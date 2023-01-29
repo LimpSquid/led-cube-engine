@@ -20,13 +20,13 @@ void graphics_device::update_state(graphics_state const & state)
 void graphics_device::draw(voxel_t const & voxel)
 {
     if (visible(voxel))
-        blend(draw_color_, buffer_.data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
+        blend(draw_color_, buffer_->data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
 }
 
 void graphics_device::draw_with_color(voxel_t const & voxel, color const & color)
 {
     if (visible(voxel))
-        blend(color, buffer_.data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
+        blend(color, buffer_->data[map_to_offset(voxel.x, voxel.y, voxel.z)]);
 }
 
 void graphics_device::draw_sphere(voxel_t const & origin, int radius)
@@ -97,7 +97,7 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
                         // (r / radius) reaches a certain threshold
                         scalar = std::min(1.0, 0.3 + (1.0 - r / radius));
                         offset = map_to_offset(x, y, z);
-                        blend(draw_color_.vec() * scalar, buffer_.data[offset]);
+                        blend(draw_color_.vec() * scalar, buffer_->data[offset]);
                     }
                 }
             }
@@ -113,7 +113,7 @@ void graphics_device::draw_sphere(voxel_t const & origin, int radius)
 
 void graphics_device::fill()
 {
-    for (rgba_t & data : buffer_)
+    for (rgba_t & data : *buffer_)
         blend(draw_color_, data);
 }
 
@@ -130,8 +130,14 @@ void graphics_device::render(animation & anim)
             LOG_ARG("FPS", 1000 / render_time.count()));
         last_render_tp_ = now;
 
+        auto const blur = anim.motion_blur();
+        if (blur)
+            apply_motion_blur(*blur);
+
         anim.paint_event(*this);
-        show(buffer_);
+        show(*buffer_);
+
+        buffer_.flip_and_fill(rgba_t{});
     }
 }
 
@@ -150,6 +156,16 @@ engine_context & graphics_device::context()
 int graphics_device::map_to_offset(int x, int y, int z) const
 {
     return x + y * cube_size_1d + z * cube_size_2d;
+}
+
+void graphics_device::apply_motion_blur(double blur)
+{
+    blur = std::clamp(blur, 0.0, 1.0);
+
+    // TODO: parallel_for ?
+    auto prev = buffer_.back().begin();
+    for (rgba_t & data : *buffer_)
+        blend(map(blur, 0.0, 1.0, color{data}.vec(), color{*prev++}.vec()), data);
 }
 
 } // End of namespace

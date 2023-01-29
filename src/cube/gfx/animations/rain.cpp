@@ -45,6 +45,7 @@ animation_publisher<rain> const publisher;
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr glm::dvec3 gravity{0.0, 0.0, -0.000001 * cube::cube_size_1d}; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr unsigned int default_number_of_droplets{cube::cube_size_1d * 3};
+constexpr double default_motion_blur{0.9};
 std::vector<color> const default_droplet_colors{color_steel_blue, color_cyan};
 
 rain::rain(engine_context & context) :
@@ -87,7 +88,6 @@ void rain::scene_tick(milliseconds dt)
 void rain::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     for (auto const & droplet : droplets_)
         droplet.paint(p, rgb_vec(fader_.value()));
@@ -98,6 +98,7 @@ std::unordered_map<std::string, property_value_t> rain::extra_properties() const
     return {
         {"number_of_droplets", default_number_of_droplets},
         {"droplet_colors", default_droplet_colors},
+        {"motion_blur", default_motion_blur},
     };
 }
 

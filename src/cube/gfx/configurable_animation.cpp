@@ -12,6 +12,7 @@ namespace
 constexpr std::string_view default_label{""};
 constexpr milliseconds default_duration{15000};
 constexpr milliseconds default_transition_time{2000};
+constexpr double no_motion_blur{0};
 
 } // End of namespace
 
@@ -34,6 +35,11 @@ milliseconds configurable_animation::get_transition_time() const
     return is_set(traits(), animation_trait::transition)
         ? read_property<milliseconds>("transition_time_ms")
         : milliseconds{};
+}
+
+double configurable_animation::get_motion_blur() const
+{
+    return read_property<double>("motion_blur");
 }
 
 void configurable_animation::load_properties(nlohmann::json const & json)
@@ -71,6 +77,14 @@ configurable_animation::configurable_animation(engine_context & context) :
     animation(context)
 { }
 
+std::optional<double> configurable_animation::motion_blur() const
+{
+    auto const blur = get_motion_blur();
+    return blur == no_motion_blur
+        ? std::optional<double>{}
+        : std::optional{blur};
+}
+
 animation_trait configurable_animation::traits() const
 {
     return animation_trait::none;
@@ -85,7 +99,7 @@ std::unordered_map<std::string, property_value_t> configurable_animation::defaul
 {
     auto x = extra_properties();
     auto b = base_properties();
-    x.insert(b.begin(), b.end()); // Base overwrites extra
+    x.insert(b.begin(), b.end()); // Extra precedes base
 
     return x;
 }
@@ -93,8 +107,9 @@ std::unordered_map<std::string, property_value_t> configurable_animation::defaul
 std::unordered_map<std::string, property_value_t> configurable_animation::base_properties() const
 {
     std::unordered_map<std::string, property_value_t> properties = {
-        { "label", std::string(default_label) },
-        { "duration_ms", default_duration },
+        {"label", std::string(default_label)},
+        {"duration_ms", default_duration},
+        {"motion_blur", no_motion_blur},
     };
 
     if (is_set(traits(), animation_trait::transition))

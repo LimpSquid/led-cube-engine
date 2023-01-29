@@ -15,7 +15,6 @@ public:
     void set_fill_mode(graphics_fill_mode const & mode);
 
     void draw(voxel_t const & voxel);
-    void wipe_canvas();
     void fill_canvas();
     void sphere(voxel_t const & origin, int radius);
 

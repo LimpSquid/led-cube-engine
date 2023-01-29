@@ -85,7 +85,6 @@ void helix::scene_tick(milliseconds dt)
 void helix::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     auto const phase_shift_sin_factor = read_property<double>("phase_shift_sin_factor");
     auto const phase_shift_cos_factor = read_property<double>("phase_shift_cos_factor");

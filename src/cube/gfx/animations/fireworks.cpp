@@ -75,6 +75,7 @@ animation_publisher<fireworks> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
 constexpr double default_explosion_force = 2.5;
+constexpr double default_motion_blur = 0.95;
 constexpr double gravity = -0.000001 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_shells{3};
@@ -127,7 +128,6 @@ void fireworks::scene_tick(milliseconds dt)
 void fireworks::paint(graphics_device & device)
 {
     painter p(device);
-    p.wipe_canvas();
 
     paint_context ctx{p, fade_in_->value() * fade_out_->value()};
     for (auto const & shell : shells_)
@@ -142,6 +142,7 @@ std::unordered_map<std::string, property_value_t> fireworks::extra_properties() 
         {"shell_radius", default_shell_radius},
         {"explosion_force", default_explosion_force},
         {"shell_colors", std::vector<color>{}},
+        {"motion_blur", default_motion_blur},
     };
 }
 
