@@ -33,12 +33,10 @@ inline std::vector<T> & dedup(std::vector<T> & v)
     return v;
 }
 
-render_engine & engine_instance()
+render_engine<driver::graphics_device_t> & engine_instance()
 {
     struct singleton
     {
-        using factory_t = graphics_device_factory<driver::graphics_device_t>;
-
         singleton()
         {
             sigint_handlers.push_back([&]() {
@@ -48,7 +46,7 @@ render_engine & engine_instance()
         }
 
         engine_context context;
-        render_engine engine{context, factory_t{}};
+        render_engine<driver::graphics_device_t> engine{context};
     };
 
     static singleton s;

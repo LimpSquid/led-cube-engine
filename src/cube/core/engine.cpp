@@ -166,23 +166,6 @@ void basic_engine::do_run(F ... extras)
     }
 }
 
-void render_engine::load(std::shared_ptr<animation> animation)
-{
-    animation_session_.set(animation);
-}
-
-render_engine::render_engine(engine_context & context, std::unique_ptr<graphics_device> && device) :
-    basic_engine(context, default_poll_timeout),
-    device_(std::move(device))
-{ }
-
-void render_engine::poll_one(bool stopping)
-{
-    // Render animation
-    if (!stopping && animation_session_)
-        device_->render(*animation_session_);
-}
-
 poll_engine::poll_engine(engine_context & context) :
     basic_engine(context)
 { }

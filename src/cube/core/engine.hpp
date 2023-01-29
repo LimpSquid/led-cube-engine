@@ -72,26 +72,33 @@ struct graphics_device_factory
     }
 };
 
+template<typename T>
 class render_engine :
     public basic_engine
 {
 public:
-    template<typename T>
-    render_engine(engine_context & context, graphics_device_factory<T> factory) :
-        render_engine(context, factory(context))
+    using graphics_device_t = T;
+
+    render_engine(engine_context & context) :
+        basic_engine(context),
+        device_(context)
     { }
 
-    void load(std::shared_ptr<animation> animation);
+    void load(std::shared_ptr<animation> animation) { animation_session_.set(animation); }
 
 private:
-    render_engine(engine_context & context, std::unique_ptr<graphics_device> && device);
     render_engine(render_engine &) = delete;
     render_engine(render_engine &&) = delete;
 
-    void poll_one(bool stopping) override;
+    void poll_one(bool stopping) override
+    {
+        // Render animation
+        if (!stopping && animation_session_)
+            device_.render(*animation_session_);
+    }
 
     detail::animation_session animation_session_;
-    std::unique_ptr<graphics_device> device_;
+    graphics_device_t device_;
 };
 
 class poll_engine :
