@@ -119,7 +119,7 @@ void graphics_device::fill()
 
 void graphics_device::render(animation & anim)
 {
-    constexpr int smooth_factor{4};
+    constexpr int smooth_factor{8};
 
     if (anim.dirty()) {
         auto const now = steady_clock::now();
