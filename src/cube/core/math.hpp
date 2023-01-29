@@ -207,9 +207,11 @@ T rand(range<T> range) // Inclusive
 }
 
 template<typename T, typename F>
-void smooth(T & accumulator, T const & sample, F factor)
+T smooth(T & accumulator, T const & sample, F factor)
 {
-    accumulator = (sample / factor) + accumulator - (accumulator / factor);
+    accumulator -= (accumulator / factor);
+    accumulator += sample;
+    return accumulator / factor;
 }
 
 } // End of namespace

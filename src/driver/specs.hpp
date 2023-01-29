@@ -5,7 +5,7 @@
     #define TARGET_ANIMATION_SCENE_FPS  60
 #elif TARGET_RPI_CUBE
     #define TARGET_CUBE_SIZE            16
-    #define TARGET_ANIMATION_SCENE_FPS  60
+    #define TARGET_ANIMATION_SCENE_FPS  90
 #else
     #error "Oopsie, unknown target."
 #endif

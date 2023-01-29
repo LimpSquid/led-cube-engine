@@ -83,7 +83,7 @@ private:
     graphics_fill_mode fill_mode_;
     color draw_color_;
     std::chrono::steady_clock::time_point last_render_tp_;
-    std::chrono::milliseconds avg_render_time_;
+    std::chrono::milliseconds render_time_acc_;
 };
 
 } // End of namespace
