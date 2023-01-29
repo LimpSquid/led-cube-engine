@@ -71,6 +71,8 @@ struct graphics_buffer
 {
     std::array<rgba_t, cube_size_3d> data = {};
 
+    constexpr static std::size_t size() { return cube_size_3d; }
+
     auto begin() { return data.begin(); }
     auto const begin() const { return data.begin(); }
     auto end() { return data.end(); }

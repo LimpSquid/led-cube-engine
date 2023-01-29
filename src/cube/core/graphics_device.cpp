@@ -2,6 +2,7 @@
 #include <cube/core/animation.hpp>
 #include <cube/core/math.hpp>
 #include <cube/core/logging.hpp>
+#include <cube/core/parallel.hpp>
 #include <3rdparty/glm/geometric.hpp>
 
 using namespace std::chrono;
@@ -162,10 +163,21 @@ void graphics_device::apply_motion_blur(double blur)
 {
     blur = std::clamp(blur, 0.0, 1.0);
 
-    // TODO: parallel_for ?
-    auto prev = buffer_.back().begin();
-    for (rgba_t & data : *buffer_)
-        blend(map(blur, 0.0, 1.0, color{data}.vec(), color{*prev++}.vec()), data);
+    if constexpr (cube::cube_size_1d >= 32) {
+        parallel_for({std::size_t(0), graphics_buffer::size()}, [&](parallel_range_t range) {
+            auto prev = buffer_.back().begin() + range.from;
+            auto data = buffer_->begin() + range.from;
+            for (auto i = range.from; i < range.to; ++i) {
+                blend(map(blur, 0.0, 1.0, color{*data}.vec(), color{*prev}.vec()), *data);
+                data++;
+                prev++;
+            }
+        }, use_all_cpus);
+    } else {
+        auto prev = buffer_.back().begin();
+        for (rgba_t & data : *buffer_)
+            blend(map(blur, 0.0, 1.0, color{data}.vec(), color{*prev++}.vec()), data);
+    }
 }
 
 } // End of namespace
