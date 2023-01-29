@@ -137,7 +137,8 @@ display::display(engine_context & context) :
     bus_monitor_(context, std::bind(&display::probe_slaves, this), true),
     resources_(context),
     bus_comm_(resources_.bus_comm_device),
-    shutdown_signal_(*this)
+    shutdown_signal_(*this),
+    pixel_pump_kick_(context, std::bind(&display::pixel_pump_run, this))
 {
     bus_monitor_.start(detail::bus_monitor_interval);
 }
@@ -175,7 +176,7 @@ void display::pixel_pump_run()
 
 void display::pixel_pump_finished()
 {
-    bus_comm_.broadcast<bus_command::app_exe_dma_swap_buffers>({}, std::bind(&display::pixel_pump_run, this));
+    pixel_pump_kick_.start(0ms);
 }
 
 void display::probe_slaves()
@@ -199,10 +200,15 @@ void display::probe_slaves()
         }
 
         // Slave detected, (re)initialize
-        auto [sys_version_handler, dma_reset_handler] = decompose_function([this, slave](
+        auto [
+            sys_version_handler,
+            dma_reset_handler,
+            set_auto_buffer_swap_handler
+        ] = decompose_function([this, slave](
             bus_response_params_or_error<bus_command::app_get_version> version_response,
-            bus_response_params_or_error<bus_command::app_exe_dma_reset> reset_response) {
-                if (!version_response || ! reset_response) {
+            bus_response_params_or_error<bus_command::app_exe_dma_reset> reset_response,
+            bus_response_params_or_error<bus_command::app_set_auto_buffer_swap> set_auto_buffer_swap_response) {
+                if (!version_response || !reset_response || !set_auto_buffer_swap_response) {
                     LOG_WRN("Failed to initialize slave", LOG_ARG("address", as_hex(slave)));
                     return;
                 }
@@ -221,6 +227,7 @@ void display::probe_slaves()
 
         bus_comm_.send<bus_command::app_get_version>({}, slave, std::move(sys_version_handler));
         bus_comm_.send<bus_command::app_exe_dma_reset>({}, slave, std::move(dma_reset_handler));
+        bus_comm_.send<bus_command::app_set_auto_buffer_swap>({true}, slave, std::move(set_auto_buffer_swap_handler));
     }, resources_.bus_comm_slave_addresses);
 }
 

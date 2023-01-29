@@ -15,6 +15,8 @@ enum class bus_command : unsigned char
     app_get_status              = 3,
     app_get_version             = 5,
 
+    app_set_auto_buffer_swap    = 0,
+
     app_exe_led_open_detection  = 1,
     app_exe_dma_reset           = 2,
     app_exe_dma_swap_buffers    = 4,
@@ -94,12 +96,22 @@ template<bus_command>
 struct bus_response_params { };
 
 template<> struct bus_request_params<bus_command::app_exe_dma_swap_buffers> : high_prio_request { };
+
 template<>
 struct bus_request_params<bus_command::app_exe_cpu_reset> : low_prio_request
 {
     int32_t delay_ms;
 };
 
+template<>
+struct bus_request_params<bus_command::app_set_auto_buffer_swap> : low_prio_request
+{
+    bus_request_params(bool e) :
+        enable(e)
+    { }
+
+    bool enable;
+};
 
 template<> struct bus_request_params<bus_command::bl_get_status> : bootloader_request { };
 template<> struct bus_request_params<bus_command::bl_get_version> : bootloader_request { };
@@ -107,21 +119,25 @@ template<> struct bus_request_params<bus_command::bl_get_row_crc> : bootloader_r
 template<> struct bus_request_params<bus_command::bl_exe_erase> : bootloader_request { };
 template<> struct bus_request_params<bus_command::bl_exe_row_reset> : bootloader_request { };
 template<> struct bus_request_params<bus_command::bl_exe_boot> : bootloader_request { };
+
 template<>
 struct bus_request_params<bus_command::bl_set_boot_magic> : bootloader_request
 {
     uint32_t magic;
 };
+
 template<>
 struct bus_request_params<bus_command::bl_get_info> : bootloader_request
 {
     uint8_t query;
 };
+
 template<>
 struct bus_request_params<bus_command::bl_exe_push_word> : bootloader_request
 {
     uint8_t data[4];
 };
+
 template<>
 struct bus_request_params<bus_command::bl_exe_row_burn> : bootloader_request
 {
@@ -135,11 +151,13 @@ struct bus_response_params<bus_command::app_get_version>
     uint8_t minor;
     uint8_t patch;
 };
+
 template<>
 struct bus_response_params<bus_command::app_get_status>
 {
-    bool layer_ready        :1;
-    bool layer_dma_error    :1;
+    bool layer_ready            :1;
+    bool layer_dma_error        :1;
+    bool layer_auto_buffer_swap :1;
 };
 
 template<>
@@ -149,10 +167,12 @@ struct bus_response_params<bus_command::bl_get_status>
     bool bootloader_error               :1;
     bool bootloader_waiting_for_magic   :1;
 };
+
 template<> struct bus_response_params<bus_command::bl_get_info>
 {
     uint32_t query_result;
 };
+
 template<>
 struct bus_response_params<bus_command::bl_get_version>
 {
@@ -160,6 +180,7 @@ struct bus_response_params<bus_command::bl_get_version>
     uint8_t minor;
     uint8_t patch;
 };
+
 template<>
 struct bus_response_params<bus_command::bl_get_row_crc>
 {
@@ -182,6 +203,7 @@ inline std::string to_string(bus_response_params<bus_command::app_get_status> co
 
     return "["s
          + "layer_ready: " + std::to_string(response.layer_ready) + ", "
+         + "layer_auto_buffer_swap: " + std::to_string(response.layer_auto_buffer_swap) + ", "
          + "layer_dma_error: " + std::to_string(response.layer_dma_error) + "]";
 }
 

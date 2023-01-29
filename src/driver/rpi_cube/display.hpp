@@ -57,6 +57,7 @@ private:
     detail::display_shutdown_signal shutdown_signal_;
     std::deque<std::unique_ptr<detail::rgb_buffer const>> buffer_queue_;
     std::unique_ptr<detail::async_pixel_pump const> pixel_pump_;
+    cube::core::single_shot_timer pixel_pump_kick_;
 };
 
 } // End of namespace
