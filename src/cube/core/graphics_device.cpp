@@ -119,12 +119,16 @@ void graphics_device::fill()
 
 void graphics_device::render(animation & anim)
 {
+    constexpr int smooth_factor{4};
+
     if (anim.dirty()) {
         auto const now = steady_clock::now();
         auto const elapsed = std::max(1ms, duration_cast<milliseconds>(now - last_render_tp_));
+
+        smooth(avg_render_time_, elapsed, smooth_factor);
         LOG_DBG_PERIODIC(10s, "Framerate information.",
-            LOG_ARG("frame_time", elapsed),
-            LOG_ARG("FPS", 1000 / elapsed.count()));
+            LOG_ARG("frame_time", avg_render_time_),
+            LOG_ARG("FPS", 1000 / avg_render_time_.count()));
         last_render_tp_ = now;
 
         anim.paint_event(*this);

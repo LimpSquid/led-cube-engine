@@ -206,4 +206,10 @@ T rand(range<T> range) // Inclusive
     return map(rand<double>(), range_cast<double>(rand_range), range); // Use double so output is rounded and we avoid integer overflows
 }
 
+template<typename T, typename F>
+void smooth(T & accumulator, T const & sample, F factor)
+{
+    accumulator = (sample / factor) + accumulator - (accumulator / factor);
+}
+
 } // End of namespace
