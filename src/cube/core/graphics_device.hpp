@@ -21,27 +21,27 @@ public:
     using buffer_t = T;
 
     flip_flop() :
-        f(&buffers_[0]),
-        b(&buffers_[1])
+        a(&buffers_[0]),
+        i(&buffers_[1])
     { }
 
-    buffer_t & front() { return *f; }
-    buffer_t & back() { return *b; }
-    buffer_t * operator->() { return f; }
-    buffer_t & operator*() { return *f; }
-    void flip() { std::swap(f, b); }
+    buffer_t & active() { return *a; }
+    buffer_t & inactive() { return *i; }
+    buffer_t * operator->() { return a; }
+    buffer_t & operator*() { return *a; }
+    void flip() { std::swap(a, i); }
 
     template<typename F>
     void flip_and_fill(F value)
     {
         flip();
-        f->fill(value);
+        a->fill(value);
     }
 
 private:
     buffer_t buffers_[2]; // FIXME: allocate on heap instead of stack?
-    buffer_t * f;
-    buffer_t * b;
+    buffer_t * a;
+    buffer_t * i;
 };
 
 } // End of namespace

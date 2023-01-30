@@ -165,7 +165,7 @@ void graphics_device::apply_motion_blur(double blur)
 
     if constexpr (cube::cube_size_1d >= 32) {
         parallel_for({std::size_t(0), graphics_buffer::size()}, [&](parallel_range_t range) {
-            auto prev = buffer_.back().begin() + range.from;
+            auto prev = buffer_.inactive().begin() + range.from;
             auto data = buffer_->begin() + range.from;
             for (auto i = range.from; i < range.to; ++i) {
                 blend(map(blur, 0.0, 1.0, color{*data}.vec(), color{*prev}.vec()), *data);
@@ -174,7 +174,7 @@ void graphics_device::apply_motion_blur(double blur)
             }
         }, use_all_cpus);
     } else {
-        auto prev = buffer_.back().begin();
+        auto prev = buffer_.inactive().begin();
         for (rgba_t & data : *buffer_)
             blend(map(blur, 0.0, 1.0, color{data}.vec(), color{*prev++}.vec()), data);
     }
