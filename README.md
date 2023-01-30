@@ -131,6 +131,7 @@ Naturally you want to create your own animations. The process of adding an anima
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
+#include <cube/core/math.hpp> // Optional, math utilities like `map`
 #include <cube/gfx/gradient.hpp> // Optional, only used if you use a gradient
 
 using namespace cube::gfx;
@@ -159,7 +160,7 @@ animation_publisher<my_animation> const publisher;
 // Some default animation property values
 constexpr int default_int_property = 12345;
 constexpr double default_double_property = 3.14;
-constexpr double default_motion_blur_property = 0.75;
+constexpr double default_motion_blur_property = 0.975;
 gradient const default_gradient_property =
 {
     {0.00, color_blue},
@@ -175,7 +176,7 @@ my_animation::my_animation(engine_context & context) :
 void my_animation::state_changed(animation_state state)
 {
     switch (state) {
-        case animation_state::running:
+        case animation_state::running: {
             // Do some additional processing before the animation starts
             // ...
             // ...
@@ -190,6 +191,7 @@ void my_animation::state_changed(animation_state state)
             // Or a vector of colors:
             auto const my_colors = read_property<std::vector<color>>("my_color_vector_property");
             break;
+        }
         case animation_state::stopping:
             // Do some additional processing when the animation is about to be stopped
             // ...
@@ -210,11 +212,25 @@ void my_animation::scene_tick(std::chrono::milliseconds dt)
 
 void my_animation::paint(graphics_device & device)
 {
+    // Draw something interesting with the use of the painter
     painter p(device);
 
-    // Draw something interesting with the use of the painter
-    // ...
-    // ...
+    // Pick a random sphere size, uses randd so no integer overflow may occur
+    auto const sphere_size = map(randd(), randd_range, range{cube::cube_size_1d / 16, cube::cube_size_1d / 4});
+
+    // Pick a random sphere origin
+    auto const sphere_origin = random_voxel();
+
+    // Randomly generate a sphere color
+    p.set_color(random_color());
+
+    // Draw a large hollow sphere
+    p.set_fill_mode(graphics_fill_mode::none);
+    p.sphere(sphere_origin, sphere_size);
+
+    // Draw a smaller solid sphere inside the hollow sphere
+    p.set_fill_mode(graphics_fill_mode::solid);
+    p.sphere(sphere_origin, sphere_size / 2);
 }
 
 std::unordered_map<std::string, property_value_t> my_animation::extra_properties() const
@@ -243,6 +259,7 @@ If you've succesfully provisioned your animation, you can simply re-compile the 
 $ ./led-cube-engine library --list # To see if your animation has been added to the library
 $ ./led-cube-engine library --info my_animation # To see the exposed properties in JSON
 $ ./led-cube-engine render --animation my_animation # Finally, render it
+$ ./led-cube-engine render --animation my_animation '{"motion_blur": 0}' # Render it with a different motion blur value
 ```
 
 ## Evaluate animation property expressions
