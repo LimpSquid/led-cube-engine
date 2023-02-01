@@ -10,6 +10,7 @@ namespace
 {
 
 constexpr unsigned int max_attempts{3};
+constexpr milliseconds reset_time{500};
 
 void throw_if_ne(driver::rpi_cube::bus_state expected, driver::rpi_cube::bus_state actual)
 {
@@ -30,6 +31,7 @@ bus_comm::bus_comm(iodev & device) :
         device_.subscribe(iodev::transfer_complete, std::bind(&bus_comm::do_transfer_complete, this))
     },
     response_watchdog_(device.context(), std::bind(&bus_comm::do_timeout, this)),
+    reset_timer_(device.context(), std::bind(&bus_comm::do_reset, this)),
     state_(bus_state::idle),
     job_id_(0)
 { }
@@ -41,6 +43,9 @@ bus_state bus_comm::state() const
 
 void bus_comm::do_read()
 {
+    if (state_ == bus_state::error)
+        return;
+
     // Unexpected data from device, bus error
     if (state_ != bus_state::transfer)
         return switch_state(bus_state::error);
@@ -88,6 +93,9 @@ void bus_comm::do_read()
 
 void bus_comm::do_transfer_complete()
 {
+    if (state_ == bus_state::error)
+        return;
+
     // Unexpected transfer completion from device, bus error
     if (state_ != bus_state::transfer)
         return switch_state(bus_state::error);
@@ -98,7 +106,7 @@ void bus_comm::do_transfer_complete()
 
         if constexpr (std::is_same_v<params_t, broadcast_params>) {
             if (params.handler)
-                params.handler();
+                params.handler({});
             do_finish();
         }
     }, job.params);
@@ -106,6 +114,9 @@ void bus_comm::do_transfer_complete()
 
 void bus_comm::do_write()
 {
+    if (state_ == bus_state::error)
+        return;
+
     throw_if_ne(bus_state::idle, state_); // Should never happen
     switch_state(bus_state::transfer);
     do_write_one();
@@ -138,6 +149,9 @@ void bus_comm::do_write_one()
 
 void bus_comm::do_timeout()
 {
+    if (state_ == bus_state::error)
+        return;
+
     throw_if_ne(bus_state::transfer, state_); // Should never happen
 
     auto & job = jobs_.back();
@@ -163,6 +177,9 @@ void bus_comm::do_timeout()
 
 void bus_comm::do_finish()
 {
+    if (state_ == bus_state::error)
+        return;
+
     throw_if_ne(bus_state::transfer, state_); // Should never happen
 
     jobs_.pop_back();
@@ -172,22 +189,44 @@ void bus_comm::do_finish()
         do_write_one();
 }
 
+void bus_comm::do_reset()
+{
+    throw_if_ne(bus_state::error, state_); // Should never happen
+
+    device_.clear();
+    switch_state(bus_state::idle);
+
+    if (!jobs_.empty())
+        do_write();
+}
+
 void bus_comm::switch_state(bus_state state)
 {
     if (state_ == state)
         throw std::runtime_error("Already switched to state: "s + to_string(state));
 
-    state_ = state;
-
-    // TODO: proper error handling
     switch (state) {
-        case bus_state::error:
-            LOG_ERR("Bus switched state",
+        case bus_state::error: {
+            LOG_ERR("Bus error",
                 LOG_ARG("from", to_string(state_)),
                 LOG_ARG("to", to_string(state)));
-            throw std::runtime_error("Bus error");
+
+            if (!jobs_.empty()) {
+                auto & job = jobs_.back();
+                std::visit([&](auto & params) {
+                    params.handler(bus_error{"Bus error", {}});
+                }, job.params);
+                jobs_.pop_back();
+            }
+
+            response_watchdog_.stop();
+            reset_timer_.start(reset_time);
+            break;
+        }
         default:;
     }
+
+    state_ = state;
 }
 
 bus_comm::frame_or_error bus_comm::read_frame()

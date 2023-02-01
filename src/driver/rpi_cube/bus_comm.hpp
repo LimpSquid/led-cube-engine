@@ -23,18 +23,19 @@ SIMPLE_NS_ENUM(bus_state,
 struct bus_error :
     cube::core::unexpected_error
 {
-    std::optional<bus_response_code> response_code; // If not set we encountered a CRC error, timeout, etc.
+    std::optional<bus_response_code> response_code; // If not set we encountered a CRC error, timeout, bus error etc.
 };
 
 template<bus_command C>
 using bus_response_params_or_error = cube::core::basic_expected<bus_response_params<C>, bus_error>;
+using bus_void_or_error = cube::core::basic_expected<void, bus_error>;
 
 class bus_comm
 {
 public:
     template<bus_command C>
     using response_handler_t = std::function<void(bus_response_params_or_error<C>)>;
-    using broadcast_handler_t = std::function<void()>;
+    using broadcast_handler_t = std::function<void(bus_void_or_error)>;
 
     bus_comm(iodev & device);
 
@@ -167,6 +168,7 @@ private:
     void do_write_one();
     void do_timeout();
     void do_finish();
+    void do_reset();
     void switch_state(bus_state state);
 
     frame_or_error read_frame();
@@ -176,6 +178,7 @@ private:
     iodev_subscription subscriptions_[2];
 
     cube::core::single_shot_timer response_watchdog_;
+    cube::core::single_shot_timer reset_timer_;
     std::deque<job> jobs_;
     bus_state state_;
     uint64_t job_id_;
