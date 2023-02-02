@@ -7,6 +7,7 @@
 
 using namespace cube::core;
 using namespace cube::gfx;
+using namespace cube::programs;
 namespace po = boost::program_options;
 
 namespace
@@ -89,11 +90,6 @@ void handle_dump_properties(std::vector<std::string> const & args)
         << "  led-cube-engine library --dump-properties helix '{\"rotation_time_ms\":7500,\"length\":4}'\n";
     std::exit(EXIT_FAILURE);
 }
-
-}
-
-namespace cube::programs
-{
 
 program const program_library
 {
