@@ -39,7 +39,7 @@ private:
     int fd;
 };
 
-using scope_guard_t = std::shared_ptr<void *>;
+using scope_guard_t = std::shared_ptr<void>;
 inline scope_guard_t make_scope_guard() { return std::make_shared<void *>(nullptr); }
 inline scope_guard_t::weak_type get_ref(scope_guard_t tracker) { return {tracker}; }
 inline bool lock(scope_guard_t::weak_type weak) { return weak.lock() != nullptr; }

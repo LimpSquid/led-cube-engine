@@ -126,7 +126,7 @@ void graphics_device::render(animation & anim)
         auto const now = steady_clock::now();
         auto const elapsed = std::max(1ms, duration_cast<milliseconds>(now - last_render_tp_));
         auto const render_time = smooth(render_time_acc_, elapsed, smooth_factor);
-        LOG_DBG_PERIODIC(10s, "Framerate information.",
+        LOG_DBG_PERIODIC(10s, "Framerate information",
             LOG_ARG("frame_time", render_time),
             LOG_ARG("FPS", 1000 / render_time.count()));
         last_render_tp_ = now;
