@@ -3,8 +3,8 @@
 #include <cube/gfx/noise.hpp>
 #include <cube/gfx/gradient.hpp>
 #include <cube/gfx/easing.hpp>
-#include <cube/core/painter.hpp>
 #include <cube/core/parallel.hpp>
+#include <cube/core/graphics_device.hpp>
 
 using namespace cube::gfx;
 using namespace cube::core;
@@ -82,8 +82,6 @@ void noise_v3::scene_tick(milliseconds dt)
 
 void noise_v3::paint(graphics_device & device)
 {
-    painter p(device);
-
     auto const grow_shrink_rate = time_ * 0.5;
     auto const grow_shrink_scalar = static_cast<float>(map(std::sin(grow_shrink_rate), unit_circle_range, grow_shrink_range));
 
