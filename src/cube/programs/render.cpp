@@ -13,6 +13,7 @@
 
 using namespace cube::core;
 using namespace cube::gfx;
+using namespace cube::programs;
 using namespace std::chrono;
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -150,11 +151,6 @@ void handle_animation(std::vector<std::string> const & args)
     std::exit(EXIT_FAILURE);
 }
 
-} // End of namespace
-
-namespace cube::programs
-{
-
 program const program_render
 {
     "render",
@@ -189,6 +185,5 @@ program const program_render
             handler();
     }
 };
-
 
 } // End of namespace

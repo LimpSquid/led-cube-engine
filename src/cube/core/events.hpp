@@ -6,6 +6,7 @@
 #include <optional>
 #include <chrono>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace cube::core
 {
@@ -19,6 +20,7 @@ public:
     event_poller();
 
     bool has_subscribers() const;
+    bool has_subscription(int fd) const { return fds_.count(fd) != 0; }
     void subscribe(int fd, events_t events = 0, event_handler_t * handler = nullptr);
     void unsubscribe(int fd);
 
@@ -29,10 +31,11 @@ public:
     std::pair<int, std::reference_wrapper<std::vector<epoll_event> const>> poll_events(std::optional<std::chrono::milliseconds> timeout = {});
 
 private:
-    event_poller(event_poller &) = delete;
+    event_poller(event_poller const &) = delete;
     event_poller(event_poller &&) = delete;
 
     std::vector<epoll_event> events_;
+    std::unordered_set<int> fds_;
     safe_fd fd_;
 };
 
@@ -64,7 +67,7 @@ public:
     void schedule();
 
 private:
-    function_invoker(function_invoker &) = delete;
+    function_invoker(function_invoker const &) = delete;
     function_invoker(function_invoker &&) = delete;
 
     event_poller & event_poller_;
@@ -100,7 +103,7 @@ public:
     void clr_events(event_flags evs);
 
 private:
-    fd_event_notifier(fd_event_notifier &) = delete;
+    fd_event_notifier(fd_event_notifier const &) = delete;
     fd_event_notifier(fd_event_notifier &&) = delete;
 
     event_poller & event_poller_;

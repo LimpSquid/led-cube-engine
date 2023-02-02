@@ -44,12 +44,40 @@ expected_or_error<animation_pointer_t> library::incubate(std::string const & ani
     return {std::move(incubated)};
 }
 
+expected_or_error<animation_t> load_animation(nlohmann::json const & json, engine_context & context)
+{
+    if (!json.is_object())
+        return unexpected_error{"Expected JSON object got: "s + json.type_name()};
+
+    library & lib = library::instance();
+    animation_t result;
+
+    try {
+        auto const animation = parse_field<std::string>(json, "animation");
+        auto const properties = parse_field(json, "properties", nlohmann::json({})); // Or default properties
+
+        auto incubated = lib.incubate(animation, context);
+        if (!incubated)
+            return incubated.error();
+
+        (*incubated)->load_properties(properties);
+        result = {animation, std::move(*incubated)};
+
+        LOG_DBG("Loaded animation",
+            LOG_ARG("animation", animation),
+            LOG_ARG("properties", properties.dump(-1)));
+    } catch (std::exception const & ex) {
+        return unexpected_error{ex.what()};
+    }
+
+    return result;
+}
+
 expected_or_error<animation_list_t> load_animations(nlohmann::json const & json, engine_context & context)
 {
     if (!json.is_array())
         return unexpected_error{"Expected JSON array got: "s + json.type_name()};
 
-    library & lib = library::instance();
     animation_list_t result;
 
     try {
@@ -57,19 +85,11 @@ expected_or_error<animation_list_t> load_animations(nlohmann::json const & json,
             if (!parse_field(element, "enabled", true))
                 continue;
 
-            auto const animation = parse_field<std::string>(element, "animation");
-            auto const properties = parse_field(element, "properties", nlohmann::json({})); // Or default properties
+            auto animation = load_animation(element, context);
+            if (!animation)
+                return animation.error();
 
-            auto incubated = lib.incubate(animation, context);
-            if (!incubated)
-                return incubated.error();
-
-            (*incubated)->load_properties(properties);
-            result.push_back(std::make_pair(animation, std::move(*incubated)));
-
-            LOG_DBG("Loaded animation",
-                LOG_ARG("animation", animation),
-                LOG_ARG("properties", properties.dump(-1)));
+            result.push_back(std::move(*animation));
         }
     } catch (std::exception const & ex) {
         return unexpected_error{ex.what()};

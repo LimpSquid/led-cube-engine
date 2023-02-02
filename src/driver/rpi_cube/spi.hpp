@@ -23,7 +23,7 @@ public:
     spi(spi_config config, cube::core::engine_context & context);
 
 private:
-    spi(spi &) = delete;
+    spi(spi const &) = delete;
     spi(spi &&) = delete;
 
     std::size_t bytes_avail_for_reading() const override;

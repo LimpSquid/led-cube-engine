@@ -67,6 +67,7 @@ public:
     {
         restore();
         std::swap(io_, other.io_);
+        return *this;
     }
 
     void restore()
@@ -78,7 +79,7 @@ public:
     }
 
 private:
-    basic_gpio_guard(basic_gpio_guard &) = delete;
+    basic_gpio_guard(basic_gpio_guard const &) = delete;
 
     gpio const * io_;
 };

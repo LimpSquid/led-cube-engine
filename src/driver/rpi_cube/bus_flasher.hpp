@@ -52,7 +52,7 @@ private:
         memory_layout layout;
     };
 
-    bus_flasher(bus_flasher &) = delete;
+    bus_flasher(bus_flasher const &) = delete;
     bus_flasher(bus_flasher &&) = delete;
 
     template<typename H>
@@ -88,6 +88,8 @@ private:
     std::vector<node_t> nodes_;
     std::filesystem::path hex_filepath_;
     completion_handler_t completion_handler_;
+
+    // keep last
     cube::core::scope_guard_t scope_guard_;
 };
 

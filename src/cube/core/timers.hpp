@@ -23,7 +23,7 @@ public:
     void stop();
 
 private:
-    recurring_timer(recurring_timer &) = delete;
+    recurring_timer(recurring_timer const &) = delete;
     recurring_timer(recurring_timer &&) = delete;
 
     engine_context & context_;

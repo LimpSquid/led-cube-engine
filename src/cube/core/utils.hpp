@@ -41,8 +41,26 @@ private:
 
 using scope_guard_t = std::shared_ptr<void *>;
 inline scope_guard_t make_scope_guard() { return std::make_shared<void *>(nullptr); }
-inline scope_guard_t::weak_type get_ref(scope_guard_t tracker) { return {tracker}; }
+inline scope_guard_t::weak_type get_weak_ref(scope_guard_t tracker) { return {tracker}; }
 inline bool lock(scope_guard_t::weak_type weak) { return weak.lock() != nullptr; }
+
+template<typename H, typename T>
+auto scoped_handler(H && h, scope_guard_t & guard)
+{
+    return [scope = get_weak_ref(guard), h = std::move(h)](auto && ... args) {
+        if (scope.lock())
+            h(std::forward<decltype(args)>(args)...);
+    };
+}
+
+template<typename H, typename T>
+auto scoped_handler(H && h, T & t)
+{
+    return [scope = t.weak_from_this(), h = std::move(h)](auto && ... args) {
+        if (auto x = scope.lock())
+            h(std::forward<decltype(args)>(args)...);
+    };
+}
 
 inline void throw_errno(char const * const op = nullptr)
 {

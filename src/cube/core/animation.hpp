@@ -38,7 +38,7 @@ protected:
     void change_state(animation_state state);
 
 private:
-    animation(animation &) = delete;
+    animation(animation const &) = delete;
     animation(animation &&) = delete;
 
     virtual void scene_tick(std::chrono::milliseconds dt);

@@ -32,7 +32,7 @@ struct critical_section_guard
         sched_setscheduler(0, restore_policy, &param);
     }
 
-    critical_section_guard(critical_section_guard &) = delete;
+    critical_section_guard(critical_section_guard const &) = delete;
     critical_section_guard(critical_section_guard &&) = delete;
 
     int const restore_policy;

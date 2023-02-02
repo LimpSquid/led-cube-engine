@@ -11,7 +11,8 @@ namespace cube::gfx
 class configurable_animation;
 using animation_pointer_t = std::shared_ptr<configurable_animation>;
 using animation_incubator_t = std::function<animation_pointer_t(core::engine_context &)>;
-using animation_list_t = std::vector<std::pair<std::string, animation_pointer_t>>;
+using animation_t = std::pair<std::string, animation_pointer_t>;
+using animation_list_t = std::vector<animation_t>;
 
 class library
 {
@@ -24,7 +25,7 @@ public:
 
 private:
     library() = default;
-    library(library &) = delete;
+    library(library const &) = delete;
     library(library &&) = delete;
 
     std::unordered_map<std::string, animation_incubator_t> animations_;
@@ -55,6 +56,7 @@ struct animation_publisher
     }
 };
 
+core::expected_or_error<animation_t> load_animation(nlohmann::json const & json, core::engine_context & context);
 core::expected_or_error<animation_list_t> load_animations(nlohmann::json const & json, core::engine_context & context);
 
 }

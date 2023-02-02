@@ -42,7 +42,7 @@ private:
         std::chrono::seconds epoch{std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch())};
     };
 
-    iodev_metrics_logger(iodev_metrics_logger &) = delete;
+    iodev_metrics_logger(iodev_metrics_logger const &) = delete;
     iodev_metrics_logger(iodev_metrics_logger &&) = delete;
 
     cube::core::engine_context & context_;

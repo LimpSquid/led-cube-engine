@@ -35,10 +35,15 @@ void event_poller::subscribe(int fd, events_t events, event_handler_t * handler)
     ev.events = events;
     ev.data.ptr = handler;
 
+    // In case the fd is already closed but we haven't unsubscribed it yet
+    if (has_subscription(fd))
+        throw std::runtime_error("Already subscribed to fd: " + std::to_string(fd));
+
     int r = ::epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &ev);
     if (r < 0)
         throw_errno("epoll_ctl add");
     events_.push_back({});
+    fds_.insert(fd);
 }
 
 void event_poller::unsubscribe(int fd)
@@ -46,9 +51,13 @@ void event_poller::unsubscribe(int fd)
     epoll_event ev{};
 
     int r = ::epoll_ctl(fd_, EPOLL_CTL_DEL, fd, &ev); // older kernels require a non nullptr parameter
-    if (r < 0)
+
+    // It might be possible that the fd is already closed but we still hold a reference to it.
+    // For this particular case we allow the EBADF (invalid file descriptor) error.
+    if (r < 0 && !(has_subscription(fd) && errno == EBADF))
         throw_errno("epoll_ctl delete");
     events_.pop_back();
+    fds_.erase(fd);
 }
 
 void event_poller::modify(int fd, events_t events, event_handler_t * handler)
