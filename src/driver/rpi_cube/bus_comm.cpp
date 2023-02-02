@@ -193,7 +193,7 @@ void bus_comm::do_reset()
 {
     throw_if_ne(bus_state::error, state_); // Should never happen
 
-    device_.clear();
+    device_.clear(iodev::all_directions);
     switch_state(bus_state::idle);
 
     if (!jobs_.empty())
