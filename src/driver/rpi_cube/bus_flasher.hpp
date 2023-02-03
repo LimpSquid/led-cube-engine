@@ -88,6 +88,8 @@ private:
     std::vector<node_t> nodes_;
     std::filesystem::path hex_filepath_;
     completion_handler_t completion_handler_;
+
+    // keep last
     cube::core::scope_guard_t scope_guard_;
 };
 

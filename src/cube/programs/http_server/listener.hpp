@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cube/core/utils.hpp>
+#include <cube/core/engine_context.hpp>
 #include <cube/core/logging.hpp>
 #include <boost/beast/core.hpp>
-#include <memory>
 
 namespace cube::programs::http_server
 {
@@ -16,8 +17,20 @@ class listener :
 public:
     using on_connection_handler_t = std::function<void(tcp::socket)>;
 
-    listener(net::io_context & context, tcp::endpoint endpoint, on_connection_handler_t on_conn_handler) :
-        acceptor_(context),
+    template<typename ... A>
+    static std::shared_ptr<listener> create(A && ... args)
+    {
+        return std::shared_ptr<listener>(new listener(std::forward<A>(args) ...));
+    }
+
+    void run()
+    {
+        do_accept();
+    }
+
+private:
+    listener(core::engine_context & context, tcp::endpoint endpoint, on_connection_handler_t on_conn_handler) :
+        acceptor_(context.io_context),
         on_conn_handler_(on_conn_handler)
     {
         boost::beast::error_code ec;
@@ -38,18 +51,18 @@ public:
 
         acceptor_.listen(net::socket_base::max_listen_connections, ec);
         if (ec) fail("listen");
+
+        read_poll_.emplace(context.event_poller, acceptor_.native_handle(), core::fd_event_notifier::read);
     }
 
-    void run() { do_accept(); }
-
-private:
     void do_accept()
     {
-        acceptor_.async_accept(
+        acceptor_.async_accept(core::scoped_handler(
             std::bind(&listener::on_accept,
-                shared_from_this(),
+                this,
                 std::placeholders::_1,
-                std::placeholders::_2));
+                std::placeholders::_2),
+            *this));
     }
 
     void on_accept(boost::beast::error_code ec, tcp::socket socket)
@@ -66,6 +79,7 @@ private:
     }
 
     tcp::acceptor acceptor_;
+    std::optional<core::fd_event_notifier> read_poll_;
     on_connection_handler_t on_conn_handler_;
 };
 

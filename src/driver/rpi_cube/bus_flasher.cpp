@@ -404,10 +404,7 @@ void bus_flasher::broadcast(bus_request_params<C> && params, H && handler)
     if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
         return complete();
 
-    bus_comm_.broadcast(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = get_ref(scope_guard_)](auto && ... args){
-        if (lock(r))
-            h(std::forward<decltype(args)>(args)...);
-    });
+    bus_comm_.broadcast(std::forward<decltype(params)>(params), scoped_handler(std::move(handler), scope_guard_));
 }
 
 template<bus_command C, typename H, typename N>
@@ -416,10 +413,9 @@ void bus_flasher::send_for_all(bus_request_params<C> && params, H && handler, N 
     if (view(nodes_).filter(state_filter<flashing_in_progress>{}).get().empty())
         return complete();
 
-    bus_comm_.send_for_all(std::forward<decltype(params)>(params), [h = std::forward<H>(handler), r = get_ref(scope_guard_)](auto && ... args){
-        if (lock(r))
-            h(std::forward<decltype(args)>(args)...);
-    }, std::forward<N>(nodes));
+    bus_comm_.send_for_all(std::forward<decltype(params)>(params),
+        scoped_handler(std::move(handler), scope_guard_),
+        std::forward<N>(nodes));
 }
 
 void bus_flasher::complete()
