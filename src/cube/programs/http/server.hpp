@@ -42,9 +42,15 @@ public:
                 });
         listener_->run();
 
-        LOG_INF("Started HTTP server.",
+        std::string url_builder = "http://";
+        url_builder += interface_.to_string();
+        url_builder += ":";
+        url_builder += std::to_string(port_);
+
+        LOG_INF("Started HTTP server",
             LOG_ARG("interface", interface_.to_string()),
-            LOG_ARG("port", port_));
+            LOG_ARG("port", port_),
+            LOG_ARG("url", url_builder));
     }
 
 private:
