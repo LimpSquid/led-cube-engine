@@ -83,4 +83,4 @@ private:
     on_connection_handler_t on_conn_handler_;
 };
 
-}
+} // End of namespace

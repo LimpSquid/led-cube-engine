@@ -1,10 +1,12 @@
 #include <cube/programs/http/server.hpp>
+#include <cube/programs/http/router.hpp>
 #include <cube/programs/program.hpp>
 #include <cube/core/engine.hpp>
 #include <cube/core/logging.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <driver/graphics_device.hpp>
+#include <boost/beast/version.hpp>
 
 using namespace cube::core;
 using namespace cube::gfx;
@@ -36,67 +38,6 @@ render_engine<driver::graphics_device_t> & engine_instance()
     return s.engine;
 }
 
-http_response_t handle_request(http_request_t req)
-{
-    using namespace boost::beast::http;
-
-    auto const bad_request = [&req](std::string why)
-        {
-            http_response_t res{status::bad_request, req.version()};
-            res.set(field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(field::content_type, "text/html");
-            res.keep_alive(req.keep_alive());
-            res.body() = std::move(why);
-            res.prepare_payload();
-            return res;
-        };
-
-    auto const not_found = [&req]()
-        {
-            http_response_t res{status::not_found, req.version()};
-            res.set(field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(field::content_type, "text/html");
-            res.keep_alive(req.keep_alive());
-            res.body() = "";
-            res.prepare_payload();
-            return res;
-        };
-
-    // Make sure we can handle the method
-    if( req.method() != verb::get &&
-        req.method() != verb::head)
-        return bad_request("Unknown HTTP-method");
-
-    // Request path must be absolute and not contain "..".
-    if( req.target().empty() ||
-        req.target()[0] != '/' ||
-        req.target().size() <= 2 ||
-        req.target().find("..") != std::string_view::npos)
-        return bad_request("Illegal request-target");
-
-    auto target = req.target();
-    target.remove_prefix(1);
-    std::string const animation_name = std::string(target);
-
-    auto & engine = engine_instance();
-    auto animation = library::instance().incubate(animation_name, engine.context());
-
-    if (!animation) {
-        LOG_INF("Animation not found!", LOG_ARG("name", animation_name));
-        return not_found();
-    }
-
-    engine.load(std::static_pointer_cast<cube::core::animation>(*animation));
-
-    http_response_t res{status::ok, req.version()};
-    res.set(field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(field::content_type, "text/html");
-    res.keep_alive(req.keep_alive());
-    res.body() = "";
-    res.prepare_payload();
-    return res;
-}
-
 int handle_http_server(int ac, char const * const av[])
 {
     if (ac != 2) {
@@ -109,8 +50,34 @@ int handle_http_server(int ac, char const * const av[])
 
     auto & engine = engine_instance();
     auto server = make_server_from_string(engine.context(), av[1]);
+    auto router = router::create();
 
-    server.run(handle_request);
+    router->add_route(
+        {
+            /* curl --header "Content-Type: application/json" \
+                    -X POST --data '{"animation":"fireworks"}' \
+                    http://localhost:8080/api/animation
+            */
+            "/api/animation",
+            [&engine](auto req)
+            {
+                if (req.method() == verb::get)
+                    return response::bad_request("Yet to be implemented", req);
+
+                auto animation = load_animation(nlohmann::json::parse(req.body()), engine.context());
+                if (!animation)
+                    return response::bad_request(animation.error().what, req);
+
+                auto const & [_, x] = *animation;
+                engine.load(std::static_pointer_cast<cube::core::animation>(x));
+
+                return response::ok(req);
+            },
+            {verb::get, verb::post},
+            mime_type::application_json
+        });
+
+    server.run(std::bind(&router::operator(), router, std::placeholders::_1));
     engine.run();
 
     return EXIT_SUCCESS;

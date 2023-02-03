@@ -3,6 +3,7 @@
 #include <cube/programs/http/listener.hpp>
 #include <cube/programs/http/session.hpp>
 #include <cube/core/engine_context.hpp>
+#include <boost/beast/http.hpp>
 
 namespace cube::programs::http
 {
@@ -85,4 +86,4 @@ inline server make_server_from_string(core::engine_context & context, std::strin
     return server{context, std::move(interface), port};
 }
 
-}
+} // End of namespace

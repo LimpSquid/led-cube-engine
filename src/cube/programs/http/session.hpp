@@ -141,4 +141,4 @@ private:
     finished_handler_t finished_handler_;
 };
 
-}
+} // End of namespace
