@@ -64,7 +64,14 @@ int handle_http_server(int ac, char const * const av[])
                 if (req.method() == verb::get)
                     return response::bad_request("Yet to be implemented", req);
 
-                auto animation = load_animation(nlohmann::json::parse(req.body()), engine.context());
+                nlohmann::json body;
+                try {
+                    body = nlohmann::json::parse(req.body());
+                }  catch (std::exception const & ex) {
+                    return response::bad_request(ex.what(), req);
+                }
+
+                auto animation = load_animation(body, engine.context());
                 if (!animation)
                     return response::bad_request(animation.error().what, req);
 
