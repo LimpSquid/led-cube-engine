@@ -93,7 +93,7 @@ int handle_http_server(int ac, char const * const av[])
 program const program_http_server
 {
     "http-server",
-    "run the LED cube's engine and HTTP server",
+    "run the LED cube's render engine and HTTP server",
     handle_http_server,
     []()
     {
