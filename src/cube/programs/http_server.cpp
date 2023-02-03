@@ -84,7 +84,7 @@ int handle_http_server(int ac, char const * const av[])
             mime_type::application_json
         });
 
-    server.run(std::bind(&router::operator(), router, std::placeholders::_1));
+    server.run(router->mux());
     engine.run();
 
     return EXIT_SUCCESS;

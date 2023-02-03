@@ -122,6 +122,14 @@ public:
         return *this;
     }
 
+    http_request_handler_t mux() const
+    {
+        return std::bind(&router::operator(), shared_from_this(), std::placeholders::_1);
+    }
+
+private:
+    router() = default;
+
     http_response_t operator()(http_request_t req) const
     {
         auto const & target = req.target();
@@ -147,9 +155,6 @@ public:
 
         return route.handler(std::move(req));
     }
-
-private:
-    router() = default;
 
     std::unordered_map<std::string, route> routes_;
 };
