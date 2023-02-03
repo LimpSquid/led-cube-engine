@@ -111,7 +111,7 @@ protected:
     virtual int map_to_offset(int x, int y, int z) const;
 
 private:
-    graphics_device(graphics_device &) = delete;
+    graphics_device(graphics_device const &) = delete;
     graphics_device(graphics_device &&) = delete;
 
     void apply_motion_blur(double blur);

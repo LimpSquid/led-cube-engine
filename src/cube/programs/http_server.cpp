@@ -1,9 +1,7 @@
-#include <cube/programs/http_server/listener.hpp>
-#include <cube/programs/http_server/session.hpp>
-#include <cube/core/engine.hpp>
-#include <cube/core/engine_context.hpp>
-#include <cube/core/logging.hpp>
+#include <cube/programs/http/server.hpp>
 #include <cube/programs/program.hpp>
+#include <cube/core/engine.hpp>
+#include <cube/core/logging.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <driver/graphics_device.hpp>
@@ -11,7 +9,7 @@
 using namespace cube::core;
 using namespace cube::gfx;
 using namespace cube::programs;
-using namespace cube::programs::http_server;
+using namespace cube::programs::http;
 
 namespace
 {
@@ -40,11 +38,13 @@ render_engine<driver::graphics_device_t> & engine_instance()
 
 http_response_t handle_request(http_request_t req)
 {
+    using namespace boost::beast::http;
+
     auto const bad_request = [&req](std::string why)
         {
-            http_response_t res{http::status::bad_request, req.version()};
-            res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(http::field::content_type, "text/html");
+            http_response_t res{status::bad_request, req.version()};
+            res.set(field::server, BOOST_BEAST_VERSION_STRING);
+            res.set(field::content_type, "text/html");
             res.keep_alive(req.keep_alive());
             res.body() = std::move(why);
             res.prepare_payload();
@@ -53,9 +53,9 @@ http_response_t handle_request(http_request_t req)
 
     auto const not_found = [&req]()
         {
-            http_response_t res{http::status::not_found, req.version()};
-            res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-            res.set(http::field::content_type, "text/html");
+            http_response_t res{status::not_found, req.version()};
+            res.set(field::server, BOOST_BEAST_VERSION_STRING);
+            res.set(field::content_type, "text/html");
             res.keep_alive(req.keep_alive());
             res.body() = "";
             res.prepare_payload();
@@ -63,8 +63,8 @@ http_response_t handle_request(http_request_t req)
         };
 
     // Make sure we can handle the method
-    if( req.method() != http::verb::get &&
-        req.method() != http::verb::head)
+    if( req.method() != verb::get &&
+        req.method() != verb::head)
         return bad_request("Unknown HTTP-method");
 
     // Request path must be absolute and not contain "..".
@@ -88,68 +88,29 @@ http_response_t handle_request(http_request_t req)
 
     engine.load(std::static_pointer_cast<cube::core::animation>(*animation));
 
-    http_response_t res{http::status::ok, req.version()};
-    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-    res.set(http::field::content_type, "text/html");
+    http_response_t res{status::ok, req.version()};
+    res.set(field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(field::content_type, "text/html");
     res.keep_alive(req.keep_alive());
     res.body() = "";
     res.prepare_payload();
     return res;
 }
 
-class http_server
-{
-public:
-    http_server(net::ip::address interface, unsigned short port) :
-        interface_(interface),
-        port_(port)
-    { }
-
-    void run()
-    {
-        auto & engine = engine_instance();
-
-        listener_ = listener::create(
-            engine.context(),
-            tcp::endpoint{interface_, port_},
-            [this, &ctx = engine.context()](auto socket)
-                {
-                    auto const id = session_id_++;
-                    auto session = session::create(std::move(socket), ctx.event_poller, handle_request,
-                        [this, id]() { sessions_.erase(id); });
-                    session->run();
-                    sessions_[id] = std::move(session);
-                });
-        listener_->run();
-    }
-
-private:
-    std::shared_ptr<listener> listener_;
-    std::unordered_map<int, std::shared_ptr<session>> sessions_;
-
-    net::ip::address interface_;
-    unsigned short port_;
-    int session_id_{0};
-};
-
 int handle_http_server(int ac, char const * const av[])
 {
-    if (ac != 3)
-    {
-        std::cerr <<
-            "Usage: ./led-cube-engine http-server <address> <port>\n" <<
-            "Example:\n" <<
-            "     ./led-cube-engine http-server 0.0.0.0 8080\n";
+    if (ac != 2) {
+        std::cout
+            << "Usage: led-cube-engine http-server <interface>:<port>\n\n"
+            << "Examples:\n"
+            << "  led-cube-engine http-server 0.0.0.0:8080\n";
         return EXIT_FAILURE;
     }
 
     auto & engine = engine_instance();
-    auto const address = net::ip::make_address(av[1]);
-    auto const port = static_cast<unsigned short>(std::atoi(av[2]));
+    auto server = make_server_from_string(engine.context(), av[1]);
 
-    http_server server{address, port};
-
-    server.run();
+    server.run(handle_request);
     engine.run();
 
     return EXIT_SUCCESS;
@@ -158,7 +119,7 @@ int handle_http_server(int ac, char const * const av[])
 program const program_http_server
 {
     "http-server",
-    "run the LED cube's engine HTTP server.",
+    "run the LED cube's engine and HTTP server",
     handle_http_server,
     []()
     {

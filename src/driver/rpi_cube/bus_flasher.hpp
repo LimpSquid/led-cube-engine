@@ -52,7 +52,7 @@ private:
         memory_layout layout;
     };
 
-    bus_flasher(bus_flasher &) = delete;
+    bus_flasher(bus_flasher const &) = delete;
     bus_flasher(bus_flasher &&) = delete;
 
     template<typename H>

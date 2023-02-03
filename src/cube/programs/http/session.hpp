@@ -7,7 +7,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 
-namespace cube::programs::http_server
+namespace cube::programs::http
 {
 
 namespace net = boost::asio;

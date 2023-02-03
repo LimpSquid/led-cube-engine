@@ -5,7 +5,7 @@
 #include <cube/core/logging.hpp>
 #include <boost/beast/core.hpp>
 
-namespace cube::programs::http_server
+namespace cube::programs::http
 {
 
 namespace net = boost::asio;
@@ -42,7 +42,7 @@ private:
         acceptor_.open(endpoint.protocol(), ec);
         if (ec) fail("open");
 
-        // Allow to reuse socket if it's in the TIME_WAIT state
+        // Allow to reuse address if it's in the TIME_WAIT state
         acceptor_.set_option(net::socket_base::reuse_address(true), ec);
         if (ec) fail("set option");
 

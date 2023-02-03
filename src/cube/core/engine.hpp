@@ -25,7 +25,7 @@ public:
     operator bool() const;
 
 private:
-    animation_session(animation_session &) = delete;
+    animation_session(animation_session const &) = delete;
     animation_session(animation_session &&) = delete;
 
     std::shared_ptr<cube::core::animation> animation_;
@@ -48,7 +48,7 @@ protected:
     basic_engine(engine_context & context, std::chrono::milliseconds poll_timeout);
 
 private:
-    basic_engine(basic_engine &) = delete;
+    basic_engine(basic_engine const &) = delete;
     basic_engine(basic_engine &&) = delete;
 
     virtual void poll_one(bool stopping) = 0;
@@ -87,7 +87,7 @@ public:
     void load(std::shared_ptr<animation> animation) { animation_session_.set(animation); }
 
 private:
-    render_engine(render_engine &) = delete;
+    render_engine(render_engine const &) = delete;
     render_engine(render_engine &&) = delete;
 
     void poll_one(bool stopping) override
@@ -108,7 +108,7 @@ public:
     poll_engine(engine_context & context);
 
 private:
-    poll_engine(poll_engine &) = delete;
+    poll_engine(poll_engine const &) = delete;
     poll_engine(poll_engine &&) = delete;
 
     void poll_one(bool stopping) override;

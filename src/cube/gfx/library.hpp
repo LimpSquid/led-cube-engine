@@ -24,7 +24,7 @@ public:
 
 private:
     library() = default;
-    library(library &) = delete;
+    library(library const &) = delete;
     library(library &&) = delete;
 
     std::unordered_map<std::string, animation_incubator_t> animations_;

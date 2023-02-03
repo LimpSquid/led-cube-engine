@@ -27,7 +27,7 @@ public:
 
 private:
     program_registry() = default;
-    program_registry(program_registry &) = delete;
+    program_registry(program_registry const &) = delete;
     program_registry(program_registry &&) = delete;
 
     std::vector<program_definition> programs_;

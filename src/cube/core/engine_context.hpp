@@ -72,7 +72,7 @@ protected:
     }
 
 private:
-    engine_shutdown_signal(engine_shutdown_signal &) = delete;
+    engine_shutdown_signal(engine_shutdown_signal const &) = delete;
     engine_shutdown_signal(engine_shutdown_signal &&) = delete;
 
     virtual void shutdown_requested() = 0;
