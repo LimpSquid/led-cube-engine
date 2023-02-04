@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cube/core/logging.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/algorithm/string.hpp>
 #include <memory>
+#include <optional>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -105,56 +104,15 @@ public:
         return std::shared_ptr<router>(new router(std::forward<A>(args) ...));
     }
 
-    router & add_route(route route)
-    {
-        if (route.location.empty())
-            throw std::runtime_error("Route cannot be empty");
+    router & add_route(route route);
+    router & operator()(route route);
 
-        if (!route.handler) {
-            LOG_WRN("Request handler not set for route", LOG_ARG("location", route.location));
-            route.handler = [](auto req) { return response::not_found(req); };
-        }
-
-        if (route.expected_content_type && route.expected_content_type->empty())
-            throw std::runtime_error("Route expected content type cannot an empty string");
-
-        routes_[route.location] = std::move(route);
-        return *this;
-    }
-
-    http_request_handler_t mux() const
-    {
-        return std::bind(&router::operator(), shared_from_this(), std::placeholders::_1);
-    }
+    http_request_handler_t mux() const;
 
 private:
     router() = default;
 
-    http_response_t operator()(http_request_t req) const
-    {
-        auto const & target = req.target();
-        if(target.empty() ||
-            target[0] != '/' ||
-            target.find("..") != std::string_view::npos)
-            return response::bad_request("Illegal request-target", req);
-
-        auto const search = routes_.find(std::string{target});
-        if (search == routes_.end())
-            return response::not_found(req);
-
-        auto const & route = search->second;
-        if (!route.allowed_methods.empty() &&
-            !route.allowed_methods.count(req.method()))
-            return response::method_not_allowed(req);
-
-        auto const & headers = req.base();
-        auto const content_type = headers[http::field::content_type];
-        if (route.expected_content_type && (content_type.empty() ||
-            !boost::iequals(*route.expected_content_type, content_type)))
-            return response::bad_request("Content type not allowed", req);
-
-        return route.handler(std::move(req));
-    }
+    http_response_t operator()(http_request_t req) const;
 
     std::unordered_map<std::string, route> routes_;
 };
