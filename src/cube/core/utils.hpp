@@ -77,6 +77,8 @@ struct signature
 {
     template<typename T, typename R>
     constexpr static auto select_overload(R (T::*f)(A ...)) { return f; }
+    template<typename T, typename R>
+    constexpr static auto select_overload(R (T::*f)(A ...) const) { return f; }
     template<typename R>
     constexpr static auto select_overload(R (*f)(A ...)) { return f; }
 };
