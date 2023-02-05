@@ -73,7 +73,14 @@ public:
         device_(context)
     { }
 
-    void load(std::shared_ptr<animation> animation) { animation_session_.set(animation); }
+    void load(std::shared_ptr<animation> animation)
+    {
+        animation_session_.set(animation);
+
+        // If we unset the animation, clear the framebuffers
+        if (!animation)
+            device_.clear();
+    }
 
 private:
     render_engine(render_engine const &) = delete;

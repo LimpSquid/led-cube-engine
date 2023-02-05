@@ -142,6 +142,12 @@ void graphics_device::render(animation & anim)
     }
 }
 
+void graphics_device::clear()
+{
+    buffer_.fill_all(color_transparent.rgba());
+    show(*buffer_);
+}
+
 graphics_device::graphics_device(engine_context & context) :
     context_(context),
     fill_mode_(graphics_fill_mode::solid),

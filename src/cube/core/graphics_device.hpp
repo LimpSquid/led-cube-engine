@@ -32,6 +32,13 @@ public:
     void flip() { std::swap(a, i); }
 
     template<typename F>
+    void fill_all(F value)
+    {
+        a->fill(value);
+        i->fill(value);
+    }
+
+    template<typename F>
     void flip_and_fill(F value)
     {
         flip();
@@ -99,6 +106,7 @@ public:
     void fill();
 
     void render(animation & anim);
+    void clear();
 
     // thread safe given that each thread accesses a different voxel
     void draw_with_color(voxel_t const & voxel, color const & color);

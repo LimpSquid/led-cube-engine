@@ -50,8 +50,9 @@ To build and run the `mock` target follow the steps below:
 1. Render animations via the HTTP API:
     ```bash
     $ bin/led-cube-engine http-server 0.0.0.0:8080
-    $ curl --header "Content-Type: application/json" --data '{"animation":"noise_v2"}' http://localhost:8080/api/animation
-    $ curl --header "Content-Type: application/json" --data '{"animation":"fireworks", "properties":{"number_of_shells":15}}' http://localhost:8080/api/animation
+    $ curl --header "Content-Type: application/json" --data '{"animation":"noise_v2"}' http://localhost:8080/api/render
+    $ curl --header "Content-Type: application/json" --data '{"animation":"fireworks", "properties":{"number_of_shells":15}}' http://localhost:8080/api/render
+    $ curl http://localhost:8080/api/render/stop # stop rendering
     ```
 1. Finally, see the [programs](#programs) section for a detailed overview of all commands that are available.
 

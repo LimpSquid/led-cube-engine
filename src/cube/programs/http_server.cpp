@@ -57,9 +57,9 @@ std::string current_animation_name()
     return current_animation ? *current_animation : "";
 }
 
-route const route_animation =
+route const route_render =
 {
-    "/api/animation",
+    "/api/render",
     [](auto req)
     {
         if (req.method() == verb::get)
@@ -82,6 +82,17 @@ route const route_animation =
     },
     {verb::get, verb::post},
     mime_type::application_json
+};
+
+route const route_render_stop =
+{
+    "/api/render/stop",
+    [](auto req)
+    {
+        show_animation({});
+        return response::ok(req);
+    },
+    {verb::get, verb::post}
 };
 
 route const route_animation_info =
@@ -123,7 +134,6 @@ route const route_animation_list =
             if (!incubated) // Should never happen
                 return response::internal_server_error(req);
 
-
             nlohmann::json item = nlohmann::json::object();
             item.emplace(make_field("animation", animation_name));
             item.emplace(make_field("properties", (*incubated)->dump_properties()));
@@ -151,7 +161,8 @@ int handle_http_server(int ac, char const * const av[])
     auto server = make_server_from_string(engine.context(), av[1]);
 
     auto router = router::create();
-    router->add_route(api::route_animation)
+    router->add_route(api::route_render)
+           .add_route(api::route_render_stop)
            .add_route(api::route_animation_info)
            .add_route(api::route_animation_list);
 
