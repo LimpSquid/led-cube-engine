@@ -19,18 +19,18 @@ using http::verb;
 namespace mime_type
 {
 
-inline char const * text_html    = "text/html";
-inline char const * text_plain   = "text/plain";
-inline char const * text_css     = "text/css";
+inline char const * const text_html    = "text/html";
+inline char const * const text_plain   = "text/plain";
+inline char const * const text_css     = "text/css";
 
-inline char const * image_png    = "image/png";
-inline char const * image_jpeg   = "image/jpeg";
-inline char const * image_gif    = "image/gif";
-inline char const * image_svg    = "image/svg+xml";
+inline char const * const image_png    = "image/png";
+inline char const * const image_jpeg   = "image/jpeg";
+inline char const * const image_gif    = "image/gif";
+inline char const * const image_svg    = "image/svg+xml";
 
-inline char const * application_javascript   = "application/javascript";
-inline char const * application_json         = "application/json";
-inline char const * application_xml          = "application/xml";
+inline char const * const application_javascript   = "application/javascript";
+inline char const * const application_json         = "application/json";
+inline char const * const application_xml          = "application/xml";
 
 } // End of namespace
 
