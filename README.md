@@ -64,12 +64,40 @@ option|type|description|default
 `LCE_TARGET`|string|Select the LED cube engine's target graphics device. See the [*target dependencies*](#target-dependencies) section for more information.|`mock`
 `LCE_EVAL_EXPRESSIONS`|bool|Enable string expressions for JSON number fields. See the [*evaluate animation property expressions*](#evaluate-animation-property-expressions) section for more information. **Note: enabling this option will significantly increase the compile time when you build the application for the first time.**|`off`
 `LCE_BACKTRACE_SYMBOLS`|bool|Enable human readable backtrace symbols.|`on`
+`LCE_HTTP_API`|bool|Enable HTTP API. Needed for the program `http-server`. Makes use of the boost [`beast`](https://www.boost.org/doc/libs/1_81_0/libs/beast/doc/html/beast/introduction.html) networking library.|`on`
 
 ## Programs
 The application is divided into multiple programs for easy access to core functionalities of the LED cube engine. The following sub-sections will describe each program in detail to get a overview of all the capabilities of a program. To list all the available programs, execute the following command:
 ```bash
 $ ./led-cube-engine --help
 ```
+
+### HTTP server
+The `http-server` program is used to run both the rendering engine and a HTTP server. This program has no extra options and must be passed a valid network interface address and port pair separated by a colon (`interface:port`). For example:
+```bash
+$ ./led-cube-engine http-server 0.0.0.0:8080
+```
+
+This will launch a HTTP server which binds to all network interfaces listening on port `8080`. When started succesfully you can send a request as follows:
+```bash
+$ curl --header "Content-Type: application/json" --data '{"animation":"fireworks"}' http://localhost:8080/api/render
+```
+
+This will instruct the render engine to start rendering the animation `fireworks` to the LED cube engine's graphics device. To stop rendering the `fireworks` animation, the following request can be made:
+```bash
+$ curl http://localhost:8080/api/render/stop
+```
+
+> NB: Only available when the executable is build with the `LCE_HTTP_API` build option enabled.
+
+#### API endpoints
+
+<details>
+<summary>Click to expand the HTTP API documentation.</summary>
+
+**TODO**
+
+</details>
 
 ### Library
 The `library` program is used to list information about the LED cube engine's animation library. To list all the available options of the `library` program, execute the following command:

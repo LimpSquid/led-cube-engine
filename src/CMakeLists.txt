@@ -10,6 +10,12 @@ message(NOTICE "Found target driver: ${LCE_TARGET}")
 
 file(GLOB_RECURSE CUBE_SOURCES "cube/*.cpp")
 file(GLOB_RECURSE DRIVER_SOURCES "${DRIVER_TARGET_DIR}/*.cpp")
+
+if (NOT LCE_HTTP_API)
+    # Exclude sources which contain the keyword 'http' in its filepath
+    list(FILTER CUBE_SOURCES EXCLUDE REGEX "http.*\.cpp$")
+endif ()
+
 add_executable(${PROJECT_NAME}
     "main.cpp"
     ${CUBE_SOURCES}
@@ -24,6 +30,10 @@ if (LCE_EVAL_EXPRESSIONS)
     target_compile_definitions(${PROJECT_NAME}
     PRIVATE EVAL_EXPRESSION)
 endif ()
+
+# To list all boost components:
+# set(Boost_DEBUG ON)
+# find_package(Boost COMPONENTS ALL)
 
 set(${THREADS_PREFER_PTHREAD_FLAG} ON)
 find_package(Threads REQUIRED)
