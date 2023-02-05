@@ -44,7 +44,6 @@ gradient const default_gradient
     {1.0, color_transparent},
 };
 
-
 noise_v3::noise_v3(engine_context & context) :
     configurable_animation(context)
 {

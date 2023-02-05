@@ -48,6 +48,28 @@ inline http_response_t ok(http_request_t const & req)
     return res;
 }
 
+inline http_response_t ok_text(std::string body, http_request_t const & req)
+{
+    http_response_t res{http::status::ok, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, mime_type::text_plain);
+    res.keep_alive(req.keep_alive());
+    res.body() = std::move(body);
+    res.prepare_payload();
+    return res;
+}
+
+inline http_response_t ok_json(std::string body, http_request_t const & req)
+{
+    http_response_t res{http::status::ok, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, mime_type::application_json);
+    res.keep_alive(req.keep_alive());
+    res.body() = std::move(body);
+    res.prepare_payload();
+    return res;
+}
+
 inline http_response_t bad_request(std::string why, http_request_t const & req)
 {
     http_response_t res{http::status::bad_request, req.version()};
@@ -55,6 +77,17 @@ inline http_response_t bad_request(std::string why, http_request_t const & req)
     res.set(http::field::content_type, mime_type::text_plain);
     res.keep_alive(req.keep_alive());
     res.body() = std::move(why);
+    res.prepare_payload();
+    return res;
+}
+
+inline http_response_t internal_server_error(http_request_t const & req)
+{
+    http_response_t res{http::status::internal_server_error, req.version()};
+    res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+    res.set(http::field::content_type, mime_type::text_plain);
+    res.keep_alive(req.keep_alive());
+    res.body() = "";
     res.prepare_payload();
     return res;
 }
@@ -91,7 +124,10 @@ struct route
 
     // optional
     std::unordered_set<http::verb> allowed_methods = {}; // empty means any method
-    std::optional<std::string> expected_content_type = {}; // empty means any content type
+
+    // empty means any content type
+    // nb: only for PUT or POST requests
+    std::optional<std::string> expected_content_type = {};
 };
 
 class router :

@@ -55,7 +55,8 @@ http_response_t router::operator()(http_request_t req) const
 
     auto const & headers = req.base();
     auto const content_type = headers[http::field::content_type];
-    if (route.expected_content_type && (content_type.empty() ||
+    if ((req.method() == http::verb::put || req.method() == http::verb::post) &&
+        route.expected_content_type && (content_type.empty() ||
         !boost::iequals(*route.expected_content_type, content_type)))
         return response::bad_request("Content type not allowed", req);
 

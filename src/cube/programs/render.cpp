@@ -97,7 +97,7 @@ void handle_file(std::vector<std::string> const & args)
                         break;
                     case animation_state::stopping:
                     case animation_state::stopped: {
-                        engine.load(std::static_pointer_cast<cube::core::animation>(animation));
+                        engine.load(animation);
 
                         auto const transition_time = animation->get_transition_time();
                         auto const duration = std::max(animation->get_duration(), transition_time * 2 /* start + end transition */) - transition_time;
@@ -138,7 +138,7 @@ void handle_animation(std::vector<std::string> const & args)
         if (args.size() == 2)
             (*animation)->load_properties(nlohmann::json::parse(args[1]));
 
-        engine.load(std::static_pointer_cast<cube::core::animation>(*animation));
+        engine.load(*animation);
         engine.run();
         std::exit(EXIT_SUCCESS);
     }

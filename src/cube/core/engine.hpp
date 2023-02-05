@@ -20,7 +20,7 @@ public:
     animation_session();
     ~animation_session();
 
-    void set(std::shared_ptr<cube::core::animation> animation);
+    void set(std::shared_ptr<animation> animation);
     cube::core::animation & operator*();
     operator bool() const;
 
@@ -28,7 +28,7 @@ private:
     animation_session(animation_session const &) = delete;
     animation_session(animation_session &&) = delete;
 
-    std::shared_ptr<cube::core::animation> animation_;
+    std::shared_ptr<animation> animation_;
 };
 
 } // End of namespace
@@ -59,17 +59,6 @@ private:
     engine_context & context_;
     std::chrono::milliseconds const poll_timeout_;
     bool stopping_;
-};
-
-template<typename T>
-struct graphics_device_factory
-{
-    using type = T;
-
-    std::unique_ptr<type> operator()(engine_context & context) const
-    {
-        return std::make_unique<type>(context);
-    }
 };
 
 template<typename T>
