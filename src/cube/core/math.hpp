@@ -16,6 +16,9 @@ struct range
         to(std::move(t))
     { }
 
+    constexpr bool operator==(range const & other) const { return from == other.from && to == other.to; }
+    constexpr bool operator!=(range const & other) const { return !(*this == other); }
+
     T from;
     T to;
 };
@@ -27,6 +30,9 @@ struct safe_range
         from(unsafe.from),
         to(unsafe.to)
     { }
+
+    constexpr bool operator==(safe_range const & other) const { return from == other.from && to == other.to; }
+    constexpr bool operator!=(safe_range const & other) const { return !(*this == other); }
 
     static_assert(std::is_integral_v<T>);
     boost::safe_numerics::safe<T> from;

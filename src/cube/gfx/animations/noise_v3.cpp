@@ -91,7 +91,9 @@ void noise_v3::paint(graphics_device & device)
                 auto const yy = static_cast<float>(y) * grow_shrink_scalar;
                 for (int z = 0; z < cube::cube_size_1d; ++z) {
                     auto const zz = static_cast<float>(z) * grow_shrink_scalar;
-                    auto const gp = map(ridged_mf_noise({xx, yy, zz, time_}), ridged_noise_range, gradient_pos_range);
+
+                    static_assert(range_cast<double>(ridged_mf_noise_range) == gradient_pos_range);
+                    auto const gp = ridged_mf_noise({xx, yy, zz, time_});
 
                     auto c = gradient_(gp).vec();
                     c *= rgb_vec(fade_in_->value());
