@@ -162,7 +162,7 @@ engine_context & graphics_device::context()
 
 int graphics_device::map_to_offset(int x, int y, int z) const
 {
-    return x + y * cube_size_1d + z * cube_size_2d;
+    return x * cube_size_2d + y * cube_size_1d + z;
 }
 
 void graphics_device::apply_motion_blur(double blur)
