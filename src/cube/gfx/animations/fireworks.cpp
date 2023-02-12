@@ -74,13 +74,13 @@ struct fireworks :
 animation_publisher<fireworks> const publisher;
 
 constexpr range cube_axis_range{cube::cube_axis_min_value, cube::cube_axis_max_value};
-constexpr double default_explosion_force = 2.5;
+constexpr double default_explosion_force = 3.0;
 constexpr double default_motion_blur = 0.95;
 constexpr double gravity = -0.000001 * cube::cube_size_1d; // Traveled distance under gravity is one cube_size_1d per 2 seconds
 constexpr glm::dvec3 force{0.0, 0.0, gravity};
 constexpr unsigned int default_number_of_shells{3};
-constexpr unsigned int default_number_of_fragments{cube::cube_size_1d * 15};
-constexpr int default_shell_radius{cube::cube_size_1d / 8};
+constexpr unsigned int default_number_of_fragments{cube::cube_size_1d * 18};
+constexpr int default_shell_radius{cube::cube_size_1d / 10};
 
 fireworks::fireworks(engine_context & context) :
     configurable_animation(context)
@@ -161,7 +161,7 @@ shell fireworks::make_shell() const
     shell.radius = shell_radius_;
     shell.position = random_voxel();
     shell.position.z = cube::cube_axis_min_value; // Must start on bottom
-    shell.velocity = (target - shell.position) * randd({0.001, 0.002});
+    shell.velocity = (target - shell.position) * randd({0.00075, 0.0015});
     shell.hue =
     {
         {0.0, pick_color()},
