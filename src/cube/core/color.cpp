@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include <sstream>
 #include <iomanip>
+#include <bit>
 
 namespace cube::core
 {
@@ -113,12 +114,6 @@ void alpha_blend(color const & c, color & bucket)
 
 void alpha_blend(rgba_t const & c, rgba_t & bucket)
 {
-    // This method differs ever so slightly from the one above because we have to deal
-    // with endianness here. Depending on the endianness the color channels may've been
-    // swapped, thus we can't say for sure which index to use for the a specific color channel.
-    // For now we just blend all the channels, also the alpha channel, opposed to the function above
-    // which sets it to color_max_value. Strictly speaking it doesn't really matter what value
-    // the alpha channel will become, so for now blending it is fine.
     constexpr int shift{sizeof(color_t) * 8};
 
     color_t const * const c_ptr = reinterpret_cast<color_t const *>(&c);
@@ -126,10 +121,18 @@ void alpha_blend(rgba_t const & c, rgba_t & bucket)
 
     color_t const alpha = color_t(c); // bit 0 - 7
     color_t const inv_alpha = static_cast<color_t>(color_max_value - alpha);
-    bucket_ptr[0] = static_cast<color_t>((alpha * c_ptr[0] + inv_alpha * bucket_ptr[0]) >> shift);
-    bucket_ptr[1] = static_cast<color_t>((alpha * c_ptr[1] + inv_alpha * bucket_ptr[1]) >> shift);
-    bucket_ptr[2] = static_cast<color_t>((alpha * c_ptr[2] + inv_alpha * bucket_ptr[2]) >> shift);
-    bucket_ptr[3] = static_cast<color_t>((alpha * c_ptr[3] + inv_alpha * bucket_ptr[3]) >> shift);
+
+    if constexpr (std::endian::native == std::endian::little) {
+        bucket_ptr[0] = color_max_value; // Alpha channel
+        bucket_ptr[1] = static_cast<color_t>((alpha * c_ptr[1] + inv_alpha * bucket_ptr[1]) >> shift);
+        bucket_ptr[2] = static_cast<color_t>((alpha * c_ptr[2] + inv_alpha * bucket_ptr[2]) >> shift);
+        bucket_ptr[3] = static_cast<color_t>((alpha * c_ptr[3] + inv_alpha * bucket_ptr[3]) >> shift);
+    } else {
+        bucket_ptr[0] = static_cast<color_t>((alpha * c_ptr[0] + inv_alpha * bucket_ptr[0]) >> shift);
+        bucket_ptr[1] = static_cast<color_t>((alpha * c_ptr[1] + inv_alpha * bucket_ptr[1]) >> shift);
+        bucket_ptr[2] = static_cast<color_t>((alpha * c_ptr[2] + inv_alpha * bucket_ptr[2]) >> shift);
+        bucket_ptr[3] = color_max_value; // Alpha channel
+    }
 }
 
 void blend(color const & c, color & bucket)
