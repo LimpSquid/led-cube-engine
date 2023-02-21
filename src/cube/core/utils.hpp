@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <iostream>
 #include <optional>
+#include <functional>
 #include <algorithm>
 #include <csignal>
 #include <unistd.h>
@@ -44,7 +45,7 @@ inline scope_guard_t make_scope_guard() { return std::make_shared<void *>(nullpt
 inline scope_guard_t::weak_type get_weak_ref(scope_guard_t tracker) { return {tracker}; }
 inline bool lock(scope_guard_t::weak_type weak) { return weak.lock() != nullptr; }
 
-template<typename H, typename T>
+template<typename H>
 auto scoped_handler(H && h, scope_guard_t & guard)
 {
     return [scope = get_weak_ref(guard), h = std::move(h)](auto && ... args) {
@@ -124,6 +125,27 @@ inline bool question_yesno(const char * message)
     if (!std::cin)
         throw std::runtime_error("Reading user input failed");
     return *result;
+}
+
+template<typename T, typename F>
+void visit(F && visitor, std::optional<T> & opt)
+{
+    if (opt)
+        visitor(*opt);
+}
+
+template<typename T, typename F>
+void visit(F && visitor, std::optional<T> const & opt)
+{
+    if (opt)
+        visitor(*opt);
+}
+
+template<typename ... A>
+void visit(std::function<void(A...)> const & func, A && ... args)
+{
+    if (func)
+        func(std::forward<A>(args)...);
 }
 
 } // End of namespace

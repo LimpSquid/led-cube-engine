@@ -1,11 +1,12 @@
 #include <cube/programs/program.hpp>
 #include <cube/core/logging.hpp>
+#include <cube/core/utils.hpp>
 #include <iostream>
 #include <vector>
-#include <optional>
 #include <signal.h>
 #include <execinfo.h>
 
+using namespace cube::core;
 using namespace cube::programs;
 using std::operator""s;
 
@@ -41,13 +42,8 @@ void handle_segfault()
 
 void signal_handler(int signal)
 {
-    auto exec = [](auto handler) {
-        if (handler)
-            handler();
-    };
-
     if (signal == SIGINT)
-        return exec(prog->sigint);
+        return visit(prog->sigint);
     if (signal == SIGSEGV)
         return handle_segfault();
 
@@ -63,7 +59,7 @@ int main(int ac, char const * const av[])
 
     auto const & programs = program_registry::instance().programs();
     auto const search = std::find_if(programs.begin(), programs.end(),
-        [arg=std::string_view(av[1])](auto const & p) { return p.name == arg; });
+        [arg=std::string_view(av[1])](auto const & p) { return p.name == arg && p.entry; });
     if (search == programs.cend())
         exit_with_help();
     prog = *search;

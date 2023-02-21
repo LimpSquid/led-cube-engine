@@ -214,7 +214,8 @@ void bus_comm::switch_state(bus_state state)
             if (!jobs_.empty()) {
                 auto & job = jobs_.back();
                 std::visit([&](auto & params) {
-                    params.handler(bus_error{"Bus error", {}});
+                    if (params.handler)
+                        params.handler(bus_error{"Bus error", {}});
                 }, job.params);
                 jobs_.pop_back();
             }
