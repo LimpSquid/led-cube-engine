@@ -131,8 +131,7 @@ void graphics_device::render(animation & anim)
             LOG_ARG("FPS", 1000 / render_time.count()));
         last_render_tp_ = now;
 
-        auto const blur = anim.motion_blur();
-        if (blur)
+        if (auto const blur = anim.motion_blur())
             apply_motion_blur(*blur);
 
         anim.paint_event(*this);
