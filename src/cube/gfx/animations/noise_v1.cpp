@@ -80,16 +80,16 @@ void noise_v1::scene_tick(milliseconds dt)
 
 void noise_v1::paint(graphics_device & device)
 {
-    auto const grow_shrink_rate = time_ * 0.5;
-    auto const grow_shrink_scalar = static_cast<float>(map(std::sin(grow_shrink_rate), unit_circle_range, grow_shrink_range));
+    auto const grow_rate = time_ * 0.5;
+    auto const grow_scalar = static_cast<float>(map(std::sin(grow_rate), unit_circle_range, grow_shrink_range));
 
     parallel_for({0, cube::cube_size_1d}, [&](parallel_range_t range) {
         for (int x = range.from; x < range.to; ++x) {
-            auto const xx = static_cast<float>(x) * grow_shrink_scalar;
+            auto const xx = static_cast<float>(x) * grow_scalar;
             for (int y = 0; y < cube::cube_size_1d; ++y) {
-                auto const yy = static_cast<float>(y) * grow_shrink_scalar;
+                auto const yy = static_cast<float>(y) * grow_scalar;
                 for (int z = 0; z < cube::cube_size_1d; ++z) {
-                    auto const zz = static_cast<float>(z) * grow_shrink_scalar;
+                    auto const zz = static_cast<float>(z) * grow_scalar;
                     auto const gp = map(noise({xx, yy, zz, time_}), noise_range, gradient_pos_range);
 
                     auto c = gradient_(gp).vec();

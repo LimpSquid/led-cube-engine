@@ -103,11 +103,11 @@ void falling_balls::paint(graphics_device & device)
     painter p(device);
     p.set_fill_mode(graphics_fill_mode::none);
 
-    double const grow_shrink_scalar = grow_in_->value() * shrink_out_->value();
+    double const grow_scalar = grow_in_->value() * shrink_out_->value();
 
     for (auto const & ball : balls_) {
         p.set_color(ball.c);
-        p.sphere(ball.position, static_cast<int>(std::round(grow_shrink_scalar * ball.radius)));
+        p.sphere(ball.position, static_cast<int>(std::round(grow_scalar * ball.radius)));
     }
 }
 
