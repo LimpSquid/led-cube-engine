@@ -1,5 +1,5 @@
 #include <cube/gfx/configurable_animation.hpp>
-#include <cube/core/json_utils.hpp>
+#include <cube/gfx/json_utils.hpp>
 
 using namespace cube::core;
 using namespace cube::gfx;

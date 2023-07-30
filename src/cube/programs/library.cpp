@@ -2,6 +2,7 @@
 #include <cube/core/engine_context.hpp>
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
+#include <3rdparty/nlohmann/json.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 
@@ -40,23 +41,21 @@ void handle_info(std::vector<std::string> const & args)
         auto const animations = std::set<std::string>(args.begin(), args.end());
         engine_context context{};
 
+        nlohmann::json json = nlohmann::json::array();
+
         for (auto it = animations.begin(); it != animations.end(); ++it) {
-            auto incubated = library::instance().incubate(*it, context);
+            auto animation_name = *it;
+            auto incubated = library::instance().incubate(animation_name, context);
 
             if (incubated) {
-                std::cout
-                    << "Default properties for '" << *it << "':\n"
-                    << (*incubated)->dump_properties().dump(2) << '\n';
-            } else {
-                std::cout
-                    << "Error for '" << *it << "': "
-                    << incubated.error().what << '\n';
+                nlohmann::json item = nlohmann::json::object();
+                item.emplace(make_field("animation", animation_name));
+                item.emplace(make_field("properties", (*incubated)->dump_properties()));
+                json.push_back(std::move(item));
             }
-
-            // Separator
-            if (std::distance(it, animations.end()) > 1)
-                std::cout << "=====\n\n";
         }
+
+        std::cout << json.dump(2) << '\n';
 
         std::exit(EXIT_SUCCESS);
     }
@@ -67,6 +66,30 @@ void handle_info(std::vector<std::string> const & args)
         << "  led-cube-engine library --info helix\n"
         << "  led-cube-engine library --info helix stars\n";
     std::exit(EXIT_FAILURE);
+}
+
+
+void handle_info_all()
+{
+    engine_context context{};
+    auto & lib = library::instance();
+
+    nlohmann::json json = nlohmann::json::array();
+
+    for (auto const & animation_name : lib.available_animations()) {
+        auto incubated = library::instance().incubate(animation_name, context);
+
+        if (incubated) {
+            nlohmann::json item = nlohmann::json::object();
+            item.emplace(make_field("animation", animation_name));
+            item.emplace(make_field("properties", (*incubated)->dump_properties()));
+            json.push_back(std::move(item));
+        }
+    }
+
+    std::cout << json.dump(2) << '\n';
+
+    std::exit(EXIT_SUCCESS);
 }
 
 void handle_dump_properties(std::vector<std::string> const & args)
@@ -106,6 +129,8 @@ program const program_library
                 ->zero_tokens()
                 ->multitoken()
                 ->notifier(handle_info), "print info about one or more animations")
+            ("info-all", po::bool_switch()
+                ->notifier(bool_switch_notifier(handle_info_all)), "print info about all available animations")
             ("dump-properties", po::value<std::vector<std::string>>()
                 ->zero_tokens()
                 ->multitoken()
