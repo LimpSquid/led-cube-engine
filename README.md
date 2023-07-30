@@ -109,7 +109,10 @@ $ ./led-cube-engine library --help
 > List all the available animations of the library.
 
 **--info \<name>**
-> Print information about one or more animations, the `name` parameter must be one of the animations that are listed with the `--list` option. To print information about multiple animations, simply cascade the animation names, e.g. `--info stars helix`
+> Dump properties in JSON format of one or more animations, the `name` parameter must be one of the animations that are listed with the `--list` option. To dump properties from multiple animations, simply cascade the animation names, e.g. `--info stars helix`
+
+**--info-all**
+> Print properties in JSON format of all available animations.`
 
 **--dump-properties \<name> \<properties>**
 > Load an animation with the specified properties and dump the resulting properties to the command line interface. The `name` parameter must be one of the animations that are listed with the `--list` option. The `properties` parameter must be a JSON object string with fields that are overriding the default properties of the animation. When the build option `LCE_EVAL_EXPRESSIONS` is used, any expression is also evaluated.

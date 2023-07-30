@@ -68,7 +68,6 @@ void handle_info(std::vector<std::string> const & args)
     std::exit(EXIT_FAILURE);
 }
 
-
 void handle_info_all()
 {
     engine_context context{};
