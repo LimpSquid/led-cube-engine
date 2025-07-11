@@ -100,6 +100,7 @@ constexpr inline bool opaque(rgba_t const & rgba)
     return color(rgba).opaque();
 }
 
+color hsv(double hue, double saturation, double value = 1.0);
 color lighter(color const & c, double factor = 0.1);
 color darker(color const & c, double factor = 0.1);
 color adjust_brightness(color const & c, double factor);

@@ -1,4 +1,10 @@
 [
+  {
+    "animation": "rotating_torus",
+    "properties": {
+        "motion_blur": 0.95
+    }
+  },
   { "animation": "noise_v2" },
   {
     "animation": "ripple",

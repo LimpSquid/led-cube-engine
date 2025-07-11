@@ -22,6 +22,32 @@ color::color(color_vec_t const & vec)
     a = clamp(vec.a);
 }
 
+color hsv(double hue, double saturation, double value) {
+    hue = std::fmod(hue, 360.0);
+    if (hue < 0.0) hue += 360.0;
+
+    double c = value * saturation;
+    double x = c * (1.0 - std::fabs(std::fmod(hue / 60.0, 2.0) - 1.0));
+    double m = value - c;
+    double rp = 0, gp = 0, bp = 0;
+
+    if      (hue <  60.0) { rp = c;  gp = x;  bp = 0; }
+    else if (hue < 120.0) { rp = x;  gp = c;  bp = 0; }
+    else if (hue < 180.0) { rp = 0;  gp = c;  bp = x; }
+    else if (hue < 240.0) { rp = 0;  gp = x;  bp = c; }
+    else if (hue < 300.0) { rp = x;  gp = 0;  bp = c; }
+    else                  { rp = c;  gp = 0;  bp = x; }
+
+    auto to_color = [](double f) {
+        int x = static_cast<int>(std::round(f * color_max_value));
+        if (x < color_min_value) return color_min_value;
+        if (x > color_max_value) return color_max_value;
+        return color_t(x);
+    };
+
+    return color{ to_color(rp + m), to_color(gp + m), to_color(bp + m) };
+}
+
 color lighter(color const & c, double factor)
 {
     factor = std::clamp(factor, 0.0, 1.0);
