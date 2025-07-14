@@ -1,3 +1,5 @@
+// NB: Created by ChatGPT
+
 #include <cube/gfx/configurable_animation.hpp>
 #include <cube/gfx/library.hpp>
 #include <cube/core/painter.hpp>
