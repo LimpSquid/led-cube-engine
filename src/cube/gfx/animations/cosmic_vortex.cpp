@@ -180,13 +180,11 @@ void cosmic_vortex::paint(graphics_device & device)
                 static_cast<int>(std::round(zt + cube_center))
             };
 
-            if (visible(voxel)) {
-                double const nrm = std::min(r / max_r, 1.0);
-                double const d = arm_strength * twinkle * fade * (0.6 + 0.4 * (1.0 - nrm));
-                auto c = gradient_(nrm).vec();
-                c *= rgb_vec(d);
-                device.draw_with_color(voxel, c);
-            }
+            double const nrm = std::min(r / max_r, 1.0);
+            double const d = arm_strength * twinkle * fade * (0.6 + 0.4 * (1.0 - nrm));
+            auto c = gradient_(nrm).vec();
+            c *= rgb_vec(d);
+            device.draw_with_color(voxel, c);
         }
     }, use_all_cpus);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef TARGET_MOCK
-    #define TARGET_CUBE_SIZE            32
+    #define TARGET_CUBE_SIZE            64
     #define TARGET_ANIMATION_SCENE_FPS  60
 #elif TARGET_RPI_CUBE
     #define TARGET_CUBE_SIZE            16
