@@ -155,7 +155,6 @@ struct flying_text :
 {
     flying_text(engine_context & context);
 
-    animation_trait traits() const override { return animation_trait::transition; }
     void state_changed(animation_state state) override;
     void scene_tick(milliseconds dt) override;
     void paint(graphics_device & device) override;

@@ -14,19 +14,19 @@ class graphics_device;
 namespace detail
 {
 
-class animation_session
+class animation_transition
 {
 public:
-    animation_session();
-    ~animation_session();
+    animation_transition();
+    ~animation_transition();
 
     void set(std::shared_ptr<animation> animation);
     cube::core::animation & operator*();
     operator bool() const;
 
 private:
-    animation_session(animation_session const &) = delete;
-    animation_session(animation_session &&) = delete;
+    animation_transition(animation_transition const &) = delete;
+    animation_transition(animation_transition &&) = delete;
 
     std::shared_ptr<animation> animation_;
 };
@@ -75,7 +75,7 @@ public:
 
     void load(std::shared_ptr<animation> animation)
     {
-        animation_session_.set(animation);
+        animation_transition_.set(animation);
 
         // If we unset the animation, clear the framebuffers
         if (!animation)
@@ -89,11 +89,11 @@ private:
     void poll_one(bool stopping) override
     {
         // Render animation
-        if (!stopping && animation_session_)
-            device_.render(*animation_session_);
+        if (!stopping && animation_transition_)
+            device_.render(*animation_transition_);
     }
 
-    detail::animation_session animation_session_;
+    detail::animation_transition animation_transition_;
     graphics_device_t device_;
 };
 

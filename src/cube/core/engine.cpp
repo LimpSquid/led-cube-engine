@@ -56,16 +56,16 @@ namespace cube::core
 namespace detail
 {
 
-animation_session::animation_session()
+animation_transition::animation_transition()
 { }
 
-animation_session::~animation_session()
+animation_transition::~animation_transition()
 {
     if (animation_)
         animation_->finish();
 }
 
-void animation_session::set(std::shared_ptr<cube::core::animation> animation)
+void animation_transition::set(std::shared_ptr<cube::core::animation> animation)
 {
     if (animation_ == animation)
         return; // Already set
@@ -76,12 +76,12 @@ void animation_session::set(std::shared_ptr<cube::core::animation> animation)
     animation_ = animation;
 }
 
-cube::core::animation & animation_session::operator*()
+cube::core::animation & animation_transition::operator*()
 {
     return *animation_;
 }
 
-animation_session::operator bool() const
+animation_transition::operator bool() const
 {
     return bool(animation_);
 }
