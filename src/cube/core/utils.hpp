@@ -1,14 +1,16 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <stdexcept>
-#include <cstring>
-#include <cerrno>
-#include <iostream>
-#include <optional>
 #include <algorithm>
+#include <cerrno>
+#include <cctype>
 #include <csignal>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
 #include <unistd.h>
 
 namespace cube::core
@@ -44,7 +46,8 @@ inline scope_guard_t make_scope_guard() { return std::make_shared<void *>(nullpt
 inline scope_guard_t::weak_type get_weak_ref(scope_guard_t tracker) { return {tracker}; }
 inline bool lock(scope_guard_t::weak_type weak) { return weak.lock() != nullptr; }
 
-template<typename H, typename T>
+
+template<typename H>
 auto scoped_handler(H && h, scope_guard_t & guard)
 {
     return [scope = get_weak_ref(guard), h = std::move(h)](auto && ... args) {
