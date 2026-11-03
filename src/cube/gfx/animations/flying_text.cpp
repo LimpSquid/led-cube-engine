@@ -369,37 +369,99 @@ void flying_text::update_sparkles()
     }
     sparkle_mood_ = 0.2 + 0.8 * (0.5 + 0.5 * std::sin(static_cast<double>(time_ms_) * 0.003 + std::sin(static_cast<double>(time_ms_) * 0.007) * 0.5));
 }
-
-void flying_text::draw_letter(painter & p, int cx, int depth, int cz, double angle, double zoom, double hue) const
+void flying_text::draw_letter(
+    painter & p,
+    int cx,
+    int depth,
+    int cz,
+    double angle,
+    double zoom,
+    double hue) const
 {
     auto const & g = glyphs_[char_idx_];
     double spacing = zoom * cube::cube_size_1d / 16.0;
+    double ca = std::cos(angle);
+    double sa = std::sin(angle);
+    bool on[LETTER_HEIGHT][LETTER_WIDTH] = {};
+    voxel_t positions[LETTER_HEIGHT][LETTER_WIDTH];
 
     for (int row = 0; row < LETTER_HEIGHT; ++row) {
-        uint8_t bits = g.rows[row];
         for (int col = 0; col < g.width; ++col) {
-            if (!(bits & (1 << (7 - col))))
+            on[row][col] = (g.rows[row] & (1u << (7 - col))) != 0;
+            if (!on[row][col])
                 continue;
 
             double lx = (col - g.width / 2.0) * spacing;
             double lz = (LETTER_HEIGHT / 2.0 - row) * spacing;
 
-            // Rotate around Z axis (vertical): X and Y rotate, Z stays
-            double ca = cos(angle), sa = sin(angle);
-            int x = cx - static_cast<int>(std::round(lx * ca));
-            int y = cube::cube_axis_max_value -
-                    (depth + static_cast<int>(std::round(lx * sa)));
-            int z = cz + static_cast<int>(std::round(lz));
+            positions[row][col] = {
+                cx - static_cast<int>(std::round(lx * ca)),
+                cube::cube_axis_max_value -
+                    (depth + static_cast<int>(std::round(lx * sa))),
+                cz + static_cast<int>(std::round(lz))
+            };
+        }
+    }
 
-            if (x < 0 || x > cube::cube_axis_max_value ||
-                y < 0 || y > cube::cube_axis_max_value ||
-                z < 0 || z > cube::cube_axis_max_value)
+    int radius = std::max(0, static_cast<int>(zoom * cube::cube_size_1d / 25.0));
+
+    auto draw_voxel = [&](voxel_t v) {
+        if (radius == 0)
+            p.draw(v);
+        else
+            p.sphere(v, radius);
+    };
+
+    auto draw_line_interior = [&](voxel_t a, voxel_t b) {
+        int dx = b.x - a.x;
+        int dy = b.y - a.y;
+        int dz = b.z - a.z;
+        int steps = std::max(
+            std::abs(dx),
+            std::max(std::abs(dy), std::abs(dz)));
+
+        for (int i = 1; i < steps; ++i) {
+            double t = static_cast<double>(i) / steps;
+            voxel_t v{
+                static_cast<int>(std::round(a.x + t * dx)),
+                static_cast<int>(std::round(a.y + t * dy)),
+                static_cast<int>(std::round(a.z + t * dz))
+            };
+            draw_voxel(v);
+        }
+    };
+
+    for (int row = 0; row < LETTER_HEIGHT; ++row) {
+        for (int col = 0; col < g.width; ++col) {
+            if (!on[row][col])
                 continue;
 
-            p.set_color(hsv(hue + static_cast<double>(col * 20 + row * 10), 1.0, 1.0));
+            p.set_color(hsv(
+                hue + static_cast<double>(col * 20 + row * 10),
+                1.0,
+                1.0));
 
-            int r = std::max(0, static_cast<int>(zoom * cube::cube_size_1d / 25.0));
-            p.sphere({x, y, z}, r);
+            draw_voxel(positions[row][col]);
+
+            // Connect right, down-left, down, and down-right neighbors.
+            for (int dr = 0; dr <= 1; ++dr) {
+                for (int dc = -1; dc <= 1; ++dc) {
+                    if (dr == 0 && dc != 1)
+                        continue;
+
+                    int nr = row + dr;
+                    int nc = col + dc;
+
+                    if (nr >= LETTER_HEIGHT || nc < 0 || nc >= g.width)
+                        continue;
+                    if (!on[nr][nc])
+                        continue;
+
+                    draw_line_interior(
+                        positions[row][col],
+                        positions[nr][nc]);
+                }
+            }
         }
     }
 }
