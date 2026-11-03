@@ -126,7 +126,6 @@ struct sparkle
     double life;
     double fade_rate;
     double hue;
-    int radius;
     double wobble_offset;
 };
 
@@ -220,7 +219,6 @@ void flying_text::state_changed(animation_state state)
                 s.life = randd();
                 s.fade_rate = randd({0.003, 0.025});
                 s.hue = randd() * 360.0;
-                s.radius = (randd() < 0.3) ? rand(range{1, (cube::cube_size_1d >= 48 ? 2 : 1)}) : 0;
                 s.wobble_offset = randd() * 2.0 * M_PI;
             }
             next_char();
@@ -366,7 +364,6 @@ void flying_text::update_sparkles()
             s.life = 1.0;
             s.fade_rate = randd({0.003, 0.025});
             s.hue = randd() * 360.0;
-            s.radius = (randd() < 0.3) ? rand(range{1, 2}) : 0;
             s.wobble_offset = randd() * 2.0 * M_PI;
         }
     }
@@ -389,8 +386,9 @@ void flying_text::draw_letter(painter & p, int cx, int depth, int cz, double ang
 
             // Rotate around Z axis (vertical): X and Y rotate, Z stays
             double ca = cos(angle), sa = sin(angle);
-            int x = cx + static_cast<int>(std::round(lx * ca));
-            int y = depth + static_cast<int>(std::round(lx * sa));
+            int x = cx - static_cast<int>(std::round(lx * ca));
+            int y = cube::cube_axis_max_value -
+                    (depth + static_cast<int>(std::round(lx * sa)));
             int z = cz + static_cast<int>(std::round(lz));
 
             if (x < 0 || x > cube::cube_axis_max_value ||
@@ -413,10 +411,7 @@ void flying_text::draw_sparkles(painter & p) const
         if (bright > 0.02) {
             double hue = fmod(s.hue + static_cast<double>(time_ms_) * 0.08 + std::sin(s.wobble_offset + static_cast<double>(time_ms_) * 0.005) * 30.0, 360.0);
             p.set_color(hsv(hue, 0.9 + 0.1 * bright, bright));
-            if (s.radius > 0)
-                p.sphere(s.pos, s.radius);
-            else
-                p.draw(s.pos);
+            p.draw(s.pos);
         }
     }
 }
